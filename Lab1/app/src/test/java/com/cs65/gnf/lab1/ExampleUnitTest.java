@@ -1,4 +1,4 @@
-package com.example.naman.lab1;
+package com.cs65.gnf.lab1;
 
 import org.junit.Test;
 

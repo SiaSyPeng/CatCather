@@ -1,4 +1,4 @@
-package com.example.naman.lab1;
+package com.cs65.gnf.lab1;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.example.naman.lab1", appContext.getPackageName());
+        assertEquals("com.cs65.gnf.lab1", appContext.getPackageName());
     }
 }

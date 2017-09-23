@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Lab1</string>
+    <string name="login_button_text">Login</string>
+    <string name="username_hint">Username</string>
+    <string name="full_name_hint">Full Name</string>
+    <string name="password_hint">Password</string>
 </resources>
