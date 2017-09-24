@@ -22,7 +22,7 @@
         app:alignItems="flex_start"
         app:justifyContent="center"
         app:flexDirection="row"
-        app:layout_flexGrow="1f"
+        app:layout_flexGrow="1.0"
         >
         <at.markushi.ui.CircleButton
             android:id="@+id/pict_button"
@@ -85,5 +85,46 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="30dp"
         />
+
+    <com.google.android.flexbox.FlexboxLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:flexDirection="row"
+        app:justifyContent="space_between"
+        >
+
+        <Button
+            android:id="@+id/tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tag_text"
+            app:layout_alignSelf="flex_end"
+            />
+
+        <Button
+            android:id="@+id/history"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/history_text"
+            app:layout_alignSelf="flex_end"
+            />
+
+        <Button
+            android:id="@+id/score"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/score_text"
+            app:layout_alignSelf="flex_end"
+            />
+
+        <Button
+            android:id="@+id/setting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/setting_text"
+            app:layout_alignSelf="flex_end"
+            />
+
+    </com.google.android.flexbox.FlexboxLayout>
 
 </com.google.android.flexbox.FlexboxLayout>
