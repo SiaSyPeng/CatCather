@@ -6,13 +6,14 @@
     app:flexWrap="nowrap"
     app:alignItems="center"
     app:alignContent="stretch"
-    app:flexDirection="column">
+    app:flexDirection="column"
+    android:id="@+id/screen"
+    >
 
     <Button
         android:id="@+id/login_or_clear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/login_button_text"
         app:layout_alignSelf="flex_end"
         />
 
@@ -22,7 +23,7 @@
         app:alignItems="flex_start"
         app:justifyContent="center"
         app:flexDirection="row"
-        app:layout_flexGrow="1f"
+        app:layout_flexGrow="1.0"
         >
         <at.markushi.ui.CircleButton
             android:id="@+id/pict_button"
@@ -72,6 +73,7 @@
         />
 
     <EditText
+        android:textColor="#000000"
         android:id="@+id/passwrd"
         android:layout_width="match_parent"
         android:layout_margin="30dp"
@@ -84,6 +86,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="30dp"
+        android:text="@string/submit_button"
+        android:onClick="submitButton"
         />
 
 </com.google.android.flexbox.FlexboxLayout>
