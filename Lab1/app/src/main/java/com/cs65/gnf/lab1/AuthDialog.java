@@ -35,39 +35,36 @@ public class AuthDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // inflate dialog view
-        View dialog_view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_auth, null);
+        final View dialog_view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_auth, null);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
 
         // checks if password or user is valid
         // and adjust "matched/unmatched" accordingly
-        final EditText pass_re = (EditText) dialog_view.findViewById(R.id.Confirm_pass);
-//
-//        pass_re.addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//                final EditText password = getActivity().findViewById(R.id.passwrd);
-//                final TextView pass_check = getActivity().findViewById(R.id.Match);
-//                String passwords = password.getText().toString();
-//                String pass_res = pass_re.getText().toString();
-//
-//                // match/unmatch change
-//                String match = getString(R.string.pass_match);
-//
-//                if (passwords.equals(pass_res)) {
-//
-//                    pass_check.setText(match);
-//                } else {
-//                    pass_check.setText(R.string.pass_unmatch);
-//                }
-//            }
-//
-//            @Override
-//            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
-//
-//            @Override
-//            public void afterTextChanged(Editable editable) {}
-//        });
+        final EditText pass_re = dialog_view.findViewById(R.id.Confirm_pass);
+
+        pass_re.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                final EditText password = getActivity().findViewById(R.id.passwrd);
+                final TextView pass_check = dialog_view.findViewById(R.id.Match);
+                String passwords = password.getText().toString();
+                String pass_res = pass_re.getText().toString();
+
+                // match/unmatch change
+                if (passwords.equals(pass_res)) {
+                    pass_check.setText(R.string.pass_match);
+                } else {
+                    pass_check.setText(R.string.pass_unmatch);
+                }
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
 
         alertDialogBuilder.setView(dialog_view)
                 .setTitle(R.string.pass_dialog)
