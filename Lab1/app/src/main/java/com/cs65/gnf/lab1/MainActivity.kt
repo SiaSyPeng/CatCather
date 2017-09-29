@@ -22,7 +22,9 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory
 import android.util.Log
+import android.view.KeyEvent
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 
 
 class MainActivity : AppCompatActivity() {
@@ -31,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     val IMAGE_REQUEST_CODE = 1001
     val CROP_REQUEST_CODE = 2002
     val PERMISSIONS_REQUEST_CODE = 101
+    val AUTH_REQUEST_CODE=202
     lateinit var transitoryImage: Bitmap
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -169,6 +172,11 @@ class MainActivity : AppCompatActivity() {
      */
     fun passwordConfirm(orig_text: String) {
         //TODO Make a dialog
+        val PASS_CONFIRM = "pass_confirm_dialog";
+
+        val manager = fragmentManager
+        val dialog = AuthDialog()
+        dialog.show( manager, PASS_CONFIRM)
     }
 
     //A lot of buttons
@@ -220,6 +228,32 @@ class MainActivity : AppCompatActivity() {
 
     fun submitButton(v: View) {
         //TODO Pass all those values to the server
+    }
+
+    // Lifecycle instrumentation
+    override fun onStart() {
+        Log.d("CYCLE", "onStart")
+        super.onStart()
+    }
+
+    override fun onResume() {
+        Log.d("CYCLE", "onResume")
+        super.onResume()
+    }
+
+    override fun onPause() {
+        Log.d("CYCLE", "onPause")
+        super.onPause()
+    }
+
+    override fun onStop() {
+        Log.d("CYCLE", "onStop")
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        Log.d("CYCLE", "onDestroy")
+        super.onDestroy()
     }
 
 }
