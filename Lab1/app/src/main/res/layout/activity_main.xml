@@ -1,93 +1,105 @@
-<com.google.android.flexbox.FlexboxLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    app:flexWrap="nowrap"
-    app:alignItems="center"
-    app:alignContent="stretch"
-    app:flexDirection="column"
-    android:id="@+id/screen"
-    >
-
-    <Button
-        android:id="@+id/login_or_clear"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_alignSelf="flex_end"
-        />
+    android:layout_height="match_parent">
 
     <com.google.android.flexbox.FlexboxLayout
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        app:alignItems="flex_start"
-        app:justifyContent="center"
-        app:flexDirection="row"
-        app:layout_flexGrow="1.0"
-        >
-        <at.markushi.ui.CircleButton
-            android:id="@+id/pict_button"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:src="@drawable/cat_cut"
-            app:layout_flexBasisPercent="80%"
-            android:onClick="pictButton"
-            />
-    </com.google.android.flexbox.FlexboxLayout>
-
-    <com.google.android.flexbox.FlexboxLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/screen"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:flexDirection="row"
-        app:justifyContent="space_between"
+        app:flexDirection="column"
         app:alignItems="center"
-        app:layout_flexGrow=".2"
+        app:alignContent="stretch"
+        app:flexWrap="nowrap"
         >
+
+        <Button
+            android:id="@+id/login_or_clear"
+            android:text="@string/login_button_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_alignSelf="flex_end"
+            android:onClick="loginOrClearButton"
+            />
+
+        <com.google.android.flexbox.FlexboxLayout
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            app:alignItems="flex_start"
+            app:justifyContent="center"
+            app:flexDirection="row"
+            app:layout_flexGrow="1.0"
+
+            >
+            <at.markushi.ui.CircleButton
+                android:id="@+id/pict_button"
+                android:layout_height="300dp"
+                android:layout_width="300dp"
+                android:src="@drawable/cat_cut"
+                android:scaleType="fitCenter"
+                android:onClick="pictButton"
+                />
+        </com.google.android.flexbox.FlexboxLayout>
+
+        <com.google.android.flexbox.FlexboxLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:flexDirection="row"
+            app:justifyContent="space_between"
+            app:alignItems="center"
+            app:layout_flexGrow=".2"
+            android:layout_marginTop="40dp"
+            >
+
+            <EditText
+                android:id="@+id/username"
+                android:layout_width="10dp"
+                android:layout_height="match_parent"
+                app:layout_flexBasisPercent="60%"
+                android:layout_marginStart="30dp"
+                android:hint="@string/username_hint"
+                />
+
+            <TextView
+                android:id = "@+id/availability"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_flexBasisPercent="30%"
+                android:textAlignment="center"
+                android:text="@string/username_available"
+                />
+
+        </com.google.android.flexbox.FlexboxLayout>
 
         <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:id="@+id/username"
-            android:hint="@string/username_hint"
+            android:id="@+id/full_name"
+            android:layout_width="match_parent"
             android:layout_margin="30dp"
-            app:layout_flexBasisPercent="60%"
+            android:layout_height="wrap_content"
+            android:hint="@string/full_name_hint"
+            app:layout_flexGrow=".1"
             />
 
-        <TextView
+        <EditText
+            android:textColor="#000000"
+            android:id="@+id/passwrd"
+            android:layout_width="match_parent"
+            android:layout_margin="30dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/password_hint"
+            app:layout_flexGrow=".1"
+            />
+
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_flexBasisPercent="30%"
-            android:textAlignment="center"
-            android:text="Available"
+            android:layout_marginBottom="30dp"
+            android:text="@string/submit_button"
+            android:onClick="submitButton"
             />
 
     </com.google.android.flexbox.FlexboxLayout>
-
-    <EditText
-        android:id="@+id/full_name"
-        android:layout_width="match_parent"
-        android:layout_margin="30dp"
-        android:layout_height="wrap_content"
-        android:hint="@string/full_name_hint"
-        app:layout_flexGrow=".1"
-        />
-
-    <EditText
-        android:textColor="#000000"
-        android:id="@+id/passwrd"
-        android:layout_width="match_parent"
-        android:layout_margin="30dp"
-        android:layout_height="wrap_content"
-        android:hint="@string/password_hint"
-        app:layout_flexGrow=".1"
-        />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="30dp"
-        android:text="@string/submit_button"
-        android:onClick="submitButton"
-        />
-
-</com.google.android.flexbox.FlexboxLayout>
+</ScrollView>
