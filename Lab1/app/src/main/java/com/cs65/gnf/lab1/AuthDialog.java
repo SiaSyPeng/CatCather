@@ -22,15 +22,16 @@ import org.w3c.dom.Text;
 public class AuthDialog extends DialogFragment {
 
     private AlertDialog dialog;
+    private Button submitButton;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // inflate dialog view
         final View dialog_view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_auth, null);
         // build dialog
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
-        dialog = alertDialogBuilder.show();
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
 
+        dialog = alertDialogBuilder.show();
         // set basic view for alertDialog
         alertDialogBuilder.setView(dialog_view)
                 .setTitle(R.string.pass_dialog)
@@ -39,20 +40,22 @@ public class AuthDialog extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Log.d("DIALOG", "positive clicked");
+                        dialog.dismiss();
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Log.d("DIALOG", "negative clicked");
-                        dialog.cancel();
+                        //dialog.cancel();
+                        dialog.dismiss();
                     }
                 });
 
         /* checks if password or user is valid
          * and adjust "matched/unmatched" accordingly
          * enable positive button only when matched*/
-        final Button submitButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+//        submitButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         final EditText pass_re = dialog_view.findViewById(R.id.Confirm_pass);
 
         pass_re.addTextChangedListener(new TextWatcher() {
@@ -81,12 +84,15 @@ public class AuthDialog extends DialogFragment {
             }
         });
 
-        return alertDialogBuilder.create();
+        dialog = alertDialogBuilder.create();
+        return dialog;
     }
 
     @Override
     public void onStart(){
         super.onStart();
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+        submitButton = (Button) dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+
     }
 }
