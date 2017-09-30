@@ -2,7 +2,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    >
 
     <com.google.android.flexbox.FlexboxLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -21,6 +22,7 @@
             android:text="@string/login_button_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@color/LLPink"
             app:layout_alignSelf="flex_end"
             android:onClick="loginOrClearButton"
             />
@@ -102,13 +104,14 @@
             android:layout_marginBottom="30dp"
             android:text="@string/submit_button"
             android:onClick="submitButton"
+            android:background="@color/LLPink"
             />
 
         <com.google.android.flexbox.FlexboxLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:background="@color/colorPrimary"
+            android:background="@color/LPink"
             android:padding="10dp"
             app:flexDirection="row"
             app:justifyContent="space_between"
@@ -118,6 +121,7 @@
                 android:id="@+id/tag"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@color/LLPink"
                 android:text="@string/tag_text"
                 app:layout_alignSelf="flex_end"
                 />
@@ -126,6 +130,7 @@
                 android:id="@+id/history"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@color/LLPink"
                 android:text="@string/history_text"
                 />
 
@@ -133,6 +138,7 @@
                 android:id="@+id/score"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@color/LLPink"
                 android:text="@string/score_text"
                 />
 
@@ -140,6 +146,7 @@
                 android:id="@+id/setting"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@color/LLPink"
                 android:text="@string/setting_text"
                 />
         </com.google.android.flexbox.FlexboxLayout>
