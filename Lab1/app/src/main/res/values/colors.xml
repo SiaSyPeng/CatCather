@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorPrimary">#F9D5D3</color>
+    <color name="colorPrimaryDark">#ECA4A6</color>
     <color name="Black">#000000</color>
     <color name="colorAccent">#FF4081</color>
+
+    <!--Main color palette: Cacti Color-->
+    <color name="DPink">#ECA4A6</color>
+    <color name="LPink">#F9D5D3</color>
+    <color name="LLPink">#E4E0E1</color>
+    <color name="LGrey">#807F89</color>
+    <color name="DGreen">#99A89E</color>
+    <color name="LGreen">#BBC7BA</color>
+    <color name="LLGreen">#D7DBD1</color>
+
+
 </resources>

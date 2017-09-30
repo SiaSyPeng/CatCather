@@ -26,6 +26,7 @@ import android.support.v4.content.FileProvider
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory
 import android.util.Log
+import android.view.KeyEvent
 import android.view.inputmethod.InputMethodManager
 import java.io.File
 

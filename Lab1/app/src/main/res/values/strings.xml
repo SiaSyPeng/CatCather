@@ -16,7 +16,7 @@
     <string name="setting_text">Settings</string>
     <!--pass_confirm_dialog-->
     <string name="pass_dialog">Confirm Password</string>
-    <string name="retype_pass">Please retype here to confirm password</string>
+    <string name="retype_pass">Retype here to confirm password</string>
     <string name="pass_match">Matches</string>
     <string name="pass_unmatch">Not matched</string>
     <string name="confirm">Confirm</string>
