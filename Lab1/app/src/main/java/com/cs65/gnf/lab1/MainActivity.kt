@@ -1,6 +1,7 @@
 package com.cs65.gnf.lab1
 
 import android.Manifest
+import android.content.ContentValues
 import android.content.Context
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -14,33 +15,55 @@ import android.text.Editable
 import android.text.TextWatcher
 import at.markushi.ui.CircleButton
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.inputmethodservice.InputMethodService
+import android.net.Uri
+import android.os.Environment
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.FileProvider
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory
 import android.util.Log
 import android.view.KeyEvent
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
+import java.io.File
 
 
 class MainActivity : AppCompatActivity() {
 
-    var anythingEntered = false
-    val IMAGE_REQUEST_CODE = 1001
-    val CROP_REQUEST_CODE = 2002
-    val PERMISSIONS_REQUEST_CODE = 101
-    val AUTH_REQUEST_CODE=202
-    lateinit var transitoryImage: Bitmap
+    private var anythingEntered = false
+    private val STORAGE_SPACE = Environment.getExternalStorageDirectory().absolutePath + "/cat_app"
+    private val IMAGE_REQUEST_CODE = 1001
+    private val CROP_REQUEST_CODE = 2002
+    private val CAMERA_REQUEST_CODE = 101
+    private val WRITE_REQUEST_CODE = 202
+    private val READ_REQUEST_CODE = 303
+    private lateinit var transitoryImage: Bitmap
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val mPic: CircleButton = findViewById(R.id.pict_button)
+        //Ask for permission for the camera
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA),
+                    CAMERA_REQUEST_CODE)
+        }
+        //Ask for permission to write to files
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    WRITE_REQUEST_CODE)
+        }
+        //Ask for permission to read files
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                    READ_REQUEST_CODE)
+        }
 
         //If anything starts to be entered, the Clear button will change to the login button
         val mUsername: EditText = findViewById(R.id.username)
@@ -69,7 +92,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         //Also once the password loses focus it'll trigger the dialog
-        mPassword.setOnFocusChangeListener({v: View, hasFocus: Boolean ->
+        mPassword.setOnFocusChangeListener({_, hasFocus: Boolean ->
             if (!hasFocus) {
                 passwordConfirm(mPassword.text.toString())
             }
@@ -88,6 +111,7 @@ class MainActivity : AppCompatActivity() {
         outState?.putString("mName",mName.text.toString())
         outState?.putString("mPassword",mPassword.text.toString())
         outState?.putParcelable("mPic",(mPic.drawable as BitmapDrawable).bitmap)
+        outState?.putBoolean("anything",anythingEntered)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -103,20 +127,26 @@ class MainActivity : AppCompatActivity() {
         mName.setText(savedInstanceState.getString("mName"),null)
         mPassword.setText(savedInstanceState.getString("mPassword"),null)
         mPic.setImageBitmap(savedInstanceState.getParcelable("mPic"))
+        anythingEntered = savedInstanceState.getBoolean("anything")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        val extras = data?.extras
         if (resultCode==RESULT_OK) {
             when (requestCode) {
                 IMAGE_REQUEST_CODE -> {
+                    val pathOfFile = STORAGE_SPACE+"/uncropped.jpg"
+
                     val cropIntent = Intent(applicationContext,CropActivity::class.java)
-                    cropIntent.putExtra("image",extras?.get("data") as Bitmap)
+                    cropIntent.putExtra("image",pathOfFile)
+
+                    val uri = FileProvider.getUriForFile(this,
+                            BuildConfig.APPLICATION_ID+".provider",croppedSave())
+                    cropIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
                     startActivityForResult(cropIntent,CROP_REQUEST_CODE)
                 }
                 CROP_REQUEST_CODE -> {
                     val mPic: CircleButton = findViewById(R.id.pict_button)
-                    transitoryImage= extras?.get("cropped_image") as Bitmap
+                    transitoryImage= BitmapFactory.decodeFile(STORAGE_SPACE+"/cropped.jpg")
                     mPic.setImageBitmap(toRoundDrawable(transitoryImage)?.bitmap)
                 }
             }
@@ -126,33 +156,50 @@ class MainActivity : AppCompatActivity() {
     /**
      * Changes Bitmaps and Drawables to Round Drawables
      */
-    fun toRoundDrawable(orig : Any): RoundedBitmapDrawable? {
-        when (orig) {
+    private fun toRoundDrawable(orig : Any): RoundedBitmapDrawable? {
+        return when (orig) {
             is Bitmap -> {
                 val circleBitmap = RoundedBitmapDrawableFactory.create(resources,orig)
                 circleBitmap.isCircular = true
-                return circleBitmap
+                circleBitmap
             }
             is Drawable -> {
                 val bitmap = (orig as BitmapDrawable).bitmap
                 val circleBitmap = RoundedBitmapDrawableFactory.create(resources,bitmap)
                 circleBitmap.isCircular = true
-                return circleBitmap
+                circleBitmap
             }
-            else -> return null
+            else -> null
         }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
-            PERMISSIONS_REQUEST_CODE -> {
-                // If request is cancelled, the result arrays are empty.
+            CAMERA_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     return
                 } else {
                     ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA),
-                            PERMISSIONS_REQUEST_CODE)
+                            CAMERA_REQUEST_CODE)
+                }
+                return
+            }
+            WRITE_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    return
+                } else {
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                            WRITE_REQUEST_CODE)
+                }
+                return
+            }
+            READ_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    return
+                } else {
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                            READ_REQUEST_CODE)
                 }
                 return
             }
@@ -170,13 +217,13 @@ class MainActivity : AppCompatActivity() {
     /**
      * Helper function to call the password confirmation dialog
      */
-    fun passwordConfirm(orig_text: String) {
-        //TODO Make a dialog
+    private fun passwordConfirm(orig_text: String) {
         val PASS_CONFIRM = "pass_confirm_dialog";
 
         val manager = fragmentManager
         val dialog = AuthDialog()
         dialog.show( manager, PASS_CONFIRM)
+
     }
 
     //A lot of buttons
@@ -205,21 +252,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun pictButton(v: View) {
-        //Ask for permission for the camera
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA),
-                    PERMISSIONS_REQUEST_CODE)
-        }
-
-
-
-
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        Log.d("CHECK","got here")
-        takePictureIntent.putExtra("android.intent.extras.LENS_FACING_FRONT", 1)
-        Log.d("CHECK","got this far")
         enterAnything(true)
+
+//        takePictureIntent.putExtra("android.intent.extras.LENS_FACING_FRONT", 1)
+        val uri = FileProvider.getUriForFile(this,
+                BuildConfig.APPLICATION_ID+".provider",unCroppedSave())
+
+
+        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
 
         if (takePictureIntent.resolveActivity(packageManager) != null) {
             startActivityForResult(takePictureIntent, IMAGE_REQUEST_CODE)
@@ -230,30 +271,23 @@ class MainActivity : AppCompatActivity() {
         //TODO Pass all those values to the server
     }
 
-    // Lifecycle instrumentation
-    override fun onStart() {
-        Log.d("CYCLE", "onStart")
-        super.onStart()
+    private fun unCroppedSave(): File {
+        val folder = File(STORAGE_SPACE)
+
+        if (!folder.exists()) folder.mkdir()
+        val file =  File(folder,"uncropped.jpg")
+        file.createNewFile()
+        return file
     }
 
-    override fun onResume() {
-        Log.d("CYCLE", "onResume")
-        super.onResume()
-    }
+    private fun croppedSave(): File {
+        val folder = File(STORAGE_SPACE)
 
-    override fun onPause() {
-        Log.d("CYCLE", "onPause")
-        super.onPause()
-    }
+        val imageFile = File(folder,"uncropped.jpg")
+        imageFile.delete()
 
-    override fun onStop() {
-        Log.d("CYCLE", "onStop")
-        super.onStop()
+        val file = File(folder,"user_image.jpg")
+        file.createNewFile()
+        return file
     }
-
-    override fun onDestroy() {
-        Log.d("CYCLE", "onDestroy")
-        super.onDestroy()
-    }
-
 }
