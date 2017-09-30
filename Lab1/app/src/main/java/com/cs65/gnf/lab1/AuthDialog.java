@@ -21,6 +21,7 @@ import org.w3c.dom.Text;
 
 public class AuthDialog extends DialogFragment {
 
+    // global members to use in both onStart and onCreate
     private AlertDialog dialog;
     private Button submitButton;
 
@@ -47,7 +48,6 @@ public class AuthDialog extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Log.d("DIALOG", "negative clicked");
-                        //dialog.cancel();
                         dialog.dismiss();
                     }
                 });
@@ -55,7 +55,6 @@ public class AuthDialog extends DialogFragment {
         /* checks if password or user is valid
          * and adjust "matched/unmatched" accordingly
          * enable positive button only when matched*/
-//        submitButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         final EditText pass_re = dialog_view.findViewById(R.id.Confirm_pass);
 
         pass_re.addTextChangedListener(new TextWatcher() {
@@ -65,15 +64,20 @@ public class AuthDialog extends DialogFragment {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
+            // update hint and enable submit button after password confirm text changed
             @Override
             public void afterTextChanged(Editable editable) {
-                final EditText password = getActivity().findViewById(R.id.passwrd);
+                // original password
+                final EditText password_origin = getActivity().findViewById(R.id.passwrd);
+                String password_origin_s = password_origin.getText().toString();
+                // password retyped
+                String pass_re_s = pass_re.getText().toString();
+                // checkView to show if it is available
                 final TextView pass_check = dialog_view.findViewById(R.id.Match);
-                String passwords = password.getText().toString();
-                String pass_res = pass_re.getText().toString();
 
-                // update hint and enable submit button
-                if (passwords.equals(pass_res)) {
+                // check if password retyped match the original password
+                // and update checkView and save button
+                if (password_origin_s.equals(pass_re_s)) {
                     Log.d("DIALOG", "Password Matches");
                     pass_check.setText(R.string.pass_match);
                     submitButton.setEnabled(true);
@@ -88,6 +92,7 @@ public class AuthDialog extends DialogFragment {
         return dialog;
     }
 
+    // disable save button at the beginning
     @Override
     public void onStart(){
         super.onStart();
