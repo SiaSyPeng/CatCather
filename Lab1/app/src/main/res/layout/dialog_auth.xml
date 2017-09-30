@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:id="@+id/Match"
-        android:text="@string/pass_match"
+        android:text=""
         android:textStyle="bold" />
 
 </com.google.android.flexbox.FlexboxLayout>

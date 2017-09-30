@@ -12,6 +12,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,52 +21,17 @@ import org.w3c.dom.Text;
 
 public class AuthDialog extends DialogFragment {
 
-
-    /* The activity that creates an instance of this dialog fragment must
-     * implement this interface in order to receive event callbacks.
-     * Each method passes the DialogFragment in case the host needs to query it. */
-    public interface DialogListener {
-        void onDialogPositiveClick(DialogFragment dialog);
-
-        void onDialogNegativeClick(DialogFragment dialog);
-    }
-
-    DialogListener mListener;
+    private AlertDialog dialog;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // inflate dialog view
         final View dialog_view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_auth, null);
+        // build dialog
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+        dialog = alertDialogBuilder.show();
 
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
-
-        // checks if password or user is valid
-        // and adjust "matched/unmatched" accordingly
-        final EditText pass_re = dialog_view.findViewById(R.id.Confirm_pass);
-
-        pass_re.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                final EditText password = getActivity().findViewById(R.id.passwrd);
-                final TextView pass_check = dialog_view.findViewById(R.id.Match);
-                String passwords = password.getText().toString();
-                String pass_res = pass_re.getText().toString();
-
-                // match/unmatch change
-                if (passwords.equals(pass_res)) {
-                    pass_check.setText(R.string.pass_match);
-                } else {
-                    pass_check.setText(R.string.pass_unmatch);
-                }
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
-
-            @Override
-            public void afterTextChanged(Editable editable) {}
-        });
-
+        // set basic view for alertDialog
         alertDialogBuilder.setView(dialog_view)
                 .setTitle(R.string.pass_dialog)
                 .setCancelable(false)
@@ -73,48 +39,54 @@ public class AuthDialog extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Log.d("DIALOG", "positive clicked");
-
-                        // collect password
-//                        final Text pass_check = getActivity().findViewById(R.id.Match);
-//                        String pass_res = pass_re.getText().toString();
-//
-//                        if (pass_check.equals(R.string.pass_match)){
-//                            mListener.onDialogPositiveClick(AuthDialog.this);
-//                        }
                     }
-
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int id)
-                    {
+                    public void onClick(DialogInterface dialog, int id) {
                         Log.d("DIALOG", "negative clicked");
-//                        mListener.onDialogPositiveClick(AuthDialog.this);
                         dialog.cancel();
                     }
                 });
 
+        /* checks if password or user is valid
+         * and adjust "matched/unmatched" accordingly
+         * enable positive button only when matched*/
+        final Button submitButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        final EditText pass_re = dialog_view.findViewById(R.id.Confirm_pass);
+
+        pass_re.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                final EditText password = getActivity().findViewById(R.id.passwrd);
+                final TextView pass_check = dialog_view.findViewById(R.id.Match);
+                String passwords = password.getText().toString();
+                String pass_res = pass_re.getText().toString();
+
+                // update hint and enable submit button
+                if (passwords.equals(pass_res)) {
+                    Log.d("DIALOG", "Password Matches");
+                    pass_check.setText(R.string.pass_match);
+                    submitButton.setEnabled(true);
+                } else {
+                    pass_check.setText(R.string.pass_unmatch);
+                    submitButton.setEnabled(false);
+                }
+            }
+        });
+
         return alertDialogBuilder.create();
     }
 
-//    @Override
-//    public void onAttach(Context context) {
-//        super.onAttach(context);
-//
-//        Activity activity;
-//
-//        if (context instanceof Activity){
-//            activity= (Activity) context;
-//            try {
-//                // Instantiate the NoticeDialogListener so we can send events to the host
-//                mListener = (DialogListener) activity;
-//            } catch (ClassCastException e) {
-//                // The activity doesn't implement the interface, throw exception
-//                throw new ClassCastException(activity.toString()
-//                        + " must implement NoticeDialogListener");
-//            }
-//            Log.d("DIALOG", "attached");
-//        }
-//
-//    }
+    @Override
+    public void onStart(){
+        super.onStart();
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+    }
 }
