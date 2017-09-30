@@ -58,6 +58,7 @@
                 android:id="@+id/username"
                 android:layout_width="10dp"
                 android:layout_height="match_parent"
+                android:singleLine="true"
                 app:layout_flexBasisPercent="60%"
                 android:layout_marginStart="30dp"
                 android:hint="@string/username_hint"
@@ -80,6 +81,7 @@
             android:layout_margin="30dp"
             android:layout_height="wrap_content"
             android:hint="@string/full_name_hint"
+            android:singleLine="true"
             app:layout_flexGrow=".1"
             />
 
@@ -90,6 +92,7 @@
             android:layout_margin="30dp"
             android:layout_height="wrap_content"
             android:hint="@string/password_hint"
+            android:singleLine="true"
             app:layout_flexGrow=".1"
             />
 
@@ -100,6 +103,46 @@
             android:text="@string/submit_button"
             android:onClick="submitButton"
             />
+
+        <com.google.android.flexbox.FlexboxLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@color/colorPrimary"
+            android:padding="10dp"
+            app:flexDirection="row"
+            app:justifyContent="space_between"
+            app:alignItems="center"
+            >
+            <Button
+                android:id="@+id/tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tag_text"
+                app:layout_alignSelf="flex_end"
+                />
+
+            <Button
+                android:id="@+id/history"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/history_text"
+                />
+
+            <Button
+                android:id="@+id/score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/score_text"
+                />
+
+            <Button
+                android:id="@+id/setting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/setting_text"
+                />
+        </com.google.android.flexbox.FlexboxLayout>
 
     </com.google.android.flexbox.FlexboxLayout>
 </ScrollView>

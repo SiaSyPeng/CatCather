@@ -217,7 +217,12 @@ class MainActivity : AppCompatActivity() {
      * Helper function to call the password confirmation dialog
      */
     private fun passwordConfirm(orig_text: String) {
-        //TODO Make a dialog
+        val PASS_CONFIRM = "pass_confirm_dialog";
+
+        val manager = fragmentManager
+        val dialog = AuthDialog()
+        dialog.show( manager, PASS_CONFIRM)
+
     }
 
     //A lot of buttons
@@ -249,7 +254,7 @@ class MainActivity : AppCompatActivity() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         enterAnything(true)
 
-        takePictureIntent.putExtra("android.intent.extras.LENS_FACING_FRONT", 1)
+//        takePictureIntent.putExtra("android.intent.extras.LENS_FACING_FRONT", 1)
         val uri = FileProvider.getUriForFile(this,
                 BuildConfig.APPLICATION_ID+".provider",unCroppedSave())
 
@@ -271,7 +276,6 @@ class MainActivity : AppCompatActivity() {
         if (!folder.exists()) folder.mkdir()
         val file =  File(folder,"uncropped.jpg")
         file.createNewFile()
-        Log.d("FILEPATH",file.absolutePath)
         return file
     }
 

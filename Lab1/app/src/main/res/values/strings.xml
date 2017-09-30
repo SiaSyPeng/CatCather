@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--sign up page-->
     <string name="app_name">Lab1</string>
     <string name="login_button_text">Login</string>
     <string name="clear_button_text">Clear</string>
@@ -8,5 +9,16 @@
     <string name="full_name_hint">Full Name</string>
     <string name="password_hint">Password</string>
     <string name="submit_button">Submit</string>
-    <string name="password_confirm_hint">Please confirm your password</string>
+    <!--menu-->
+    <string name="tag_text">Tag</string>
+    <string name="history_text">History</string>
+    <string name="score_text">Score</string>
+    <string name="setting_text">Settings</string>
+    <!--pass_confirm_dialog-->
+    <string name="pass_dialog">Confirm Password</string>
+    <string name="retype_pass">Please retype here to confirm password</string>
+    <string name="pass_match">Matches</string>
+    <string name="pass_unmatch">Not matched</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
 </resources>
