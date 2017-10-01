@@ -33,14 +33,14 @@ import java.io.File
 class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
     private var anythingEntered = false
-    private var ifPassMatch: Boolean? = false
+    private var ifPassMatch: Boolean = false
     private val STORAGE_SPACE = Environment.getExternalStorageDirectory().absolutePath + "/cat_app"
     private val IMAGE_REQUEST_CODE = 1001
     private val CROP_REQUEST_CODE = 2002
     private val CAMERA_REQUEST_CODE = 101
     private val WRITE_REQUEST_CODE = 202
     private val READ_REQUEST_CODE = 303
-//    private var SHARED_PREF = "my_sharedpref"
+    private var SHARED_PREF = "my_sharedpref"
     private lateinit var transitoryImage: Bitmap
     private lateinit var mdialog: AuthDialog
 
@@ -73,6 +73,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mUsername.addTextChangedListener(object: TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
                 enterAnything(p0?.length!=0)
+                checkSubmit()
                 //TODO check availability
                 //TODO possibly change the text value of R.id.availability
             }
@@ -82,14 +83,20 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
         val mName: EditText = findViewById(R.id.full_name)
         mName.addTextChangedListener(object: TextWatcher {
-            override fun afterTextChanged(p0: Editable?) {enterAnything(p0?.length!=0)}
+            override fun afterTextChanged(p0: Editable?) {
+                enterAnything(p0?.length!=0)
+                checkSubmit()
+            }
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
         })
 
         val mPassword: EditText = findViewById(R.id.passwrd)
         mPassword.addTextChangedListener(object: TextWatcher {
-            override fun afterTextChanged(p0: Editable?) {enterAnything(p0?.length!=0)}
+            override fun afterTextChanged(p0: Editable?) {
+                enterAnything(p0?.length!=0)
+                checkSubmit()
+            }
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
         })
@@ -100,6 +107,11 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
                 passwordConfirm(mPassword.text.toString())
             }
         })
+
+        // disable submitbutton onCreate
+        val submitBtn: Button = findViewById(R.id.submitBtn)
+        submitBtn.setEnabled(false)
+
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
@@ -226,8 +238,9 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
     }
 
-     override public fun onDialogPositiveClick(dialog: DialogFragment) {
+     override fun onDialogPositiveClick(dialog: DialogFragment) {
         ifPassMatch = mdialog.checkMatch()
+        checkSubmit()
      }
 
     //A lot of buttons
@@ -271,13 +284,44 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         }
     }
 
+     /*Enable button only if:
+      *every field entered
+      *password matches*/
+    fun checkSubmit(){
+        val submitBtn: Button = findViewById(R.id.submitBtn)
+        // fields to check in order to enable submit button
+        val mUsername: EditText = findViewById(R.id.username)
+        val mName: EditText = findViewById(R.id.full_name)
+        val mPassword: EditText = findViewById(R.id.passwrd)
+        val mUsernameS = mUsername.text.toString()
+        val mNameS = mName.text.toString()
+        val mPasswordS = mPassword.text.toString()
+
+        if (!ifPassMatch or mUsernameS.isEmpty() or mNameS.isEmpty() or mPasswordS.isEmpty()) {
+            submitBtn.setEnabled(false)
+        }else {
+            submitBtn.setEnabled(true)
+        }
+    }
+
+    /*
+     * OnClickSubmit will save text values in sharedPreference:
+     * username, name, password
+     */
     fun submitButton(v: View) {
-        // enable button if password matches
-        
-        //TODO Pass all those values to the server
 
+        val mUsername: EditText = findViewById(R.id.username)
+        val mName: EditText = findViewById(R.id.full_name)
+        val mPassword: EditText = findViewById(R.id.passwrd)
 
-        // use sharedpreference to save
+        val sp = getSharedPreferences(SHARED_PREF, 0)
+        val editor = sp.edit()
+        editor.putString("Username", mUsername.getText().toString())
+        editor.putString("Name", mName.getText().toString())
+        editor.putString("Password", mPassword.getText().toString())
+
+        editor.commit()
+        Toast.makeText(this,"Thanks for registering!",Toast.LENGTH_LONG).show();
     }
 
     private fun unCroppedSave(): File {
