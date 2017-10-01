@@ -1,7 +1,7 @@
 package com.cs65.gnf.lab1
 
 import android.Manifest
-import android.content.ContentValues
+import android.app.DialogFragment
 import android.content.Context
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -18,7 +18,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.net.Uri
 import android.os.Environment
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
@@ -26,21 +25,25 @@ import android.support.v4.content.FileProvider
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory
 import android.util.Log
-import android.view.KeyEvent
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import java.io.File
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
     private var anythingEntered = false
+    private var ifPassMatch: Boolean? = false
     private val STORAGE_SPACE = Environment.getExternalStorageDirectory().absolutePath + "/cat_app"
     private val IMAGE_REQUEST_CODE = 1001
     private val CROP_REQUEST_CODE = 2002
     private val CAMERA_REQUEST_CODE = 101
     private val WRITE_REQUEST_CODE = 202
     private val READ_REQUEST_CODE = 303
+//    private var SHARED_PREF = "my_sharedpref"
     private lateinit var transitoryImage: Bitmap
+    private lateinit var mdialog: AuthDialog
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -218,13 +221,14 @@ class MainActivity : AppCompatActivity() {
      * Helper function to call the password confirmation dialog
      */
     private fun passwordConfirm(orig_text: String) {
-        val PASS_CONFIRM = "pass_confirm_dialog";
-
-        val manager = fragmentManager
-        val dialog = AuthDialog()
-        dialog.show( manager, PASS_CONFIRM)
+        mdialog = AuthDialog()
+        mdialog.show(fragmentManager, "dialogShow")
 
     }
+
+     override public fun onDialogPositiveClick(dialog: DialogFragment) {
+        ifPassMatch = mdialog.checkMatch()
+     }
 
     //A lot of buttons
 
@@ -268,7 +272,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun submitButton(v: View) {
+        // enable button if password matches
+        
         //TODO Pass all those values to the server
+
+
+        // use sharedpreference to save
     }
 
     private fun unCroppedSave(): File {

@@ -24,6 +24,20 @@ public class AuthDialog extends DialogFragment {
     // global members to use in both onStart and onCreate
     private AlertDialog dialog;
     private Button submitButton;
+    public Boolean ifMatch = false;
+
+    public Boolean checkMatch() { return ifMatch; }
+
+
+    /* The activity that creates an instance of this dialog fragment must
+    * implement this interface in order to receive event callbacks.
+    * Each method passes the DialogFragment in case the host needs to query it. */
+    public interface DialogListener {
+        public void onDialogPositiveClick(DialogFragment dialog);
+    }
+
+
+    DialogListener mListener;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -36,19 +50,20 @@ public class AuthDialog extends DialogFragment {
         // set basic view for alertDialog
         alertDialogBuilder.setView(dialog_view)
                 .setTitle(R.string.pass_dialog)
-                .setCancelable(false)
+//                .setCancelable(false)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Log.d("DIALOG", "positive clicked");
-                        dialog.dismiss();
+                        mListener.onDialogPositiveClick(AuthDialog.this);
+                        //dialog.dismiss();
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Log.d("DIALOG", "negative clicked");
-                        dialog.dismiss();
+                        //dialog.dismiss();
                     }
                 });
 
@@ -80,9 +95,11 @@ public class AuthDialog extends DialogFragment {
                 if (password_origin_s.equals(pass_re_s)) {
                     Log.d("DIALOG", "Password Matches");
                     pass_check.setText(R.string.pass_match);
+                    ifMatch = true;
                     submitButton.setEnabled(true);
                 } else {
                     pass_check.setText(R.string.pass_unmatch);
+                    ifMatch = false;
                     submitButton.setEnabled(false);
                 }
             }
@@ -98,6 +115,28 @@ public class AuthDialog extends DialogFragment {
         super.onStart();
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
         submitButton = (Button) dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+    }
+
+    // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        Activity activity;
+
+        if (context instanceof Activity){
+            activity= (Activity) context;
+            try {
+                // Instantiate the NoticeDialogListener so we can send events to the host
+                mListener = (DialogListener) activity;
+            } catch (ClassCastException e) {
+                // The activity doesn't implement the interface, throw exception
+                throw new ClassCastException(activity.toString()
+                        + " must implement AuthDialog");
+            }
+            Log.d("DIALOG", "attached");
+        }
 
     }
 }
