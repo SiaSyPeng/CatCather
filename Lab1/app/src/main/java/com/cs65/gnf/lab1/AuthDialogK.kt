@@ -13,7 +13,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 
-class AuthDialog : DialogFragment() {
+class AuthDialogK : DialogFragment() {
 
     private var dialog: AlertDialog? = null
     private var submitButton: Button? = null
@@ -72,6 +72,7 @@ class AuthDialog : DialogFragment() {
         return dialog
     }
 
+    // disable save button at the beginning
     override fun onStart() {
         super.onStart()
         dialog!!.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
