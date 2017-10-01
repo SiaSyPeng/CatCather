@@ -36,12 +36,11 @@
             app:layout_flexGrow="1.0"
 
             >
-            <at.markushi.ui.CircleButton
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/pict_button"
                 android:layout_height="300dp"
                 android:layout_width="300dp"
                 android:src="@drawable/cat_cut"
-                android:scaleType="fitCenter"
                 android:onClick="pictButton"
                 />
         </com.google.android.flexbox.FlexboxLayout>
