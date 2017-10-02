@@ -7,7 +7,9 @@ Build on Android Studio
 Naman Goyal 20'<br>
 Sia Peng 20'
 
+## Submition
 
+for lab1, please see the final code on lab1Submit
 
 
 ## Usage
