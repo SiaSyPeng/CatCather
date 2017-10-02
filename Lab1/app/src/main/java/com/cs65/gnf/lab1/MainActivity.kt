@@ -235,7 +235,6 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
     }
 
     //A lot of buttons
-
     fun loginOrClearButton(v: View) {
         if (anythingEntered) {
 
@@ -274,15 +273,20 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
      * 2. otherwise, it will notify the user about the error
      */
     fun submitButton(v: View) {
-        val submitBtn: Button = findViewById(R.id.submitBtn)
+
+        //Pop up Confirm password when Password doesn't match and submitButton checked
+        if(!ifPassMatch){
+            mPassword.clearFocus()
+            v.requestFocus()
+            Toast.makeText(this, "Password does not match", Toast.LENGTH_LONG).show();
+        }
+
         // fields to check in order to enable submit button
         val mUsernameS = mUsername.text.toString()
         val mNameS = mName.text.toString()
         val mPasswordS = mPassword.text.toString()
 
-        //    /*Enable button only if:
-//      *every field entered
-//      *password matches*/
+        // check whether every field is field and password matches
         if (mUsernameS.isEmpty()) {
             Toast.makeText(this, "Please enter an Username", Toast.LENGTH_LONG).show();
         } else if (mNameS.isEmpty()) {
