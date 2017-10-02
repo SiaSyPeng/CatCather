@@ -2,6 +2,9 @@
 
 Adopted from course website lab rubric and description
 
+## Submition
+for lab1, please see the final code on lab1Submit
+
 
 ## Assumptions
 
