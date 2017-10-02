@@ -54,6 +54,10 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mName = findViewById(R.id.full_name)
         mUsername = findViewById(R.id.username)
 
+        //To see if picture has been saved internally
+        val file = File(filesDir,"user_image.png")
+        if (file.exists()) mPic.setImageBitmap(BitmapFactory.decodeFile(file.path))
+
         //Ask for permission for the camera
         if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
