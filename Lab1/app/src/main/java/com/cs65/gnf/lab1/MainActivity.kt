@@ -54,6 +54,10 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mName = findViewById(R.id.full_name)
         mUsername = findViewById(R.id.username)
 
+        //To see if picture has been saved internally
+        val file = File(filesDir,"user_image.png")
+        if (file.exists()) mPic.setImageBitmap(BitmapFactory.decodeFile(file.path))
+
         //Ask for permission for the camera
         if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -292,11 +296,6 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         editor.putString("Name", mName.text.toString())
         editor.putString("Password", mPassword.text.toString())
         editor.apply()
-
-        val folder = File(filesDir,"images")
-        if (!folder.exists()) folder.mkdir()
-        val file = File(folder,"user_image.png")
-        if (!file.exists()) file.createNewFile()
 
         val bitmap = (mPic.drawable as BitmapDrawable).bitmap
         var fos: FileOutputStream? = null
