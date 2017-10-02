@@ -20,7 +20,6 @@ import android.net.Uri
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
-import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import com.theartofdev.edmodo.cropper.CropImage
@@ -261,10 +260,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         enterAnything(true)
 
-        Log.d("URIPath", unCroppedSave().path)
-
         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, unCroppedSave())
-
         if (takePictureIntent.resolveActivity(packageManager) != null) {
             startActivityForResult(takePictureIntent, IMAGE_REQUEST_CODE)
         }
