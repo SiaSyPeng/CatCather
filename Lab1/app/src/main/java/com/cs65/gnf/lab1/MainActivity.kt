@@ -63,94 +63,94 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
                     CAMERA_REQUEST_CODE)
         }
         //Ask for permission to write to files
-        if (ContextCompat.checkSelfPermission(applicationContext,Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                     WRITE_REQUEST_CODE)
         }
         //Ask for permission to read files
-        if (ContextCompat.checkSelfPermission(applicationContext,Manifest.permission.READ_EXTERNAL_STORAGE)
+        if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
                     READ_REQUEST_CODE)
         }
 
         //If anything starts to be entered, the Clear button will change to the login button
-        mUsername.addTextChangedListener(object: TextWatcher {
+        mUsername.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
-                enterAnything(p0?.length!=0)
-                checkSubmit()
+                enterAnything(p0?.length != 0)
+//                checkSubmit()
                 //TODO check availability
                 //TODO possibly change the text value of R.id.availability
             }
+
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
         })
 
-        mName.addTextChangedListener(object: TextWatcher {
+        mName.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
-                enterAnything(p0?.length!=0)
-                checkSubmit()
+                enterAnything(p0?.length != 0)
             }
+
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
         })
 
-        mPassword.addTextChangedListener(object: TextWatcher {
+        mPassword.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
-                enterAnything(p0?.length!=0)
-                checkSubmit()
+                enterAnything(p0?.length != 0)
             }
+
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
         })
 
         //Also once the password loses focus it'll trigger the dialog
-        mPassword.setOnFocusChangeListener({_, hasFocus: Boolean ->
+        mPassword.setOnFocusChangeListener({ _, hasFocus: Boolean ->
             if (!hasFocus) {
                 passwordConfirm()
             }
         })
-
-        // disable submitbutton onCreate
-        val submitBtn: Button = findViewById(R.id.submitBtn)
-        submitBtn.setEnabled(false)
 
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
         super.onSaveInstanceState(outState)
 
-        outState?.putString("mUsername",mUsername.text.toString())
-        outState?.putString("mName",mName.text.toString())
-        outState?.putString("mPassword",mPassword.text.toString())
-        outState?.putBoolean("anything",anythingEntered)
+        outState?.putString("mUsername", mUsername.text.toString())
+        outState?.putString("mName", mName.text.toString())
+        outState?.putString("mPassword", mPassword.text.toString())
+        outState?.putBoolean("anything", anythingEntered)
 
         //Save the picture to internal storage
         var fos: FileOutputStream? = null
         try {
-            fos = openFileOutput("temporary_picture.png",Context.MODE_PRIVATE)
+            fos = openFileOutput("temporary_picture.png", Context.MODE_PRIVATE)
             val mBitmap = (mPic.drawable as BitmapDrawable).bitmap
-            mBitmap.compress(Bitmap.CompressFormat.PNG,100,fos)
+            mBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
             fos.flush()
-        }
-        catch (e: IOException) {e.printStackTrace()}
-        finally {
-            try {if (fos != null) fos.close()}
-            catch (e: IOException) {e.printStackTrace()}
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            try {
+                if (fos != null) fos.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
         }
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
 
-        mUsername.setText(savedInstanceState.getString("mUsername",null))
-        mName.setText(savedInstanceState.getString("mName"),null)
-        mPassword.setText(savedInstanceState.getString("mPassword"),null)
+        mUsername.setText(savedInstanceState.getString("mUsername", null))
+        mName.setText(savedInstanceState.getString("mName"), null)
+        mPassword.setText(savedInstanceState.getString("mPassword"), null)
         anythingEntered = savedInstanceState.getBoolean("anything")
 
         //Open and set picture
-        val file = File(filesDir,"temporary_picture.png")
+        val file = File(filesDir, "temporary_picture.png")
         mPic.setImageBitmap(BitmapFactory.decodeFile(file.absolutePath))
 
         //Delete that file
@@ -158,14 +158,14 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode==RESULT_OK) {
+        if (resultCode == RESULT_OK) {
             when (requestCode) {
                 IMAGE_REQUEST_CODE -> {
 
                     //Start 3rd party cropper
                     CropImage
                             .activity(unCroppedSave())
-                            .setAspectRatio(1,1)
+                            .setAspectRatio(1, 1)
                             .setFixAspectRatio(true)
                             .setCropShape(CropImageView.CropShape.OVAL)
                             .start(this)
@@ -174,7 +174,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
                     val result = CropImage.getActivityResult(data)
                     val uri = result.uri
                     mPic.setImageBitmap(BitmapFactory.decodeFile(uri.path))
-                    File(filesDir,"uncropped.png").delete()
+                    File(filesDir, "uncropped.png").delete()
                 }
             }
         }
@@ -212,13 +212,14 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
             }
         }
     }
+
     /**
      * Helper function for top button functionality
      */
     fun enterAnything(entered: Boolean) {
         anythingEntered = entered
         val topButton: Button = findViewById(R.id.login_or_clear)
-        topButton.text =  if (entered) "Clear" else "Login"
+        topButton.text = if (entered) "Clear" else "Login"
     }
 
     /**
@@ -229,10 +230,9 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mdialog.show(fragmentManager, "dialogShow")
     }
 
-     override fun onDialogPositiveClick(dialog: DialogFragment) {
+    override fun onDialogPositiveClick(dialog: DialogFragment) {
         ifPassMatch = mdialog.checkMatch()
-        checkSubmit()
-     }
+    }
 
     //A lot of buttons
 
@@ -249,8 +249,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
             val view = currentFocus
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromInputMethod(view.windowToken, 0)
-        }
-        else {
+        } else {
             //TODO Open the view to login
         }
     }
@@ -259,7 +258,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         enterAnything(true)
 
-        Log.d("URIPath",unCroppedSave().path)
+        Log.d("URIPath", unCroppedSave().path)
 
         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, unCroppedSave())
 
@@ -268,52 +267,57 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         }
     }
 
-     /*Enable button only if:
-      *every field entered
-      *password matches*/
-    fun checkSubmit(){
+    /*
+     * Click Submit triggers two cases:
+     * 1. it will save text values in sharedPreference:
+     * username, name, password, only if every field entered and password matches
+     * 2. otherwise, it will notify the user about the error
+     */
+    fun submitButton(v: View) {
         val submitBtn: Button = findViewById(R.id.submitBtn)
         // fields to check in order to enable submit button
-//        val mUsername: EditText = findViewById(R.id.username)
-//        val mName: EditText = findViewById(R.id.full_name)
-//        val mPassword: EditText = findViewById(R.id.passwrd)
         val mUsernameS = mUsername.text.toString()
         val mNameS = mName.text.toString()
         val mPasswordS = mPassword.text.toString()
 
-        if (!ifPassMatch or mUsernameS.isEmpty() or mNameS.isEmpty() or mPasswordS.isEmpty()) {
-            submitBtn.setEnabled(false)
-        }else {
-            submitBtn.setEnabled(true)
+        //    /*Enable button only if:
+//      *every field entered
+//      *password matches*/
+        if (mUsernameS.isEmpty()) {
+            Toast.makeText(this, "Please enter an Username", Toast.LENGTH_LONG).show();
+        } else if (mNameS.isEmpty()) {
+            Toast.makeText(this, "Please enter a Name", Toast.LENGTH_LONG).show();
+        } else if (mPasswordS.isEmpty()) {
+            Toast.makeText(this, "Please enter a Password", Toast.LENGTH_LONG).show();
+        } else if (!ifPassMatch) {
+            Toast.makeText(this, "Password does not match", Toast.LENGTH_LONG).show();
+        } else {
+            // fields to save
+            val mUsername: EditText = findViewById(R.id.username)
+            val mName: EditText = findViewById(R.id.full_name)
+            val mPassword: EditText = findViewById(R.id.passwrd)
+
+            // initiate sharedpreference instance
+            val sp = getSharedPreferences(SHARED_PREF, 0)
+            val editor = sp.edit()
+            // store fields
+            editor.putString("Username", mUsername.getText().toString())
+            editor.putString("Name", mName.getText().toString())
+            editor.putString("Password", mPassword.getText().toString())
+
+            editor.commit()
+            // check if successully saved by making a toast
+            Toast.makeText(this, "Thanks for registering! \nYour Username is saved as "
+                    + sp.getString("Username", ""), Toast.LENGTH_LONG).show();
         }
     }
 
-    /*
-     * OnClickSubmit will save text values in sharedPreference:
-     * username, name, password
-     */
-    fun submitButton(v: View) {
-
-        val mUsername: EditText = findViewById(R.id.username)
-        val mName: EditText = findViewById(R.id.full_name)
-        val mPassword: EditText = findViewById(R.id.passwrd)
-
-        val sp = getSharedPreferences(SHARED_PREF, 0)
-        val editor = sp.edit()
-        editor.putString("Username", mUsername.getText().toString())
-        editor.putString("Name", mName.getText().toString())
-        editor.putString("Password", mPassword.getText().toString())
-
-        editor.commit()
-        Toast.makeText(this,"Thanks for registering!",Toast.LENGTH_LONG).show();
-    }
-
     private fun unCroppedSave(): Uri {
-        val folder = File(filesDir,"images")
+        val folder = File(filesDir, "images")
         if (!folder.exists()) folder.mkdir()
-        val file = File(folder,"uncropped.png")
+        val file = File(folder, "uncropped.png")
         if (!file.exists()) file.createNewFile()
         return FileProvider.getUriForFile(applicationContext,
-                BuildConfig.APPLICATION_ID+".provider",file)
+                BuildConfig.APPLICATION_ID + ".provider", file)
     }
 }
