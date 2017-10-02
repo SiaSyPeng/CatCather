@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mPassword.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
                 enterAnything(p0?.length != 0)
-                ifPassMatch = false;
+                ifPassMatch = false
             }
 
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -282,7 +282,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         if(!ifPassMatch){
             mPassword.clearFocus()
             v.requestFocus()
-            Toast.makeText(this, "Please confirm password", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Please confirm password", Toast.LENGTH_LONG).show()
         }
 
         // fields to check in order to enable submit button
@@ -292,26 +292,21 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
         // check whether every field is field and password matches
         if (mUsernameS.isEmpty()) {
-            Toast.makeText(this, "Please enter an Username", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Please enter an Username", Toast.LENGTH_LONG).show()
         } else if (mNameS.isEmpty()) {
-            Toast.makeText(this, "Please enter a Name", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Please enter a Name", Toast.LENGTH_LONG).show()
         } else if (mPasswordS.isEmpty()) {
-            Toast.makeText(this, "Please enter a Password", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Please enter a Password", Toast.LENGTH_LONG).show()
         } else if (!ifPassMatch) {
-            Toast.makeText(this, "Password does not match", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Password does not match", Toast.LENGTH_LONG).show()
         } else {
-            // fields to save
-            val mUsername: EditText = findViewById(R.id.username)
-            val mName: EditText = findViewById(R.id.full_name)
-            val mPassword: EditText = findViewById(R.id.passwrd)
-
             // initiate sharedpreference instance
             val sp = getSharedPreferences(SHARED_PREF, 0)
             val editor = sp.edit()
             // store fields
-            editor.putString("Username", mUsername.getText().toString())
-            editor.putString("Name", mName.getText().toString())
-            editor.putString("Password", mPassword.getText().toString())
+            editor.putString("Username", mUsername.text.toString())
+            editor.putString("Name", mName.text.toString())
+            editor.putString("Password", mPassword.text.toString())
 
             editor.apply()
 
@@ -334,7 +329,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
             // check if successully saved by making a toast
             Toast.makeText(this, "Thanks for registering! \nYour Username is saved as "
-                    + sp.getString("Username", ""), Toast.LENGTH_LONG).show();
+                    + sp.getString("Username", ""), Toast.LENGTH_LONG).show()
         }
 
     }
