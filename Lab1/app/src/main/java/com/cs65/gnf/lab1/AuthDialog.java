@@ -24,8 +24,9 @@ public class AuthDialog extends DialogFragment {
     // global members to use in both onStart and onCreate
     private AlertDialog dialog;
     private Button submitButton;
-    public Boolean ifMatch = false;
 
+    // public memebers to pass to host
+    public Boolean ifMatch = false;
     public Boolean checkMatch() { return ifMatch; }
 
 
@@ -95,11 +96,15 @@ public class AuthDialog extends DialogFragment {
                     Log.d("DIALOG", "Password Matches");
                     pass_check.setText(R.string.pass_match);
                     ifMatch = true;
-                    submitButton.setEnabled(true);
+                    if(submitButton!=null){
+                        submitButton.setEnabled(true);
+                    }
                 } else {
                     pass_check.setText(R.string.pass_unmatch);
                     ifMatch = false;
-                    submitButton.setEnabled(false);
+                    if(submitButton!=null){
+                        submitButton.setEnabled(false);
+                    }
                 }
             }
         });
