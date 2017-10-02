@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mName.setText(sp.getString("Name", null))
         mPassword.setText(sp.getString("Password", null))
         ifPassMatch=sp.getBoolean("ifPassMatch",false)
-        anythingEntered=sp.getBoolean("anythingEntered", false)
+        enterAnything(sp.getBoolean("anythingEntered", false))
 
 
 
@@ -158,7 +158,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mUsername.setText(savedInstanceState.getString("mUsername", null))
         mName.setText(savedInstanceState.getString("mName"), null)
         mPassword.setText(savedInstanceState.getString("mPassword"), null)
-        anythingEntered = savedInstanceState.getBoolean("anything")
+        enterAnything(savedInstanceState.getBoolean("anything"))
 
         //Open and set picture
         val file = File(filesDir, "temporary_picture.png")
