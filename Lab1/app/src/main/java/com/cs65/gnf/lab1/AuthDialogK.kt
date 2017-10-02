@@ -29,13 +29,12 @@ class AuthDialogK : DialogFragment() {
         alertDialogBuilder.setView(dialogView)
                 .setTitle(R.string.pass_dialog)
                 .setCancelable(false)
-                .setPositiveButton(android.R.string.ok, DialogInterface.OnClickListener { dialog, id ->
+                .setPositiveButton(android.R.string.ok, DialogInterface.OnClickListener { dialog, _ ->
                     Log.d("DIALOG", "positive clicked")
                     dialog.dismiss()
                 })
-                .setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, id ->
+                .setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, _ ->
                     Log.d("DIALOG", "negative clicked")
-                    //dialog.cancel();
                     dialog.dismiss()
                 })
 

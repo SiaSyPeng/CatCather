@@ -16,7 +16,6 @@ import android.text.TextWatcher
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
-import android.os.Environment
 import android.net.Uri
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
@@ -24,7 +23,6 @@ import android.support.v4.content.FileProvider
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import java.io.File
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
 import de.hdodenhof.circleimageview.CircleImageView
@@ -114,7 +112,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
         // disable submitbutton onCreate
         val submitBtn: Button = findViewById(R.id.submitBtn)
-        submitBtn.setEnabled(false)
+        submitBtn.isEnabled = false
 
     }
 
@@ -274,38 +272,50 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
     fun checkSubmit(){
         val submitBtn: Button = findViewById(R.id.submitBtn)
         // fields to check in order to enable submit button
-//        val mUsername: EditText = findViewById(R.id.username)
-//        val mName: EditText = findViewById(R.id.full_name)
-//        val mPassword: EditText = findViewById(R.id.passwrd)
-        val mUsernameS = mUsername.text.toString()
-        val mNameS = mName.text.toString()
-        val mPasswordS = mPassword.text.toString()
 
-        if (!ifPassMatch or mUsernameS.isEmpty() or mNameS.isEmpty() or mPasswordS.isEmpty()) {
-            submitBtn.setEnabled(false)
-        }else {
-            submitBtn.setEnabled(true)
-        }
+         submitBtn.isEnabled = (ifPassMatch && mUsername.text.isNotEmpty() &&
+                 mName.text.isNotEmpty() && mPassword.text.isNotEmpty())
     }
 
     /*
      * OnClickSubmit will save text values in sharedPreference:
      * username, name, password
+     * It saves the user image to user_image.png
      */
     fun submitButton(v: View) {
-
-        val mUsername: EditText = findViewById(R.id.username)
-        val mName: EditText = findViewById(R.id.full_name)
-        val mPassword: EditText = findViewById(R.id.passwrd)
+        mPassword.clearFocus()
+        v.requestFocus()
 
         val sp = getSharedPreferences(SHARED_PREF, 0)
         val editor = sp.edit()
-        editor.putString("Username", mUsername.getText().toString())
-        editor.putString("Name", mName.getText().toString())
-        editor.putString("Password", mPassword.getText().toString())
+        editor.putString("Username", mUsername.text.toString())
+        editor.putString("Name", mName.text.toString())
+        editor.putString("Password", mPassword.text.toString())
+        editor.apply()
 
-        editor.commit()
-        Toast.makeText(this,"Thanks for registering!",Toast.LENGTH_LONG).show();
+        val folder = File(filesDir,"images")
+        if (!folder.exists()) folder.mkdir()
+        val file = File(folder,"user_image.png")
+        if (!file.exists()) file.createNewFile()
+
+        val bitmap = (mPic.drawable as BitmapDrawable).bitmap
+        var fos: FileOutputStream? = null
+        try {
+            fos = openFileOutput("user_image.png",Context.MODE_PRIVATE)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+            fos.flush()
+        }
+        catch (e: IOException) {e.printStackTrace()}
+        finally {
+            try {
+                fos?.close()
+            }
+            catch (e: IOException) {e.printStackTrace()}
+        }
+
+
+        Toast.makeText(this,"Thanks for registering!",Toast.LENGTH_LONG).show()
+
     }
 
     private fun unCroppedSave(): Uri {
