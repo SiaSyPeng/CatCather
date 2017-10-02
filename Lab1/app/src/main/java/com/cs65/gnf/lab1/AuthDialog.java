@@ -50,20 +50,19 @@ public class AuthDialog extends DialogFragment {
         // set basic view for alertDialog
         alertDialogBuilder.setView(dialog_view)
                 .setTitle(R.string.pass_dialog)
-//                .setCancelable(false)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Log.d("DIALOG", "positive clicked");
                         mListener.onDialogPositiveClick(AuthDialog.this);
-                        //dialog.dismiss();
+                        dialog.dismiss();
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Log.d("DIALOG", "negative clicked");
-                        //dialog.dismiss();
+                        dialog.dismiss();
                     }
                 });
 
