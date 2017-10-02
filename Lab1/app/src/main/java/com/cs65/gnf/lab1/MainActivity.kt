@@ -58,6 +58,16 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         val file = File(filesDir,"user_image.png")
         if (file.exists()) mPic.setImageBitmap(BitmapFactory.decodeFile(file.path))
 
+        //fill text fields with shared preferences
+        val sp = getSharedPreferences(SHARED_PREF, 0)
+        mUsername.setText(sp.getString("Username", null))
+        mName.setText(sp.getString("Name", null))
+        mPassword.setText(sp.getString("Password", null))
+        ifPassMatch=sp.getBoolean("ifPassMatch",false)
+        anythingEntered=sp.getBoolean("anythingEntered", false)
+
+
+
         //Ask for permission for the camera
         if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -286,16 +296,12 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         }
 
         // fields to check in order to enable submit button
-        val mUsernameS = mUsername.text.toString()
-        val mNameS = mName.text.toString()
-        val mPasswordS = mPassword.text.toString()
-
         // check whether every field is field and password matches
-        if (mUsernameS.isEmpty()) {
+        if (mUsername.text.isEmpty()) {
             Toast.makeText(this, "Please enter an Username", Toast.LENGTH_LONG).show()
-        } else if (mNameS.isEmpty()) {
+        } else if (mName.text.isEmpty()) {
             Toast.makeText(this, "Please enter a Name", Toast.LENGTH_LONG).show()
-        } else if (mPasswordS.isEmpty()) {
+        } else if (mPassword.text.isEmpty()) {
             Toast.makeText(this, "Please enter a Password", Toast.LENGTH_LONG).show()
         } else if (!ifPassMatch) {
             Toast.makeText(this, "Password does not match", Toast.LENGTH_LONG).show()
@@ -308,8 +314,11 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
             editor.putString("Name", mName.text.toString())
             editor.putString("Password", mPassword.text.toString())
 
-            editor.apply()
+            // just to facilitate the status when reopening the app
+            editor.putBoolean("ifPassMatch", ifPassMatch)
+            editor.putBoolean("anythingEntered", anythingEntered)
 
+            editor.apply()
 
             // saving image to a file
             val bitmap = (mPic.drawable as BitmapDrawable).bitmap
