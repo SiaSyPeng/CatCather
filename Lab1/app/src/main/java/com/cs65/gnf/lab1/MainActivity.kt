@@ -16,7 +16,6 @@ import android.text.TextWatcher
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
-import android.os.Environment
 import android.net.Uri
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
@@ -24,7 +23,6 @@ import android.support.v4.content.FileProvider
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import java.io.File
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
 import de.hdodenhof.circleimageview.CircleImageView
@@ -100,6 +98,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mPassword.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
                 enterAnything(p0?.length != 0)
+                ifPassMatch = false;
             }
 
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -112,7 +111,6 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
                 passwordConfirm()
             }
         })
-
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
@@ -226,8 +224,10 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
      * Helper function to call the password confirmation dialog
      */
     private fun passwordConfirm() {
-        mdialog = AuthDialog()
-        mdialog.show(fragmentManager, "dialogShow")
+        if(!ifPassMatch) {
+            mdialog = AuthDialog()
+            mdialog.show(fragmentManager, "dialogShow")
+        }
     }
 
     override fun onDialogPositiveClick(dialog: DialogFragment) {
@@ -278,7 +278,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         if(!ifPassMatch){
             mPassword.clearFocus()
             v.requestFocus()
-            Toast.makeText(this, "Password does not match", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Please confirm password", Toast.LENGTH_LONG).show();
         }
 
         // fields to check in order to enable submit button
@@ -309,11 +309,30 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
             editor.putString("Name", mName.getText().toString())
             editor.putString("Password", mPassword.getText().toString())
 
-            editor.commit()
+            editor.apply()
+
+
+            // saving image to a file
+            val bitmap = (mPic.drawable as BitmapDrawable).bitmap
+            var fos: FileOutputStream? = null
+            try {
+                fos = openFileOutput("user_image.png",Context.MODE_PRIVATE)
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+                fos.flush()
+            }
+            catch (e: IOException) {e.printStackTrace()}
+            finally {
+                try {
+                    fos?.close()
+                }
+                catch (e: IOException) {e.printStackTrace()}
+            }
+
             // check if successully saved by making a toast
             Toast.makeText(this, "Thanks for registering! \nYour Username is saved as "
                     + sp.getString("Username", ""), Toast.LENGTH_LONG).show();
         }
+
     }
 
     private fun unCroppedSave(): Uri {
