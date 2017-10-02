@@ -30,18 +30,18 @@ import java.io.*
 
 class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
-    private var anythingEntered = false
-    private var ifPassMatch: Boolean = false
+    private var anythingEntered = false //(used to help set login button to clear)
+    private var ifPassMatch: Boolean = false // (if password has been reentered and matched)
     private var SHARED_PREF = "my_sharedpref"
-    private lateinit var mdialog: AuthDialog
-    private val IMAGE_REQUEST_CODE = 1
-    private val CAMERA_REQUEST_CODE = 2
-    private val WRITE_REQUEST_CODE = 3
-    private val READ_REQUEST_CODE = 4
-    private lateinit var mUsername: EditText
-    private lateinit var mName: EditText
-    private lateinit var mPassword: EditText
-    private lateinit var mPic: CircleImageView
+    private lateinit var mdialog: AuthDialog //Dialog declared globally so it can be accessed later
+    private val IMAGE_REQUEST_CODE = 1 //To send intent to Android's camera app
+    private val CAMERA_REQUEST_CODE = 2 //To request use of camera
+    private val WRITE_REQUEST_CODE = 3 //To request use of writing files
+    private val READ_REQUEST_CODE = 4 //To request use of reading files
+    private lateinit var mUsername: EditText //Username field
+    private lateinit var mName: EditText //Full Name field
+    private lateinit var mPassword: EditText //Password field
+    private lateinit var mPic: CircleImageView // User picture
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,15 +53,17 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mName = findViewById(R.id.full_name)
         mUsername = findViewById(R.id.username)
 
-        //To see if picture has been saved internally
+        //If a picture has previously been saved, set it (defaults to src file specified in xml)
         val file = File(filesDir,"user_image.png")
         if (file.exists()) mPic.setImageBitmap(BitmapFactory.decodeFile(file.path))
 
-        //fill text fields with shared preferences
+        //fill text fields with shared preferences (or, if they don't exist, with null)
         val sp = getSharedPreferences(SHARED_PREF, 0)
         mUsername.setText(sp.getString("Username", null))
         mName.setText(sp.getString("Name", null))
         mPassword.setText(sp.getString("Password", null))
+
+        //keep the booleans as they were when information was last saved
         ifPassMatch=sp.getBoolean("ifPassMatch",false)
         enterAnything(sp.getBoolean("anythingEntered", false))
 
@@ -86,7 +88,8 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
                     READ_REQUEST_CODE)
         }
 
-        //If anything starts to be entered, the Clear button will change to the login button
+        //If anything starts to be entered, enterAnything() is called, changing 'Login' to 'Clear'
+        //button (see function below)
         mUsername.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
                 enterAnything(p0?.length != 0)
@@ -111,14 +114,15 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mPassword.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
                 enterAnything(p0?.length != 0)
-                ifPassMatch = false
+                ifPassMatch = false //additionally, if the password changes, it may no longer match
+                                    //the reentered password
             }
 
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
         })
 
-        //Also once the password loses focus it'll trigger the dialog
+        //Once the password loses focus it'll trigger the dialog
         mPassword.setOnFocusChangeListener({ _, hasFocus: Boolean ->
             if (!hasFocus) {
                 passwordConfirm()
@@ -126,13 +130,18 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         })
     }
 
+    /**
+     * Makes sure we don't lose everything when the phone orientation is flipped
+     */
     override fun onSaveInstanceState(outState: Bundle?) {
         super.onSaveInstanceState(outState)
 
+        //saves bools and text fields
         outState?.putString("mUsername", mUsername.text.toString())
         outState?.putString("mName", mName.text.toString())
         outState?.putString("mPassword", mPassword.text.toString())
         outState?.putBoolean("anything", anythingEntered)
+        outState?.putBoolean("passMatch",ifPassMatch)
 
         //Save the picture to internal storage
         var fos: FileOutputStream? = null
@@ -152,52 +161,62 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         }
     }
 
+    /**
+     * Gets back information after phone is flipped
+     */
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
 
+        //Set back text fields and booleans
         mUsername.setText(savedInstanceState.getString("mUsername", null))
         mName.setText(savedInstanceState.getString("mName"), null)
         mPassword.setText(savedInstanceState.getString("mPassword"), null)
-        enterAnything(savedInstanceState.getBoolean("anything"))
+        enterAnything(savedInstanceState.getBoolean("anything",false))
+        ifPassMatch = savedInstanceState.getBoolean("passMatch",false)
 
         //Open and set picture
         val file = File(filesDir, "temporary_picture.png")
         mPic.setImageBitmap(BitmapFactory.decodeFile(file.absolutePath))
 
-        //Delete that file
+        //Delete that file (as it was only meant to be temporary)
         file.delete()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == RESULT_OK) {
             when (requestCode) {
-                IMAGE_REQUEST_CODE -> {
+                IMAGE_REQUEST_CODE -> { //When the image has been taken
 
                     //Start 3rd party cropper
                     CropImage
-                            .activity(unCroppedSave())
-                            .setAspectRatio(1, 1)
-                            .setFixAspectRatio(true)
-                            .setCropShape(CropImageView.CropShape.OVAL)
+                            .activity(unCroppedSave()) //call it on the filename the image saved to
+                            .setAspectRatio(1, 1) //starts at 1:1 aspect ratio
+                            .setFixAspectRatio(true) //aspect ratio cannot change
+                            .setCropShape(CropImageView.CropShape.OVAL) //is a circle
                             .start(this)
                 }
-                CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE -> {
+
+                CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE -> { //When we get back our cropped pic
                     val result = CropImage.getActivityResult(data)
-                    val uri = result.uri
-                    mPic.setImageBitmap(BitmapFactory.decodeFile(uri.path))
-                    File(filesDir, "uncropped.png").delete()
+                    val uri = result.uri //This comes from usage of this 3rd party app, documented
+                                         //on their github wiki
+                    mPic.setImageBitmap(BitmapFactory.decodeFile(uri.path)) //set the new image
+                    File(filesDir, "uncropped.png").delete() //delete the uncropped image
                 }
             }
         }
     }
 
+    /**
+     * Requests permissions
+     */
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
             CAMERA_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     return
-                } else {
+                } else { //if permission wasn't  granted, request it again
                     ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA),
                             CAMERA_REQUEST_CODE)
                 }
@@ -206,7 +225,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
             WRITE_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     return
-                } else {
+                } else {//if permission wasn't  granted, request it again
                     ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                             WRITE_REQUEST_CODE)
                 }
@@ -215,7 +234,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
             READ_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     return
-                } else {
+                } else {//if permission wasn't  granted, request it again
                     ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
                             READ_REQUEST_CODE)
                 }
@@ -228,9 +247,10 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
      * Helper function for top button functionality
      */
     fun enterAnything(entered: Boolean) {
-        anythingEntered = entered
+        anythingEntered = entered //changes the boolean (we still need it, if only to be able to
+                                  //store it in sharedPrefs)
         val topButton: Button = findViewById(R.id.login_or_clear)
-        topButton.text = if (entered) "Clear" else "Login"
+        topButton.text = if (entered) "Clear" else "Login" //changes text of the top button
     }
 
     /**
@@ -248,39 +268,49 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
     }
 
     //A lot of buttons
+
+    /**
+     * This either goes to the login page or clears everything, depending on
+     * the value of anythingEntered
+     */
     fun loginOrClearButton(v: View) {
         if (anythingEntered) {
-
+            //Reset text fields
             mUsername.text = null
             mName.text = null
             mPassword.text = null
+            //Reset image
             mPic.setImageResource(R.drawable.cat_cut)
+            //Reset booleans
             enterAnything(false)
+            ifPassMatch = false
 
             //Hide Keyboard
-            val view = currentFocus
+            val view = this.currentFocus
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromInputMethod(view.windowToken, 0)
+            imm.hideSoftInputFromInputMethod(view?.windowToken, 0)
         } else {
             //TODO Open the view to login
         }
     }
 
+    /**
+     * Called when the picture is pressed
+     */
     fun pictButton(v: View) {
-        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        enterAnything(true)
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE) //start the camera intent
+        enterAnything(true) //set anythingEntered
 
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, unCroppedSave())
+        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, unCroppedSave()) //tell it where to save
+                                                                             //(see unCroppedSave())
         if (takePictureIntent.resolveActivity(packageManager) != null) {
             startActivityForResult(takePictureIntent, IMAGE_REQUEST_CODE)
         }
     }
 
-    /*
-     * Click Submit triggers two cases:
-     * 1. it will save text values in sharedPreference:
-     * username, name, password, only if every field entered and password matches
-     * 2. otherwise, it will notify the user about the error
+    /**
+     * If every field has been entered and password has been matched, this will save everything
+     * Else, it will notify the user of the error
      */
     fun submitButton(v: View) {
 
@@ -299,10 +329,8 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
             Toast.makeText(this, "Please enter a Name", Toast.LENGTH_LONG).show()
         } else if (mPassword.text.isEmpty()) {
             Toast.makeText(this, "Please enter a Password", Toast.LENGTH_LONG).show()
-        } else if (!ifPassMatch) {
-            Toast.makeText(this, "Password does not match", Toast.LENGTH_LONG).show()
-        } else {
-            // initiate sharedpreference instance
+        } else { //Only after everything has been checked
+            // initiate sharedPreferences
             val sp = getSharedPreferences(SHARED_PREF, 0)
             val editor = sp.edit()
             // store fields
@@ -310,14 +338,14 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
             editor.putString("Name", mName.text.toString())
             editor.putString("Password", mPassword.text.toString())
 
-            // just to facilitate the status when reopening the app
+            // store booleans
             editor.putBoolean("ifPassMatch", ifPassMatch)
             editor.putBoolean("anythingEntered", anythingEntered)
 
             editor.apply()
 
-            // saving image to a file
-            val bitmap = (mPic.drawable as BitmapDrawable).bitmap
+            // Images can't be put safely into sharedPrefs, so the userimage is saved internally
+            val bitmap = (mPic.drawable as BitmapDrawable).bitmap //pull the bitmap
             var fos: FileOutputStream? = null
             try {
                 fos = openFileOutput("user_image.png",Context.MODE_PRIVATE)
@@ -332,19 +360,22 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
                 catch (e: IOException) {e.printStackTrace()}
             }
 
-            // check if successully saved by making a toast
+            // If all went well, thank the user and remind them of their username
             Toast.makeText(this, "Thanks for registering! \nYour Username is saved as "
                     + sp.getString("Username", ""), Toast.LENGTH_LONG).show()
         }
 
     }
 
+    /**
+     * Helper function that returns the URI to pass to the camera app
+     */
     private fun unCroppedSave(): Uri {
-        val folder = File(filesDir, "images")
-        if (!folder.exists()) folder.mkdir()
+        val folder = File(filesDir, "images") //creates a folder in our app's internal storage
+        if (!folder.exists()) folder.mkdir() //if it doesn't exist, creates the directory
         val file = File(folder, "uncropped.png")
-        if (!file.exists()) file.createNewFile()
+        if (!file.exists()) file.createNewFile()  //creates the file if it doesn't exist
         return FileProvider.getUriForFile(applicationContext,
-                BuildConfig.APPLICATION_ID + ".provider", file)
+                BuildConfig.APPLICATION_ID + ".provider", file) //returns  the URI
     }
 }
