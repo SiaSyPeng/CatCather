@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--Main-->
+    <string name="app_name">Cat Go!</string>
+    <!--sign up page-->
+    <string name="signup_login_button_text">Log In</string>
+    <string name="signup_clear_button_text">Clear</string>
+    <string name="signup_username_hint">Username</string>
+    <string name="signup_username_available">Available</string>
+    <string name="signup_full_name_hint">Full Name</string>
+    <string name="signup_password_hint">Password</string>
+    <string name="signup_submit_button">Sign Up!</string>
+    <string name="signup_picture_description">
+        Optional picture (defaults to a cute cat)</string>
+    <!--menu-->
+    <string name="menu_tag_text">Tag</string>
+    <string name="menu_history_text">History</string>
+    <string name="menu_score_text">Score</string>
+    <string name="menu_setting_text">Settings</string>
+    <!--pass_confirm_dialog-->
+    <string name="confirm_dialog_pass_dialog">Confirm Password</string>
+    <string name="confirm_dialog_retype_pass">Retype here to confirm password</string>
+    <string name="confirm_dialog_pass_match">Matches</string>
+    <string name="confirm_dialog_pass_unmatch">Not matched</string>
+    <string name="confirm_dialog_confirm">Confirm</string>
+    <string name="confirm_dialog_cancel">Cancel</string>
+    <string name="confirm_dialog_file_provider_authority">com.cs65.gnf.lab1.fileprovider</string>
+    <!--login page-->
+    <string name="login_login_button">Let\'s Go!</string>
+    <string name="login_username">Username:</string>
+    <string name="login_pass">Password:</string>
+    <string name="login_signup">Create an account</string>
+</resources>

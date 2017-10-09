@@ -1,8 +1,7 @@
-package com.cs65.gnf.lab1
+package com.cs65.gnf.lab2
 
 import android.Manifest
 import android.app.DialogFragment
-import android.app.Fragment
 import android.content.Context
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -21,16 +20,15 @@ import android.net.Uri
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
-import android.support.v4.view.ViewPager
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
 import android.widget.Toast
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
-import de.hdodenhof.circleimageview.CircleImageView
 import java.io.*
 
 
-class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
+class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
     private var anythingEntered = false //(used to help set login button to clear)
     private var ifPassMatch: Boolean = false // (if password has been reentered and matched)
@@ -43,7 +41,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
     private lateinit var mUsername: EditText //Username field
     private lateinit var mName: EditText //Full Name field
     private lateinit var mPassword: EditText //Password field
-    private lateinit var mPic: CircleImageView // User picture
+    private lateinit var mPic: ImageView // User picture
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -117,7 +115,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
             override fun afterTextChanged(p0: Editable?) {
                 enterAnything(p0?.length != 0)
                 ifPassMatch = false //additionally, if the password changes, it may no longer match
-                                    //the reentered password
+                //the reentered password
             }
 
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -201,7 +199,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
                 CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE -> { //When we get back our cropped pic
                     val result = CropImage.getActivityResult(data)
                     val uri = result.uri //This comes from usage of this 3rd party app, documented
-                                         //on their github wiki
+                    //on their github wiki
                     mPic.setImageBitmap(BitmapFactory.decodeFile(uri.path)) //set the new image
                     File(filesDir, "uncropped.png").delete() //delete the uncropped image
                 }
@@ -250,7 +248,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
      */
     fun enterAnything(entered: Boolean) {
         anythingEntered = entered //changes the boolean (we still need it, if only to be able to
-                                  //store it in sharedPrefs)
+        //store it in sharedPrefs)
         val topButton: Button = findViewById(R.id.login_or_clear)
         topButton.text = if (entered) "Clear" else "Login" //changes text of the top button
     }
@@ -304,7 +302,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         enterAnything(true) //set anythingEntered
 
         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, unCroppedSave()) //tell it where to save
-                                                                             //(see unCroppedSave())
+        //(see unCroppedSave())
         if (takePictureIntent.resolveActivity(packageManager) != null) {
             startActivityForResult(takePictureIntent, IMAGE_REQUEST_CODE)
         }
