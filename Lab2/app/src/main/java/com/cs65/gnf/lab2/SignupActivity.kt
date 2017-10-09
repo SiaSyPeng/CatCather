@@ -20,6 +20,7 @@ import android.net.Uri
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
+import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.Toast
@@ -45,7 +46,8 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
+        setContentView(R.layout.activity_signup)
 
         //Set variables for layout items
         mPic = findViewById(R.id.pict_button)
@@ -69,23 +71,11 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
 
 
-        //Ask for permission for the camera
+        //Ask for permissions
         if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA),
                     CAMERA_REQUEST_CODE)
-        }
-        //Ask for permission to write to files
-        if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    WRITE_REQUEST_CODE)
-        }
-        //Ask for permission to read files
-        if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                    READ_REQUEST_CODE)
         }
 
         //If anything starts to be entered, enterAnything() is called, changing 'Login' to 'Clear'
@@ -214,19 +204,36 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                                             permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
             CAMERA_REQUEST_CODE -> {
+                //If we get Camera permission,
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    return
-                } else { //if permission wasn't  granted, request it again
+                    //Ask for permission to write to files
+                    if (ContextCompat.checkSelfPermission(applicationContext,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this,
+                                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                                WRITE_REQUEST_CODE)
+                    }
+                } else { //if permission wasn't  granted, request camera again
                     ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA),
                             CAMERA_REQUEST_CODE)
                 }
                 return
             }
             WRITE_REQUEST_CODE -> {
+                //If we get write permission,
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    return
+                    //Ask for permission to read files
+                    if (ContextCompat.checkSelfPermission(applicationContext,
+                            Manifest.permission.READ_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this,
+                                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                                READ_REQUEST_CODE)
+                    }
                 } else {//if permission wasn't  granted, request it again
-                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    ActivityCompat.requestPermissions(this,
+                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                             WRITE_REQUEST_CODE)
                 }
                 return
@@ -235,7 +242,8 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     return
                 } else {//if permission wasn't  granted, request it again
-                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                    ActivityCompat.requestPermissions(this,
+                            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
                             READ_REQUEST_CODE)
                 }
                 return
@@ -315,57 +323,53 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
      */
     fun submitButton(v: View) {
 
-        //Pop up Confirm password when Password doesn't match and submitButton checked
-        if(!ifPassMatch){
-            mPassword.clearFocus()
-            v.requestFocus()
-            Toast.makeText(this, "Please confirm password", Toast.LENGTH_LONG).show()
-        }
-
-        // fields to check in order to enable submit button
-        // check whether every field is field and password matches
-        if (mUsername.text.isEmpty()) {
-            Toast.makeText(this, "Please enter an Username", Toast.LENGTH_LONG).show()
-        } else if (mName.text.isEmpty()) {
-            Toast.makeText(this, "Please enter a Name", Toast.LENGTH_LONG).show()
-        } else if (mPassword.text.isEmpty()) {
-            Toast.makeText(this, "Please enter a Password", Toast.LENGTH_LONG).show()
-        } else { //Only after everything has been checked
-            // initiate sharedPreferences
-            val sp = getSharedPreferences(SHARED_PREF, 0)
-            val editor = sp.edit()
-            // store fields
-            editor.putString("Username", mUsername.text.toString())
-            editor.putString("Name", mName.text.toString())
-            editor.putString("Password", mPassword.text.toString())
-
-            // store booleans
-            editor.putBoolean("ifPassMatch", ifPassMatch)
-            editor.putBoolean("anythingEntered", anythingEntered)
-
-            editor.apply()
-
-            // Images can't be put safely into sharedPrefs, so the userimage is saved internally
-            val bitmap = (mPic.drawable as BitmapDrawable).bitmap //pull the bitmap
-            var fos: FileOutputStream? = null
-            try {
-                fos = openFileOutput("user_image.png",Context.MODE_PRIVATE)
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
-                fos.flush()
+        // check whether every field is filled and password matches
+        when {
+            !ifPassMatch -> { //if password is not matched
+                mPassword.clearFocus() //call the pass match dialog
+                v.requestFocus()
+                Toast.makeText(applicationContext, "Please confirm password", Toast.LENGTH_LONG).show()
             }
-            catch (e: IOException) {e.printStackTrace()}
-            finally {
+            mUsername.text.isEmpty() ->
+                Toast.makeText(this, "Please enter an Username",Toast.LENGTH_LONG).show()
+            mName.text.isEmpty() ->
+                Toast.makeText(this, "Please enter a Name", Toast.LENGTH_LONG).show()
+            mPassword.text.isEmpty() ->
+                Toast.makeText(this, "Please enter a Password", Toast.LENGTH_LONG).show()
+
+            else -> { //once everything is checked
+                // initiate sharedPreferences
+                val sp = getSharedPreferences(SHARED_PREF, 0)
+                val editor = sp.edit()
+                // store fields
+                editor.putString("Username", mUsername.text.toString())
+                editor.putString("Name", mName.text.toString())
+                editor.putString("Password", mPassword.text.toString())
+
+                // store booleans
+                editor.putBoolean("ifPassMatch", ifPassMatch)
+                editor.putBoolean("anythingEntered", anythingEntered)
+
+                editor.apply()
+
+                // Images can't be put safely into sharedPrefs, so the userimage is saved internally
+                val bitmap = (mPic.drawable as BitmapDrawable).bitmap //pull the bitmap
+                var fos: FileOutputStream? = null
                 try {
-                    fos?.close()
+                    fos = openFileOutput("user_image.png",Context.MODE_PRIVATE)
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+                    fos.flush()
                 }
                 catch (e: IOException) {e.printStackTrace()}
+                finally {
+                    try {
+                        fos?.close()
+                    }
+                    catch (e: IOException) {e.printStackTrace()}
+                }
+                //TODO Open the main activity
             }
-
-            // If all went well, thank the user and remind them of their username
-            Toast.makeText(this, "Thanks for registering! \nYour Username is saved as "
-                    + sp.getString("Username", ""), Toast.LENGTH_LONG).show()
         }
-
     }
 
     /**
