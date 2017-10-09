@@ -1,106 +1,119 @@
- <com.google.android.flexbox.FlexboxLayout
-     xmlns:android="http://schemas.android.com/apk/res/android"
-     xmlns:app="http://schemas.android.com/apk/res-auto"
-     android:id="@+id/sign_up_screen"
-     android:layout_width="match_parent"
-     android:layout_height="match_parent"
-     app:flexDirection="column"
-     app:alignItems="center"
-     app:alignContent="stretch"
-     app:flexWrap="nowrap"
-     android:background="@color/LGreen"
-     >
-
-    <Button
-        android:id="@+id/login_or_clear"
-        android:text="@string/signup_login_button_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@color/LPink"
-        app:layout_alignSelf="flex_end"
-        android:onClick="loginOrClearButton"
-        />
-
-    <ImageView
-        android:id="@+id/pict_button"
-        android:layout_height="300dp"
-        app:layout_flexShrink="1"
-        android:layout_width="wrap_content"
-        android:scaleType="fitCenter"
-        android:src="@drawable/cat_cut"
-        android:onClick="pictButton"
-        android:contentDescription="@string/signup_picture_description"
-        />
-
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
     <com.google.android.flexbox.FlexboxLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/sign_up_screen"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:flexDirection="row"
-        app:justifyContent="space_between"
+        app:flexDirection="column"
         app:alignItems="center"
-        app:layout_flexGrow=".2"
-        android:layout_marginTop="40dp"
+        app:alignContent="stretch"
+        app:flexWrap="nowrap"
+        android:background="@color/LGreen"
         >
 
+        <Button
+            android:id="@+id/login_or_clear"
+            android:text="@string/signup_login_button_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/LPink"
+            android:layout_margin="10dp"
+            app:layout_alignSelf="flex_end"
+            android:onClick="loginOrClearButton"
+            />
+
+        <ImageView
+            android:id="@+id/pict_button"
+            android:layout_height="300dp"
+            app:layout_flexShrink="1"
+            android:layout_width="wrap_content"
+            android:scaleType="fitCenter"
+            android:src="@drawable/cat_cut"
+            android:onClick="pictButton"
+            android:contentDescription="@string/signup_picture_description"
+            />
+
+        <com.google.android.flexbox.FlexboxLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:flexDirection="row"
+            app:justifyContent="space_between"
+            app:alignItems="center"
+            app:layout_flexGrow=".2"
+            android:layout_marginTop="40dp"
+            android:layout_marginStart="50dp"
+            android:layout_marginEnd="50dp"
+            android:layout_marginBottom="30dp"
+            >
+
+            <EditText
+                android:id="@+id/username"
+                android:layout_width="10dp"
+                android:layout_height="match_parent"
+                android:singleLine="true"
+                app:layout_flexBasisPercent="60%"
+                android:hint="@string/signup_username_hint"
+                android:backgroundTint="@color/DPink"
+                android:textColor="@color/Black"
+                android:textColorHint="@color/Black"
+                />
+
+            <TextView
+                android:id = "@+id/availability"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_flexBasisPercent="30%"
+                android:textAlignment="center"
+                android:text="@string/signup_username_available"
+                android:textColor="@color/Black"
+                />
+
+        </com.google.android.flexbox.FlexboxLayout>
+
         <EditText
-            android:id="@+id/username"
-            android:layout_width="10dp"
-            android:layout_height="match_parent"
+            android:id="@+id/full_name"
+            android:layout_width="match_parent"
+            android:layout_marginStart="50dp"
+            android:layout_marginEnd="50dp"
+            android:layout_marginBottom="30dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/signup_full_name_hint"
             android:singleLine="true"
-            app:layout_flexBasisPercent="60%"
-            android:layout_marginStart="30dp"
-            android:hint="@string/signup_username_hint"
+            app:layout_flexGrow=".1"
             android:backgroundTint="@color/DPink"
             android:textColor="@color/Black"
             android:textColorHint="@color/Black"
             />
 
-        <TextView
-            android:id = "@+id/availability"
-            android:layout_width="wrap_content"
+        <EditText
+            android:id="@+id/passwrd"
+            android:layout_width="match_parent"
+            android:layout_marginStart="50dp"
+            android:layout_marginEnd="50dp"
+            android:layout_marginBottom="30dp"
             android:layout_height="wrap_content"
-            app:layout_flexBasisPercent="30%"
-            android:textAlignment="center"
-            android:text="@string/signup_username_available"
+            android:inputType="textPassword"
+            android:hint="@string/signup_password_hint"
+            android:singleLine="true"
+            app:layout_flexGrow=".1"
+            android:backgroundTint="@color/DPink"
             android:textColor="@color/Black"
+            android:textColorHint="@color/Black"
             />
 
+        <Button
+            android:id="@+id/submitBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp"
+            android:text="@string/signup_submit_button"
+            android:onClick="submitButton"
+            android:background="@color/LPink"
+            />
     </com.google.android.flexbox.FlexboxLayout>
-
-    <EditText
-        android:id="@+id/full_name"
-        android:layout_width="match_parent"
-        android:layout_margin="30dp"
-        android:layout_height="wrap_content"
-        android:hint="@string/signup_full_name_hint"
-        android:singleLine="true"
-        app:layout_flexGrow=".1"
-        android:backgroundTint="@color/DPink"
-        android:textColor="@color/Black"
-        android:textColorHint="@color/Black"
-        />
-
-    <EditText
-        android:id="@+id/passwrd"
-        android:layout_width="match_parent"
-        android:layout_margin="30dp"
-        android:layout_height="wrap_content"
-        android:inputType="textPassword"
-        android:hint="@string/signup_password_hint"
-        android:singleLine="true"
-        app:layout_flexGrow=".1"
-        android:backgroundTint="@color/DPink"
-        android:textColor="@color/Black"
-        android:textColorHint="@color/Black"
-        />
-
-    <Button
-        android:id="@+id/submitBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="30dp"
-        android:text="@string/signup_submit_button"
-        android:onClick="submitButton"
-        android:background="@color/LPink"
-        />
-</com.google.android.flexbox.FlexboxLayout>
+</ScrollView>

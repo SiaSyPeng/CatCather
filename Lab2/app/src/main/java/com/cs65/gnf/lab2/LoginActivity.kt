@@ -11,12 +11,10 @@ class LoginActivity : Activity() {
 
     private lateinit var mUsername: EditText
     private lateinit var mPassword: EditText
-    val USER_INFO = "USER_INFO_SHARED_PREFS"
-
+    internal val USER_INFO = "USER_INFO_SHARED_PREFS" //can be accessed by other activities
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
+        setContentView(R.layout.activity_login)
         mUsername = findViewById(R.id.login_username)
         mPassword = findViewById(R.id.login_password)
     }
@@ -41,7 +39,7 @@ class LoginActivity : Activity() {
     }
 
     fun toSignupPage(v: View) {
-        val intent = Intent(this,SignupActivity::class.java)
+        val intent = Intent(applicationContext,SignupActivity::class.java)
         startActivity(intent)
     }
 }
