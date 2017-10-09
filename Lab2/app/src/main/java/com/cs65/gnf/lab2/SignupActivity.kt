@@ -290,7 +290,8 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromInputMethod(view?.windowToken, 0)
         } else {
-            //TODO Open the view to login
+            val i = Intent(this,LoginActivity::class.java)
+            startActivity(i)
         }
     }
 
