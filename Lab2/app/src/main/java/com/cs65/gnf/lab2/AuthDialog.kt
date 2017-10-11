@@ -36,7 +36,7 @@ class AuthDialog : DialogFragment() {
         fun onDialogPositiveClick(dialog: DialogFragment)
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle): Dialog? {
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog? {
         // inflate dialog view
         val dialog_view = LayoutInflater.from(activity).inflate(R.layout.dialog_auth, null)
         // build dialog
