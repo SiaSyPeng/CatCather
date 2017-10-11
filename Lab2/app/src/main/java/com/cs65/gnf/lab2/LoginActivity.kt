@@ -3,9 +3,12 @@ package com.cs65.gnf.lab2
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
+import com.google.android.flexbox.FlexboxLayout
 
 class LoginActivity : Activity() {
 
@@ -17,9 +20,21 @@ class LoginActivity : Activity() {
         setContentView(R.layout.activity_login)
         mUsername = findViewById(R.id.login_username)
         mPassword = findViewById(R.id.login_password)
+
+        //Hides keyboard if EditTexts lose focus
+        mUsername.setOnFocusChangeListener({v,hasFocus ->
+            if (!hasFocus) hideKeyboard(v)
+        })
+        mPassword.setOnFocusChangeListener({v,hasFocus ->
+            if (!hasFocus) hideKeyboard(v)
+        })
+
+        val screen: FlexboxLayout = findViewById(R.id.log_in_screen)
+        screen.setOnFocusChangeListener { v, _ ->  hideKeyboard(v)}
     }
 
     fun login(v: View) {
+        Log.d("CYCLE","pressed button")
         when {
             mUsername.text.isEmpty() ->
                 Toast.makeText(this,"Please enter an Username", Toast.LENGTH_LONG).show()
@@ -32,7 +47,11 @@ class LoginActivity : Activity() {
                     val editor = sp.edit()
                     editor.putString("Username", mUsername.text.toString())
                     editor.putString("Password", mPassword.text.toString())
-                    //TODO Create an intent and call the actual game's main activity
+
+                    //Start main activity
+                    val i = Intent(applicationContext,MainActivity::class.java)
+                    startActivity(i)
+
                 }
             }
         }
@@ -41,5 +60,13 @@ class LoginActivity : Activity() {
     fun toSignupPage(v: View) {
         val intent = Intent(applicationContext,SignupActivity::class.java)
         startActivity(intent)
+    }
+
+    /**
+     * Helper method that hides keyboard
+     */
+    fun hideKeyboard(v:View){
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(v.windowToken, 0)
     }
 }

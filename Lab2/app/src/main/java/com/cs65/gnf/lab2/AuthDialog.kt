@@ -38,29 +38,27 @@ class AuthDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog? {
         // inflate dialog view
-        val dialog_view = LayoutInflater.from(activity).inflate(R.layout.dialog_auth, null)
+        val dialogView = LayoutInflater.from(activity).inflate(R.layout.dialog_auth, null)
         // build dialog
         val alertDialogBuilder = AlertDialog.Builder(activity)
 
         dialog = alertDialogBuilder.show()
         // set basic view for alertDialog
-        alertDialogBuilder.setView(dialog_view)
+        alertDialogBuilder.setView(dialogView)
                 .setTitle(R.string.confirm_dialog_pass_dialog)
 
                 .setPositiveButton(android.R.string.ok, { dialog, _ ->
-                    Log.d("DIALOG", "positive clicked")
                     mListener.onDialogPositiveClick(this)
                     dialog.dismiss()
                 })
                 .setNegativeButton("Cancel", { dialog, _ ->
-                    Log.d("DIALOG", "negative clicked")
                     dialog.dismiss()
                 })
 
         /* checks if password or user is valid
          * and adjust "matched/unmatched" accordingly
          * enable positive button only when matched*/
-        val passRe: EditText = dialog_view.findViewById(R.id.Confirm_pass)
+        val passRe: EditText = dialogView.findViewById(R.id.Confirm_pass)
 
         passRe.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {}
@@ -75,12 +73,11 @@ class AuthDialog : DialogFragment() {
                 // password retyped
                 val passReString = passRe.text.toString()
                 // checkView to show if it is available
-                val passCheck: TextView = dialog_view.findViewById(R.id.Match)
+                val passCheck: TextView = dialogView.findViewById(R.id.Match)
 
                 // check if password retyped match the original password
                 // and update checkView and save button
                 if (passwordOriginString == passReString) {
-                    Log.d("DIALOG", "Password Matches")
                     passCheck.setText(R.string.confirm_dialog_pass_match)
                     ifMatch = true
                     submitButton.isEnabled = true
@@ -119,8 +116,6 @@ class AuthDialog : DialogFragment() {
                 // The activity doesn't implement the interface, throw exception
                 throw ClassCastException(activity.toString() + " must implement AuthDialog")
             }
-
-            Log.d("DIALOG", "attached")
         }
 
     }

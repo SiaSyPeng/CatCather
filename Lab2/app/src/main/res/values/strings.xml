@@ -27,6 +27,7 @@
     <string name="confirm_dialog_file_provider_authority">com.cs65.gnf.lab1.fileprovider</string>
     <!--login page-->
     <string name="login_login_button">Let\'s Go!</string>
+    <string name="login_picture_description">Picture of cat looking into camera</string>
     <string name="login_username">Username:</string>
     <string name="login_pass">Password:</string>
     <string name="login_signup">Create an account</string>

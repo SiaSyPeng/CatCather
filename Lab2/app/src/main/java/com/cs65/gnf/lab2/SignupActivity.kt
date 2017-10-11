@@ -22,6 +22,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
+import com.google.android.flexbox.FlexboxLayout
 import android.widget.*
 import com.android.volley.*
 import com.android.volley.toolbox.JsonObjectRequest
@@ -132,11 +133,11 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         })
 
         //Once the password loses focus it'll trigger the dialog
-        mPassword.setOnFocusChangeListener({ _, hasFocus: Boolean ->
+        mPassword.setOnFocusChangeListener{ v, hasFocus ->
             if (!hasFocus) {
                 passwordConfirm()
             }
-        })
+        }
 
         //Once userName is entered, check availability
         mUsername.setOnFocusChangeListener({ _, hasFocus: Boolean ->
@@ -409,6 +410,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     private fun passwordConfirm() {
         if(!ifPassMatch) {
             mdialog = AuthDialog()
+            Log.d("CYCLE","here")
             mdialog.show(fragmentManager, "dialogShow")
         }
     }
@@ -435,10 +437,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
             enterAnything(false)
             ifPassMatch = false
 
-            //Hide Keyboard
-            val view = this.currentFocus
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromInputMethod(view?.windowToken, 0)
+            //TODO Hide Keyboard
         } else {
             val i = Intent(this,LoginActivity::class.java)
             startActivity(i)
@@ -511,9 +510,12 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                     catch (e: IOException) {e.printStackTrace()}
                 }
 
-                //2.save profile to the server
+                //2. Save profile to server
                 saveProfile()
-                //TODO Open the main activity
+                
+                //Open main activity
+                val i = Intent(applicationContext,MainActivity::class.java)
+                startActivity(i)
             }
         }
     }
@@ -528,5 +530,13 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         if (!file.exists()) file.createNewFile()  //creates the file if it doesn't exist
         return FileProvider.getUriForFile(applicationContext,
                 BuildConfig.APPLICATION_ID + ".provider", file) //returns  the URI
+    }
+
+    /**
+     * Helper method that hides the keyboard
+     */
+    fun hideKeyboard(v:View){
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(v.windowToken, 0)
     }
 }
