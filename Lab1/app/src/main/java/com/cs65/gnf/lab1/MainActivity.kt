@@ -125,7 +125,7 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
         })
 
         //Once the password loses focus it'll trigger the dialog
-        mPassword.setOnFocusChangeListener({ _, hasFocus: Boolean
+        mPassword.setOnFocusChangeListener({ _, hasFocus: Boolean ->
             if (!hasFocus) {
                 passwordConfirm()
             }

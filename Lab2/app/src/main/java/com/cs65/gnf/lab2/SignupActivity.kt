@@ -8,8 +8,6 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.text.Editable
@@ -18,17 +16,27 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
+import android.os.Handler
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageView
-import android.widget.Toast
 import com.google.android.flexbox.FlexboxLayout
+import android.widget.*
+import com.android.volley.*
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
 import java.io.*
+import java.net.URL
+import java.util.HashMap
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import org.json.JSONException
+import org.json.JSONObject
 
 
 class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
@@ -45,11 +53,21 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     private lateinit var mName: EditText //Full Name field
     private lateinit var mPassword: EditText //Password field
     private lateinit var mPic: ImageView // User picture
+    private lateinit var dl: Handler
+    private lateinit var ctx: Activity
+    private lateinit var queue: RequestQueue
+    private lateinit var jsonReq: JSONObject
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_signup)
+
+        dl = Handler()
+        ctx = this
+        // Instantiate the RequestQueue.
+        queue = Volley.newRequestQueue(this)
 
         //Set variables for layout items
         mPic = findViewById(R.id.pict_button)
@@ -87,7 +105,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                 enterAnything(p0?.length != 0)
 //                checkSubmit()
                 //TODO check availability
-                //TODO possibly change the text value of R.id.availability
+//                checkName()
             }
 
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -121,9 +139,12 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
             }
         }
 
-        //Hide keyboard if user clicks view
-        val screen: FlexboxLayout = findViewById(R.id.sign_up_screen)
-        screen.setOnFocusChangeListener { v, _ ->  hideKeyboard(v)}
+        //Once userName is entered, check availability
+        mUsername.setOnFocusChangeListener({ _, hasFocus: Boolean ->
+            if (!hasFocus) {
+                checkName()
+            }
+        })
     }
 
     /**
@@ -201,6 +222,122 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                 }
             }
         }
+    }
+
+    /*
+     * A GET request, get name and its availability
+     * This function checks the availability of Username
+     * Create Gson object with response get from server and unameObject
+     * will then call updateAvail() to update UI
+     *
+     * It is called when username field loses focus
+     *
+     */
+    fun checkName() {
+
+        val req = mUsername.getText().toString()
+
+        val url = "http://cs65.cs.dartmouth.edu/nametest.pl?name=" + req;
+
+        // Request a string response from the provided URL.
+        val stringRequest = object : StringRequest(Request.Method.GET, url,
+                Response.Listener<String> { response ->
+                    try {
+                        // parse the string, based on provided class object as template
+                        val gson = GsonBuilder().create()
+                        val nameo = gson.fromJson(response, unameObject::class.java)
+                        val av = nameo.getNavail()
+                        updateAvail(av)
+                    } catch (e: Exception) {
+                        Log.d("JSON", e.toString())
+                    }
+                },
+                Response.ErrorListener { error -> updateAvail("Error" + error.toString()) }) {
+        }
+
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest)
+    }
+
+    /*
+     * Helper method to check_name
+     * Will update "Availability" textView in the UI
+     *
+     */
+    private fun updateAvail(res: String?) {
+        val avail: TextView = ctx.findViewById(R.id.availability)
+        if (res == null) {
+            avail.setText("Connection failed")
+        }
+        else{
+            if (res == "true") {
+                avail.setText("Available")
+            } else if (res == "false") {
+                avail.setText("Unavailable")
+            }
+        }
+    }
+
+    /*
+     * A POST Request to the server, post profile information
+     * Called when submit button is clicked and every fields is ok
+     * Create a Json object with username, name, password
+     *
+     */
+    private fun saveProfile(){
+
+        //  fields to save
+        val usernameToSave = mUsername.getText().toString()
+        val nameToSave = mName.getText().toString()
+        val passToSave = mPassword.getText().toString()
+
+        val url = "http://cs65.cs.dartmouth.edu/profile.pl"
+
+        // put into json objects
+        try {
+            jsonReq = JSONObject()
+            jsonReq.put("name", usernameToSave)
+            jsonReq.put("realName", nameToSave)
+            jsonReq.put("password", passToSave)
+
+        } catch (e: JSONException) {
+            // Warn the user that something is wrong; do not connect
+            Log.d("JSON", "Invalid JSON: " + e.toString())
+
+            Toast.makeText(this, "Invalid JSON" + e.toString(), Toast.LENGTH_LONG).show()
+
+            return
+        }
+
+
+        // Request a string response from the provided URL.
+        val joRequest = object : JsonObjectRequest(url, // POST is presumed
+                jsonReq,
+                Response.Listener<JSONObject> { response ->
+                    try {
+                        // parse the string, based on provided class object as template
+                        var jsonObject = JSONObject(response.toString())
+                        val status = jsonObject.getString("status")
+                        check_submit(status)
+                    } catch (e: Exception) {
+                        Log.d("JSON", e.toString())
+                    }
+                }, Response.ErrorListener {
+                    error -> check_submit("Error" + error.toString())
+        })
+        {
+        }
+
+        queue.add(joRequest)
+    }
+
+    fun check_submit(status: String?){
+        if (status == "OK") {
+            Toast.makeText(this, "Congrats! You have successfully saved your profile!", Toast.LENGTH_LONG).show()
+        } else if (status == "ERROR"){
+            Toast.makeText(this, "Sorry! Error occured when saving your profile." + status, Toast.LENGTH_LONG).show()
+        }
+
     }
 
     /**
@@ -342,6 +479,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                 Toast.makeText(this, "Please enter a Password", Toast.LENGTH_LONG).show()
 
             else -> { //once everything is checked
+                // 1. Save locally
                 // initiate sharedPreferences
                 val sp = getSharedPreferences(SHARED_PREF, 0)
                 val editor = sp.edit()
@@ -371,6 +509,10 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                     }
                     catch (e: IOException) {e.printStackTrace()}
                 }
+
+                //2. Save profile to server
+                saveProfile()
+                
                 //Open main activity
                 val i = Intent(applicationContext,MainActivity::class.java)
                 startActivity(i)
