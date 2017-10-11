@@ -2,7 +2,7 @@
 <com.google.android.flexbox.FlexboxLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/sign_up_screen"
+    android:id="@+id/log_in_screen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:flexDirection="column"
@@ -10,10 +10,12 @@
     app:alignContent="stretch"
     app:flexWrap="nowrap"
     android:background="@color/LGreen"
+    android:clickable="true"
+    android:focusable="true"
     >
     <ImageView
         android:layout_width="match_parent"
-        android:contentDescription="@string/signup_picture_description"
+        android:contentDescription="@string/login_picture_description"
         android:layout_height="270dp"
         android:src="@drawable/login_cat"
         android:scaleType="fitCenter"

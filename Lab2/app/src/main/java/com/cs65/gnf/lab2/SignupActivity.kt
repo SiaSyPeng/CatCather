@@ -1,6 +1,7 @@
 package com.cs65.gnf.lab2
 
 import android.Manifest
+import android.app.Activity
 import android.app.DialogFragment
 import android.content.Context
 import android.support.v7.app.AppCompatActivity
@@ -24,6 +25,7 @@ import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.Toast
+import com.google.android.flexbox.FlexboxLayout
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
 import java.io.*
@@ -113,11 +115,15 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         })
 
         //Once the password loses focus it'll trigger the dialog
-        mPassword.setOnFocusChangeListener({ _, hasFocus: Boolean ->
+        mPassword.setOnFocusChangeListener{ v, hasFocus ->
             if (!hasFocus) {
                 passwordConfirm()
             }
-        })
+        }
+
+        //Hide keyboard if user clicks view
+        val screen: FlexboxLayout = findViewById(R.id.sign_up_screen)
+        screen.setOnFocusChangeListener { v, _ ->  hideKeyboard(v)}
     }
 
     /**
@@ -267,6 +273,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     private fun passwordConfirm() {
         if(!ifPassMatch) {
             mdialog = AuthDialog()
+            Log.d("CYCLE","here")
             mdialog.show(fragmentManager, "dialogShow")
         }
     }
@@ -293,10 +300,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
             enterAnything(false)
             ifPassMatch = false
 
-            //Hide Keyboard
-            val view = this.currentFocus
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromInputMethod(view?.windowToken, 0)
+            //TODO Hide Keyboard
         } else {
             val i = Intent(this,LoginActivity::class.java)
             startActivity(i)
@@ -367,7 +371,9 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                     }
                     catch (e: IOException) {e.printStackTrace()}
                 }
-                //TODO Open the main activity
+                //Open main activity
+                val i = Intent(applicationContext,MainActivity::class.java)
+                startActivity(i)
             }
         }
     }
@@ -382,5 +388,13 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         if (!file.exists()) file.createNewFile()  //creates the file if it doesn't exist
         return FileProvider.getUriForFile(applicationContext,
                 BuildConfig.APPLICATION_ID + ".provider", file) //returns  the URI
+    }
+
+    /**
+     * Helper method that hides the keyboard
+     */
+    fun hideKeyboard(v:View){
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(v.windowToken, 0)
     }
 }
