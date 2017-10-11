@@ -37,12 +37,14 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import org.json.JSONException
 import org.json.JSONObject
+import java.net.SocketException
 
 
 class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
     private var anythingEntered = false //(used to help set login button to clear)
     private var ifPassMatch: Boolean = false // (if password has been reentered and matched)
+    private var ifNameAvailable: Boolean = false // if the username is available
     private var SHARED_PREF = "my_sharedpref"
     private lateinit var mdialog: AuthDialog //Dialog declared globally so it can be accessed later
     private val IMAGE_REQUEST_CODE = 1 //To send intent to Android's camera app
@@ -252,7 +254,13 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                         Log.d("JSON", e.toString())
                     }
                 },
-                Response.ErrorListener { error -> updateAvail("Error" + error.toString()) }) {
+                Response.ErrorListener { error ->
+                    when (error) {
+                        is NoConnectionError ->
+                            Toast.makeText(this, "Connection Error" , Toast.LENGTH_LONG).show()
+                        else -> Toast.makeText(this, "Error: " + error, Toast.LENGTH_LONG).show()
+                    }
+                 }) {
         }
 
         // Add the request to the RequestQueue.
@@ -266,15 +274,14 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
      */
     private fun updateAvail(res: String?) {
         val avail: TextView = ctx.findViewById(R.id.availability)
-        if (res == null) {
-            avail.setText("Connection failed")
-        }
-        else{
-            if (res == "true") {
-                avail.setText("Available")
-            } else if (res == "false") {
-                avail.setText("Unavailable")
-            }
+        if (res == "true") {
+            avail.setText("Available")
+            ifNameAvailable = true
+        } else if (res == "false") {
+            avail.setText("Unavailable")
+            ifNameAvailable = false
+        } else {
+            Toast.makeText(this, res, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -470,6 +477,9 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                 mPassword.clearFocus() //call the pass match dialog
                 v.requestFocus()
                 Toast.makeText(applicationContext, "Please confirm password", Toast.LENGTH_LONG).show()
+            }
+            !ifNameAvailable -> {
+                Toast.makeText(applicationContext, "Username must be available", Toast.LENGTH_LONG).show()
             }
             mUsername.text.isEmpty() ->
                 Toast.makeText(this, "Please enter an Username",Toast.LENGTH_LONG).show()
