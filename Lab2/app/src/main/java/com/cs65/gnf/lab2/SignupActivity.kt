@@ -55,6 +55,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     private lateinit var dl: Handler
     private lateinit var ctx: Activity
     private lateinit var queue: RequestQueue
+    private lateinit var jsonReq: JSONObject
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,7 +104,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                 enterAnything(p0?.length != 0)
 //                checkSubmit()
                 //TODO check availability
-                checkName()
+//                checkName()
             }
 
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -134,6 +135,13 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mPassword.setOnFocusChangeListener({ _, hasFocus: Boolean ->
             if (!hasFocus) {
                 passwordConfirm()
+            }
+        })
+
+        //Once userName is entered, check availability
+        mUsername.setOnFocusChangeListener({ _, hasFocus: Boolean ->
+            if (!hasFocus) {
+                checkName()
             }
         })
     }
@@ -215,9 +223,17 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         }
     }
 
+    /*
+     * A GET request, get name and its availability
+     * This function checks the availability of Username
+     * Create Gson object with response get from server and unameObject
+     * will then call updateAvail() to update UI
+     *
+     * It is called when username field loses focus
+     *
+     */
     fun checkName() {
 
-//        val mUsername: EditText = findViewById(R.id.username)
         val req = mUsername.getText().toString()
 
         val url = "http://cs65.cs.dartmouth.edu/nametest.pl?name=" + req;
@@ -228,41 +244,45 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                     try {
                         // parse the string, based on provided class object as template
                         val gson = GsonBuilder().create()
-                        val wr = gson.fromJson(response, unameObject::class.java)
-                        val av = wr.navail
+                        val nameo = gson.fromJson(response, unameObject::class.java)
+                        val av = nameo.getNavail()
                         updateAvail(av)
                     } catch (e: Exception) {
                         Log.d("JSON", e.toString())
                     }
                 },
                 Response.ErrorListener { error -> updateAvail("Error" + error.toString()) }) {
-            // This to set custom headers:
-            //   https://stackoverflow.com/questions/17049473/how-to-set-custom-header-in-volley-request
-//            @Throws(AuthFailureError::class)
-//            override fun getHeaders(): Map<String, String> {
-//                val params = HashMap<String, String>()
-//                params.put("Accept", "application/json") // or else HTTP code 500
-//                return params
-//            }
         }
 
         // Add the request to the RequestQueue.
         queue.add(stringRequest)
     }
 
+    /*
+     * Helper method to check_name
+     * Will update "Availability" textView in the UI
+     *
+     */
     private fun updateAvail(res: String?) {
         val avail: TextView = ctx.findViewById(R.id.availability)
-        if (res == null)
+        if (res == null) {
             avail.setText("Connection failed")
-        else
-            if (res == "true"){
+        }
+        else{
+            if (res == "true") {
                 avail.setText("Available")
-            } else {
+            } else if (res == "false") {
                 avail.setText("Unavailable")
             }
-
+        }
     }
 
+    /*
+     * A POST Request to the server, post profile information
+     * Called when submit button is clicked and every fields is ok
+     * Create a Json object with username, name, password
+     *
+     */
     private fun saveProfile(){
 
         //  fields to save
@@ -274,9 +294,9 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
         // put into json objects
         try {
-            val jsonReq = JSONObject()
+            jsonReq = JSONObject()
             jsonReq.put("name", usernameToSave)
-            jsonReq.put("RealName", nameToSave)
+            jsonReq.put("realName", nameToSave)
             jsonReq.put("password", passToSave)
 
         } catch (e: JSONException) {
@@ -290,28 +310,33 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
 
         // Request a string response from the provided URL.
-//        val joRequest = object : JsonObjectRequest(url, // POST is presumed
-//                jsonReq,
-//                Response.Listener<JSONObject> {
-//                    response -> postResultsToUI(response.toString())
-//                }, Response.ErrorListener {
-//                    error -> postResultsToUI("Error" + error.toString())
-//        })
-//        {
-////            @Throws(AuthFailureError::class)
-////            override fun getHeaders(): Map<String, String> {
-////                run {
-////                    val params = HashMap<String, String>()
-////                    // params.put("Accept", "application/json");
-////                    params.put("Accept-Encoding", "identity")
-////                    // params.put("Content-Type", "application/json");
-////
-////                    return params
-////                }
-////            }
-//        }
+        val joRequest = object : JsonObjectRequest(url, // POST is presumed
+                jsonReq,
+                Response.Listener<JSONObject> { response ->
+                    try {
+                        // parse the string, based on provided class object as template
+                        var jsonObject = JSONObject(response.toString())
+                        val status = jsonObject.getString("status")
+                        check_submit(status)
+                    } catch (e: Exception) {
+                        Log.d("JSON", e.toString())
+                    }
+                }, Response.ErrorListener {
+                    error -> check_submit("Error" + error.toString())
+        })
+        {
+        }
 
-//        queue.add(joRequest)
+        queue.add(joRequest)
+    }
+
+    fun check_submit(status: String?){
+        if (status == "OK") {
+            Toast.makeText(this, "Congrats! You have successfully saved your profile!", Toast.LENGTH_LONG).show()
+        } else if (status == "ERROR"){
+            Toast.makeText(this, "Sorry! Error occured when saving your profile." + status, Toast.LENGTH_LONG).show()
+        }
+
     }
 
     /**
@@ -485,6 +510,9 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                     }
                     catch (e: IOException) {e.printStackTrace()}
                 }
+
+                //2.save profile to the server
+                saveProfile()
                 //TODO Open the main activity
             }
         }
