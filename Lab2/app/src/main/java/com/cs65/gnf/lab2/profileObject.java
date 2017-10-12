@@ -23,12 +23,5 @@ public class profileObject {
 
     public profJson getJson() {return json;}
 
-
-//    // Access the inner json object
-//    public String getUname() {
-//        son json = new Json();
-//        String uname = json.getUname();
-//        return uname;
-//    }
 }
 

@@ -52,6 +52,7 @@
         android:layout_height="wrap_content"
         android:padding="10dp"
         android:singleLine="true"
+        android:inputType="textPassword"
         android:backgroundTint="@color/DPink"
         android:textColor="@color/Black"
         />
