@@ -29,6 +29,12 @@ import com.theartofdev.edmodo.cropper.CropImageView
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.*
 
+import android.os.Handler
+import java.io.IOException
+import java.io.InputStream
+import java.net.HttpURLConnection
+import java.net.URL
+import java.net.URLConnection
 
 class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
@@ -44,6 +50,10 @@ class MainActivity : AppCompatActivity(), AuthDialog.DialogListener {
     private lateinit var mName: EditText //Full Name field
     private lateinit var mPassword: EditText //Password field
     private lateinit var mPic: CircleImageView // User picture
+    private val REQUEST_INTERNET = 1001
+
+    private lateinit var dl: Handler
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
