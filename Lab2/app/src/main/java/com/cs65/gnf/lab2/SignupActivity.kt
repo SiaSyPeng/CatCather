@@ -21,8 +21,10 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
 import android.util.Log
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
+import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.InputMethodManager
-import com.google.android.flexbox.FlexboxLayout
 import android.widget.*
 import com.android.volley.*
 import com.android.volley.toolbox.JsonObjectRequest
@@ -31,10 +33,10 @@ import com.android.volley.toolbox.Volley
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
 import java.io.*
-import java.net.URL
-import java.util.HashMap
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.toast
+import org.jetbrains.anko.uiThread
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -43,12 +45,28 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
     private var anythingEntered = false //(used to help set login button to clear)
     private var ifPassMatch: Boolean = false // (if password has been reentered and matched)
-    private var SHARED_PREF = "my_sharedpref"
-    private lateinit var mdialog: AuthDialog //Dialog declared globally so it can be accessed later
+
+    private val SHARED_PREF = "my_sharedpref" // Same Shared Preferences as other activities
+
     private val IMAGE_REQUEST_CODE = 1 //To send intent to Android's camera app
     private val CAMERA_REQUEST_CODE = 2 //To request use of camera
     private val WRITE_REQUEST_CODE = 3 //To request use of writing files
     private val READ_REQUEST_CODE = 4 //To request use of reading files
+
+    //For safely saving
+    private val USER_STRING = "Username"
+    private val NAME_STRING = "Name"
+    private val PASS_STRING = "Password"
+    private val MATCH_STRING = "match"
+    private val ENTER_STRING = "anything"
+
+    //Server stuff
+    private val REQ_URL = "http://cs65.cs.dartmouth.edu/nametest.pl?name="
+    private val SAVE_URL = "http://cs65.cs.dartmouth.edu/profile.pl"
+    private val SERVER_FIELDS = arrayListOf("name","realName","password")
+
+    //Views and other fields needed multiple times
+    private lateinit var mDialog: AuthDialog //Dialog declared globally so it can be accessed later
     private lateinit var mUsername: EditText //Username field
     private lateinit var mName: EditText //Full Name field
     private lateinit var mPassword: EditText //Password field
@@ -81,13 +99,13 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
         //fill text fields with shared preferences (or, if they don't exist, with null)
         val sp = getSharedPreferences(SHARED_PREF, 0)
-        mUsername.setText(sp.getString("Username", null))
-        mName.setText(sp.getString("Name", null))
-        mPassword.setText(sp.getString("Password", null))
+        mUsername.setText(sp.getString(USER_STRING, null))
+        mName.setText(sp.getString(NAME_STRING, null))
+        mPassword.setText(sp.getString(PASS_STRING, null))
 
         //keep the booleans as they were when information was last saved
-        ifPassMatch=sp.getBoolean("ifPassMatch",false)
-        enterAnything(sp.getBoolean("anythingEntered", false))
+        ifPassMatch=sp.getBoolean(MATCH_STRING,false)
+        enterAnything(sp.getBoolean(ENTER_STRING, false))
 
 
 
@@ -103,9 +121,6 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mUsername.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
                 enterAnything(p0?.length != 0)
-//                checkSubmit()
-                //TODO check availability
-//                checkName()
             }
 
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -133,13 +148,13 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         })
 
         //Once the password loses focus it'll trigger the dialog
-        mPassword.setOnFocusChangeListener{ v, hasFocus ->
+        mPassword.setOnFocusChangeListener{ _ , hasFocus ->
             if (!hasFocus) {
                 passwordConfirm()
             }
         }
 
-        //Once userName is entered, check availability
+        //Once userName loses focus, check availability
         mUsername.setOnFocusChangeListener({ _, hasFocus: Boolean ->
             if (!hasFocus) {
                 checkName()
@@ -154,27 +169,30 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         super.onSaveInstanceState(outState)
 
         //saves bools and text fields
-        outState?.putString("mUsername", mUsername.text.toString())
-        outState?.putString("mName", mName.text.toString())
-        outState?.putString("mPassword", mPassword.text.toString())
-        outState?.putBoolean("anything", anythingEntered)
-        outState?.putBoolean("passMatch",ifPassMatch)
+        outState?.putString(USER_STRING, mUsername.text.toString())
+        outState?.putString(NAME_STRING, mName.text.toString())
+        outState?.putString(PASS_STRING, mPassword.text.toString())
+        outState?.putBoolean(ENTER_STRING, anythingEntered)
+        outState?.putBoolean(MATCH_STRING,ifPassMatch)
 
         //Save the picture to internal storage
-        var fos: FileOutputStream? = null
-        try {
-            fos = openFileOutput("temporary_picture.png", Context.MODE_PRIVATE)
-            val mBitmap = (mPic.drawable as BitmapDrawable).bitmap
-            mBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
-            fos.flush()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } finally {
+        doAsync {
+            var fos: FileOutputStream? = null
             try {
-                if (fos != null) fos.close()
+                fos = openFileOutput("temporary_picture.png", Context.MODE_PRIVATE)
+                val mBitmap = (mPic.drawable as BitmapDrawable).bitmap
+                mBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+                fos?.flush()
             } catch (e: IOException) {
                 e.printStackTrace()
+            } finally {
+                try {
+                    if (fos != null) fos.close()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
             }
+            uiThread { Log.d("THREAD","Picture saved") }
         }
     }
 
@@ -185,18 +203,23 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         super.onRestoreInstanceState(savedInstanceState)
 
         //Set back text fields and booleans
-        mUsername.setText(savedInstanceState.getString("mUsername", null))
-        mName.setText(savedInstanceState.getString("mName"), null)
-        mPassword.setText(savedInstanceState.getString("mPassword"), null)
-        enterAnything(savedInstanceState.getBoolean("anything",false))
-        ifPassMatch = savedInstanceState.getBoolean("passMatch",false)
+        mUsername.setText(savedInstanceState.getString(USER_STRING, null))
+        mName.setText(savedInstanceState.getString(NAME_STRING), null)
+        mPassword.setText(savedInstanceState.getString(PASS_STRING), null)
+        enterAnything(savedInstanceState.getBoolean(ENTER_STRING,false))
+        ifPassMatch = savedInstanceState.getBoolean(MATCH_STRING,false)
 
         //Open and set picture
-        val file = File(filesDir, "temporary_picture.png")
-        mPic.setImageBitmap(BitmapFactory.decodeFile(file.absolutePath))
+        doAsync {
+            val file = File(filesDir, "temporary_picture.png")
+            mPic.setImageBitmap(BitmapFactory.decodeFile(file.absolutePath))
 
-        //Delete that file (as it was only meant to be temporary)
-        file.delete()
+            //Delete that file (as it was only meant to be temporary)
+            file.delete()
+
+            uiThread { Log.d("THREAD","Picture loaded") }
+        }
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -233,11 +256,11 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
      * It is called when username field loses focus
      *
      */
-    fun checkName() {
+    private fun checkName() {
 
-        val req = mUsername.getText().toString()
+        val req = mUsername.text.toString()
 
-        val url = "http://cs65.cs.dartmouth.edu/nametest.pl?name=" + req;
+        val url = REQ_URL + req
 
         // Request a string response from the provided URL.
         val stringRequest = object : StringRequest(Request.Method.GET, url,
@@ -246,7 +269,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                         // parse the string, based on provided class object as template
                         val gson = GsonBuilder().create()
                         val nameo = gson.fromJson(response, unameObject::class.java)
-                        val av = nameo.getNavail()
+                        val av = nameo.navail
                         updateAvail(av)
                     } catch (e: Exception) {
                         Log.d("JSON", e.toString())
@@ -267,13 +290,13 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     private fun updateAvail(res: String?) {
         val avail: TextView = ctx.findViewById(R.id.availability)
         if (res == null) {
-            avail.setText("Connection failed")
+            avail.text = getString(R.string.signup_connection_fail)
         }
         else{
             if (res == "true") {
-                avail.setText("Available")
+                avail.text = getString(R.string.signup_available)
             } else if (res == "false") {
-                avail.setText("Unavailable")
+                avail.text = getString(R.string.signup_unavailable)
             }
         }
     }
@@ -287,24 +310,24 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     private fun saveProfile(){
 
         //  fields to save
-        val usernameToSave = mUsername.getText().toString()
-        val nameToSave = mName.getText().toString()
-        val passToSave = mPassword.getText().toString()
+        val usernameToSave = mUsername.text.toString()
+        val nameToSave = mName.text.toString()
+        val passToSave = mPassword.text.toString()
 
-        val url = "http://cs65.cs.dartmouth.edu/profile.pl"
-
+        val url = SAVE_URL
+        //TODO Also save default preferences
         // put into json objects
         try {
             jsonReq = JSONObject()
-            jsonReq.put("name", usernameToSave)
-            jsonReq.put("realName", nameToSave)
-            jsonReq.put("password", passToSave)
+            jsonReq.put(SERVER_FIELDS[0], usernameToSave)
+            jsonReq.put(SERVER_FIELDS[1], nameToSave)
+            jsonReq.put(SERVER_FIELDS[2], passToSave)
 
         } catch (e: JSONException) {
             // Warn the user that something is wrong; do not connect
             Log.d("JSON", "Invalid JSON: " + e.toString())
 
-            Toast.makeText(this, "Invalid JSON" + e.toString(), Toast.LENGTH_LONG).show()
+            toast("Invalid JSON")
 
             return
         }
@@ -316,14 +339,14 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                 Response.Listener<JSONObject> { response ->
                     try {
                         // parse the string, based on provided class object as template
-                        var jsonObject = JSONObject(response.toString())
+                        val jsonObject = JSONObject(response.toString())
                         val status = jsonObject.getString("status")
-                        check_submit(status)
+                        checkSubmit(status)
                     } catch (e: Exception) {
                         Log.d("JSON", e.toString())
                     }
                 }, Response.ErrorListener {
-                    error -> check_submit("Error" + error.toString())
+                    error -> checkSubmit("Error" + error.toString())
         })
         {
         }
@@ -331,11 +354,11 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         queue.add(joRequest)
     }
 
-    fun check_submit(status: String?){
+    fun checkSubmit(status: String?){
         if (status == "OK") {
-            Toast.makeText(this, "Congrats! You have successfully saved your profile!", Toast.LENGTH_LONG).show()
+            toast("Congrats! You have successfully saved your profile!")
         } else if (status == "ERROR"){
-            Toast.makeText(this, "Sorry! Error occured when saving your profile." + status, Toast.LENGTH_LONG).show()
+            toast("Sorry! Error occured when saving your profile.")
         }
 
     }
@@ -409,14 +432,13 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
      */
     private fun passwordConfirm() {
         if(!ifPassMatch) {
-            mdialog = AuthDialog()
-            Log.d("CYCLE","here")
-            mdialog.show(fragmentManager, "dialogShow")
+            mDialog = AuthDialog()
+            mDialog.show(fragmentManager, "dialogShow")
         }
     }
 
     override fun onDialogPositiveClick(dialog: DialogFragment) {
-        ifPassMatch = mdialog.checkMatch()
+        ifPassMatch = mDialog.checkMatch()
     }
 
     //A lot of buttons
@@ -437,7 +459,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
             enterAnything(false)
             ifPassMatch = false
 
-            //TODO Hide Keyboard
+            hideKeyboard(v)
         } else {
             val i = Intent(this,LoginActivity::class.java)
             startActivity(i)
@@ -466,48 +488,53 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
         // check whether every field is filled and password matches
         when {
+            mUsername.text.isEmpty() -> {
+                toast("Please enter a Username")
+                highlight(mUsername)
+            }
+            mName.text.isEmpty() -> {
+                toast("Please enter a name")
+                highlight(mName)
+            }
+            mPassword.text.isEmpty() -> {
+                toast("Please enter a password")
+                highlight(mPassword)
+            }
             !ifPassMatch -> { //if password is not matched
+                mPassword.requestFocus()
                 mPassword.clearFocus() //call the pass match dialog
                 v.requestFocus()
-                Toast.makeText(applicationContext, "Please confirm password", Toast.LENGTH_LONG).show()
+                toast("Please confirm password")
             }
-            mUsername.text.isEmpty() ->
-                Toast.makeText(this, "Please enter an Username",Toast.LENGTH_LONG).show()
-            mName.text.isEmpty() ->
-                Toast.makeText(this, "Please enter a Name", Toast.LENGTH_LONG).show()
-            mPassword.text.isEmpty() ->
-                Toast.makeText(this, "Please enter a Password", Toast.LENGTH_LONG).show()
-
             else -> { //once everything is checked
-                // 1. Save locally
-                // initiate sharedPreferences
+
+                //Store fields and booleans
                 val sp = getSharedPreferences(SHARED_PREF, 0)
                 val editor = sp.edit()
-                // store fields
-                editor.putString("Username", mUsername.text.toString())
-                editor.putString("Name", mName.text.toString())
-                editor.putString("Password", mPassword.text.toString())
-
-                // store booleans
-                editor.putBoolean("ifPassMatch", ifPassMatch)
-                editor.putBoolean("anythingEntered", anythingEntered)
-
+                editor.putString(USER_STRING, mUsername.text.toString())
+                editor.putString(NAME_STRING, mName.text.toString())
+                editor.putBoolean(MATCH_STRING, ifPassMatch)
+                editor.putBoolean(ENTER_STRING, anythingEntered)
                 editor.apply()
 
                 // Images can't be put safely into sharedPrefs, so the userimage is saved internally
-                val bitmap = (mPic.drawable as BitmapDrawable).bitmap //pull the bitmap
-                var fos: FileOutputStream? = null
-                try {
-                    fos = openFileOutput("user_image.png",Context.MODE_PRIVATE)
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
-                    fos.flush()
-                }
-                catch (e: IOException) {e.printStackTrace()}
-                finally {
+                doAsync {
+                    val bitmap = (mPic.drawable as BitmapDrawable).bitmap //pull the bitmap
+                    var fos: FileOutputStream? = null
                     try {
-                        fos?.close()
+                        fos = openFileOutput("user_image.png",Context.MODE_PRIVATE)
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+                        fos.flush()
                     }
                     catch (e: IOException) {e.printStackTrace()}
+                    finally {
+                        try {
+                            fos?.close()
+                        }
+                        catch (e: IOException) {e.printStackTrace()}
+                    }
+
+                    uiThread { Log.d("THREAD","Picture saved") }
                 }
 
                 //2. Save profile to server
@@ -519,6 +546,8 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
             }
         }
     }
+
+    //Helper methods
 
     /**
      * Helper function that returns the URI to pass to the camera app
@@ -535,8 +564,29 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     /**
      * Helper method that hides the keyboard
      */
-    fun hideKeyboard(v:View){
+    private fun hideKeyboard(v:View){
         val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(v.windowToken, 0)
+    }
+
+    /**
+     * Highlights a view if something was forgotten there
+     */
+    private fun highlight(v: View) {
+        doAsync {
+            //Change background to red
+            v.setBackgroundColor(getColor(R.color.colorPrimaryDark))
+
+            //Create a blinking animation
+            val fadeIn = AlphaAnimation(1f,0f)
+            fadeIn.interpolator = DecelerateInterpolator()
+            fadeIn.duration = 1000
+            fadeIn.repeatCount = 0
+
+            //Assign that to the view
+            v.animation = fadeIn
+
+            v.background.alpha = 0
+        }
     }
 }

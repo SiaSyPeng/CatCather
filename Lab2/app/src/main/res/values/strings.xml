@@ -2,6 +2,7 @@
 <resources>
     <!--Main-->
     <string name="app_name">Cat Go!</string>
+
     <!--sign up page-->
     <string name="signup_login_button_text">Log In</string>
     <string name="signup_clear_button_text">Clear</string>
@@ -12,11 +13,13 @@
     <string name="signup_submit_button">Sign Up!</string>
     <string name="signup_picture_description">
         Optional picture (defaults to a cute cat)</string>
+
     <!--menu-->
     <string name="menu_tag_text">Tag</string>
     <string name="menu_history_text">History</string>
     <string name="menu_score_text">Score</string>
     <string name="menu_setting_text">Settings</string>
+
     <!--pass_confirm_dialog-->
     <string name="confirm_dialog_pass_dialog">Confirm Password</string>
     <string name="confirm_dialog_retype_pass">Retype here to confirm password</string>
@@ -25,10 +28,46 @@
     <string name="confirm_dialog_confirm">Confirm</string>
     <string name="confirm_dialog_cancel">Cancel</string>
     <string name="confirm_dialog_file_provider_authority">com.cs65.gnf.lab1.fileprovider</string>
+
     <!--login page-->
     <string name="login_login_button">Let\'s Go!</string>
     <string name="login_picture_description">Picture of cat looking into camera</string>
     <string name="login_username">Username:</string>
     <string name="login_pass">Password:</string>
     <string name="login_signup">Create an account</string>
+
+    <!--availability checks-->
+    <string name="signup_connection_fail">Connection Failed</string>
+    <string name="signup_available">Available</string>
+    <string name="signup_unavailable">Unavailable</string>
+
+    <!--preferences-->
+    <string name="prefs_group_profile">Profile</string>
+    <string name="prefs_group_preferences">Preferences</string>
+
+    <string name="prefs_signout_title">Sign out</string>
+    <string name="prefs_signout_key">Signout</string>
+    <string name="prefs_signout_summary">Remove your account from this device</string>
+
+    <string name="prefs_privacy_title">Privacy Settings</string>
+    <string name="prefs_privacy_key">Prefs</string>
+    <string name="prefs_privacy_summary">Allow other users to see your score?</string>
+
+    <string name="prefs_alert_title">Alert Settings</string>
+    <string name="prefs_alert_key">Alert</string>
+    <string name="prefs_alert_summary">How would you like to be alerted?</string>
+    <string-array name="prefs_alert_entries">
+        <item>Vibrate</item>
+        <item>Ring</item>
+        <item>Nothing</item>
+    </string-array>
+    <string-array name="prefs_alert_entryValues">
+        <item>v</item>
+        <item>r</item>
+        <item>n</item>
+    </string-array>
+
+    <string name="prefs_about_title">About us</string>
+    <string name="prefs_about_key">About</string>
+    <string name="prefs_about_summary">(opens in browser)</string>
 </resources>
