@@ -11,10 +11,10 @@ public class unameObject {
     @SerializedName("avail")
     private String navail;
 
-    public unameObject(String uname, String navail){
-        this.uname = uname;
-        this.navail = navail;
-    }
+//    public unameObject(String uname, String navail){
+//        this.uname = uname;
+//        this.navail = navail;
+//    }
 
     public String getUname(){
         return uname;

@@ -8,35 +8,20 @@ import com.google.gson.annotations.SerializedName;
 
 
 public class profileObject {
-    @SerializedName("name")
-    private String uname;
-    @SerializedName("realName")
-    private String realName;
-    @SerializedName("password")
-    private String password;
+
     @SerializedName("status")
     private String status;
+    @SerializedName("data")
+    private String data;
+    @SerializedName("json")
+    private profJson json;
 
-    public profileObject(String uname, String realName, String password, String status){
-        this.uname = uname;
-        this.realName = realName;
-        this.password = password;
-        this.status = status;
-    }
 
-    public String getUname() {
-        return uname;
-    }
+    public String getData(){ return data; }
 
-    public String getRealName() {
-        return realName;
-    }
+    public String getStatus() {return status;}
 
-    public String getPassword() {
-        return password;
-    }
+    public profJson getJson() {return json;}
 
-    public String getStatus() {
-        return status;
-    }
 }
+
