@@ -35,8 +35,10 @@ import java.net.URL
 import java.util.HashMap
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonObject
 import org.json.JSONException
 import org.json.JSONObject
+import java.lang.reflect.Method
 import java.net.SocketException
 
 
@@ -45,7 +47,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     private var anythingEntered = false //(used to help set login button to clear)
     private var ifPassMatch: Boolean = false // (if password has been reentered and matched)
     private var ifNameAvailable: Boolean = false // if the username is available
-    private var SHARED_PREF = "my_sharedpref"
+    private var SHARED_PREF = "profile_data"
     private lateinit var mdialog: AuthDialog //Dialog declared globally so it can be accessed later
     private val IMAGE_REQUEST_CODE = 1 //To send intent to Android's camera app
     private val CAMERA_REQUEST_CODE = 2 //To request use of camera
@@ -55,8 +57,9 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     private lateinit var mName: EditText //Full Name field
     private lateinit var mPassword: EditText //Password field
     private lateinit var mPic: ImageView // User picture
-    private lateinit var dl: Handler
-    private lateinit var ctx: Activity
+    private lateinit var mAvail: TextView // Name Availability
+    //private lateinit var dl: Handler
+    //private lateinit var ctx: Activity
     private lateinit var queue: RequestQueue
     private lateinit var jsonReq: JSONObject
 
@@ -66,8 +69,8 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
         setContentView(R.layout.activity_signup)
 
-        dl = Handler()
-        ctx = this
+        //dl = Handler()
+        //ctx = this
         // Instantiate the RequestQueue.
         queue = Volley.newRequestQueue(this)
 
@@ -76,6 +79,8 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mPassword = findViewById(R.id.passwrd)
         mName = findViewById(R.id.full_name)
         mUsername = findViewById(R.id.username)
+        mAvail = findViewById(R.id.availability)
+
 
         //If a picture has previously been saved, set it (defaults to src file specified in xml)
         val file = File(filesDir,"user_image.png")
@@ -161,6 +166,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         outState?.putString("mPassword", mPassword.text.toString())
         outState?.putBoolean("anything", anythingEntered)
         outState?.putBoolean("passMatch",ifPassMatch)
+        outState?.putBoolean("passMatch",ifNameAvailable)
 
         //Save the picture to internal storage
         var fos: FileOutputStream? = null
@@ -192,6 +198,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mPassword.setText(savedInstanceState.getString("mPassword"), null)
         enterAnything(savedInstanceState.getBoolean("anything",false))
         ifPassMatch = savedInstanceState.getBoolean("passMatch",false)
+        ifNameAvailable = savedInstanceState.getBoolean("ifNameAvailable",false)
 
         //Open and set picture
         val file = File(filesDir, "temporary_picture.png")
@@ -258,6 +265,16 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                     when (error) {
                         is NoConnectionError ->
                             Toast.makeText(this, "Connection Error" , Toast.LENGTH_LONG).show()
+                        is TimeoutError->
+                            Toast.makeText(this, "Timeout Error" , Toast.LENGTH_LONG).show()
+                        is AuthFailureError ->
+                            Toast.makeText(this, "AuthFailure Error" , Toast.LENGTH_LONG).show()
+                        is NetworkError ->
+                            Toast.makeText(this, "Network Error" , Toast.LENGTH_LONG).show()
+                        is ParseError ->
+                            Toast.makeText(this, "Parse Error" , Toast.LENGTH_LONG).show()
+                        is ServerError ->
+                            Toast.makeText(this, "Server Error" , Toast.LENGTH_LONG).show()
                         else -> Toast.makeText(this, "Error: " + error, Toast.LENGTH_LONG).show()
                     }
                  }) {
@@ -273,12 +290,12 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
      *
      */
     private fun updateAvail(res: String?) {
-        val avail: TextView = ctx.findViewById(R.id.availability)
+//        val avail: TextView = ctx.findViewById(R.id.availability)
         if (res == "true") {
-            avail.setText("Available")
+            mAvail.setText("Available")
             ifNameAvailable = true
         } else if (res == "false") {
-            avail.setText("Unavailable")
+            mAvail.setText("Unavailable")
             ifNameAvailable = false
         } else {
             Toast.makeText(this, res, Toast.LENGTH_LONG).show()
@@ -318,29 +335,68 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
 
         // Request a string response from the provided URL.
-        val joRequest = object : JsonObjectRequest(url, // POST is presumed
+
+        val joRequest = object: JsonObjectRequest (url, // POST is presumed
                 jsonReq,
                 Response.Listener<JSONObject> { response ->
                     try {
                         // parse the string, based on provided class object as template
-                        var jsonObject = JSONObject(response.toString())
-                        val status = jsonObject.getString("status")
-                        check_submit(status)
+                        val gson = GsonBuilder().create()
+                        val nameo = gson.fromJson(response.toString(), profileObject::class.java)
+                        val status = nameo.getStatus()
+                        val data = nameo.data
+                        //val name = nameo.getUname()
+                        val dataJsonObj = JSONObject(data)
+                        val name = dataJsonObj.getString("name")
+
+
+                        Log.d("JSON", response.toString() )
+                        check_submit(status, name)
                     } catch (e: Exception) {
                         Log.d("JSON", e.toString())
                     }
-                }, Response.ErrorListener {
-                    error -> check_submit("Error" + error.toString())
+                }, Response.ErrorListener { error ->
+                    when (error) {
+                        is NoConnectionError ->
+                            Toast.makeText(this, "Connection Error" , Toast.LENGTH_LONG).show()
+                        is TimeoutError->
+                            Toast.makeText(this, "Timeout Error" , Toast.LENGTH_LONG).show()
+                        is AuthFailureError ->
+                            Toast.makeText(this, "AuthFailure Error" , Toast.LENGTH_LONG).show()
+                        is NetworkError ->
+                            Toast.makeText(this, "Network Error" , Toast.LENGTH_LONG).show()
+                        is ParseError ->
+                            Toast.makeText(this, "Parse Error" , Toast.LENGTH_LONG).show()
+                        is ServerError ->
+                            Toast.makeText(this, "Server Error" , Toast.LENGTH_LONG).show()
+                        else -> Toast.makeText(this, "Error: " + error, Toast.LENGTH_LONG).show()
+                    }
         })
+
         {
+
+
+//        // This to set custom headers:
+//        //   https://stackoverflow.com/questions/17049473/how-to-set-custom-header-in-volley-request
+        @Throws(AuthFailureError::class)
+             override  fun getHeaders(): Map<String, String> {
+                run {
+                    val params = HashMap<String, String>()
+                    // params.put("Accept", "application/json");
+                    params.put("Accept-Encoding", "identity")
+                    params.put("Content-Type", "application/json");
+
+                    return params
+                }
+            }
         }
 
         queue.add(joRequest)
     }
 
-    fun check_submit(status: String?){
+    fun check_submit(status: String?, name: String?){
         if (status == "OK") {
-            Toast.makeText(this, "Congrats! You have successfully saved your profile!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Welcome "+ name.toString(), Toast.LENGTH_LONG).show()
         } else if (status == "ERROR"){
             Toast.makeText(this, "Sorry! Error occured when saving your profile." + status, Toast.LENGTH_LONG).show()
         }
@@ -409,6 +465,11 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         //store it in sharedPrefs)
         val topButton: Button = findViewById(R.id.login_or_clear)
         topButton.text = if (entered) "Clear" else "Login" //changes text of the top button
+        if (ifNameAvailable == true) {
+            mAvail.setText("Available")
+        } else if (ifNameAvailable == false) {
+            mAvail.setText("Unavailable")
+        }
     }
 
     /**
