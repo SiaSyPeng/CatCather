@@ -158,7 +158,8 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         outState?.putBoolean(ENTER_STRING, anythingEntered)
         outState?.putBoolean(MATCH_STRING,ifPassMatch)
         outState?.putBoolean(NAME_AVAIL_STRING,ifNameAvailable)
-        outState?.putString(IMAGE_STRING,imgUri.toString())
+        outState?.putParcelable(IMAGE_STRING,imgUri)
+        Log.d("TAG",imgUri.toString())
     }
 
     /**
@@ -174,8 +175,11 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         enterAnything(savedInstanceState.getBoolean(ENTER_STRING,false))
         ifPassMatch = savedInstanceState.getBoolean(MATCH_STRING,false)
         ifNameAvailable = savedInstanceState.getBoolean(NAME_AVAIL_STRING,false)
-        val imgString = savedInstanceState.getString(IMAGE_STRING)
-        if (imgString!=null) imgUri= Uri.parse(imgString)
+        val img: Uri? = savedInstanceState.getParcelable(IMAGE_STRING)
+        if (img!=null) {
+            imgUri= img
+            doAsync { mImg.setImageURI(imgUri) } //set the new image
+        }
 
     }
 
@@ -195,9 +199,9 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
                 CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE -> { //When we get back our cropped pic
                     val result = CropImage.getActivityResult(data)
-                    val uri = result.uri //This comes from usage of this 3rd party app, documented
+                    imgUri = result.uri //This comes from usage of this 3rd party app, documented
                     //on their github wiki
-                    mImg.setImageURI(uri) //set the new image
+                    doAsync { mImg.setImageURI(imgUri) } //set the new image
                     File(filesDir, "uncropped.png").delete() //delete the uncropped image
                 }
             }
@@ -453,13 +457,15 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
      */
     private fun passwordConfirm() {
         if(!ifPassMatch) {
-            mDialog = AuthDialog()
-            mDialog.show(fragmentManager, "dialogShow")
+            doAsync {
+                mDialog = AuthDialog()
+                mDialog.show(fragmentManager, "dialogShow")
+            }
         }
     }
 
     override fun onDialogPositiveClick(dialog: DialogFragment) {
-        ifPassMatch = mDialog.checkMatch()
+        ifPassMatch = mDialog.ifMatch
     }
 
     //A lot of buttons
@@ -475,7 +481,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
             mName.text = null
             mPassword.text = null
             //Reset image
-            mImg.setImageResource(R.drawable.cat_cut)
+            doAsync {  mImg.setImageResource(R.drawable.cat_cut) }
             //Reset booleans
             enterAnything(false)
             ifPassMatch = false
