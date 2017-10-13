@@ -8,7 +8,6 @@ import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.EditText
@@ -23,11 +22,6 @@ class AuthDialog : DialogFragment() {
 
     // public members to pass to host
     var ifMatch: Boolean = false
-
-    fun checkMatch(): Boolean {return ifMatch}
-
-
-
 
     /* The activity that creates an instance of this dialog fragment must
     * implement this interface in order to receive event callbacks.
@@ -48,7 +42,6 @@ class AuthDialog : DialogFragment() {
                 .setTitle(R.string.confirm_dialog_pass_dialog)
 
                 .setPositiveButton(android.R.string.ok, { dialog, _ ->
-                    mListener.onDialogPositiveClick(this)
                     dialog.dismiss()
                 })
                 .setNegativeButton("Cancel", { dialog, _ ->
@@ -97,7 +90,7 @@ class AuthDialog : DialogFragment() {
     override fun onStart() {
         super.onStart()
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
-        submitButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE) as Button
+        submitButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
     }
 
     // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener

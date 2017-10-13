@@ -67,6 +67,8 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         PreferenceManager.setDefaultValues(context, USER_PREFS,
                 Context.MODE_PRIVATE, R.xml.fragment_preferences, false)
 
+
+
         val signoutPref = findPreference(getString(R.string.prefs_signout_key))
         val aboutPref = findPreference(getString(R.string.prefs_about_key))
 
