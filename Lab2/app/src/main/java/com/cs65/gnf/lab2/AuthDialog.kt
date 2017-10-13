@@ -21,9 +21,8 @@ class AuthDialog : DialogFragment() {
     private lateinit var mListener: DialogListener
 
     // public members to pass to host
-    var ifMatch: Boolean = false
-
-    fun checkMatch(): Boolean {return ifMatch}
+    var ifMatch: Boolean = false //Kotlin good practices is to not declare getters/setters, and to
+                                 //instead access properties by themselves
 
     /* The activity that creates an instance of this dialog fragment must
     * implement this interface in order to receive event callbacks.

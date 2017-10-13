@@ -13,7 +13,8 @@ import com.android.volley.*
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.gson.GsonBuilder
-import java.util.*
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 
 class LoginActivity : Activity() {
 
@@ -179,10 +180,16 @@ class LoginActivity : Activity() {
         //Assign that to the view
         v.setBackgroundResource(R.color.colorPrimaryDark)
         v.startAnimation(blink)
-        Timer().schedule(object : TimerTask() {
-            override fun run() {
+//        Timer().schedule(object : TimerTask() {
+//            override fun run() {
+//                v.setBackgroundResource(R.color.transparent)
+//            }
+//        }, 2000)
+        doAsync {
+            Thread.sleep(2000)
+            uiThread {
                 v.setBackgroundResource(R.color.transparent)
             }
-        }, 2000)
+        }
     }
 }

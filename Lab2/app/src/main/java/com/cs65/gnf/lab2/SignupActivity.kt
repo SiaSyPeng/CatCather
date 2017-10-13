@@ -465,7 +465,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     }
 
     override fun onDialogPositiveClick(dialog: DialogFragment) {
-        ifPassMatch = mDialog.checkMatch()
+        ifPassMatch = mDialog.ifMatch
     }
 
     //A lot of buttons
