@@ -52,6 +52,7 @@ class LoginActivity : Activity() {
         val uname = mUsername.text.toString()
         val pass = mPassword.text.toString()
         when {
+            // Check if uname and password entered
             uname.isEmpty() -> {
                 toast("Please enter an Username")
                 highlight(mUsername)
@@ -72,6 +73,10 @@ class LoginActivity : Activity() {
                                 // parse the string, based on provided class object as template
                                 val gson = GsonBuilder().create()
                                 val loginRes = gson.fromJson(response, loginResponse::class.java)
+                                // Check the status of login response
+                                // if error is null, then get succesful response
+                                // if error exists, get failure response
+                                // can also do this in java reflection object runtimecheck
                                 val error = loginRes.error
                                 if (error != null) { // error
                                     val code = loginRes.code // get error type
@@ -83,13 +88,13 @@ class LoginActivity : Activity() {
                                 } else {
                                     // if no error, authenticated, log in the the home page
                                     // update the newest user infor and preferences from the server
-                                    login(loginRes.name, loginRes.password, loginRes.privacy, loginRes.alert)
+                                    loginSubmit(loginRes.name, loginRes.password, loginRes.privacy, loginRes.alert)
                                 }
                             } catch (e: Exception) {
                                 Log.d("JSON", e.toString())
                             }
                         },
-                        Response.ErrorListener { error ->
+                        Response.ErrorListener { error -> // Handle error cases
                             when (error) {
                                 is NoConnectionError ->
                                     toast("Connection Error")
@@ -115,9 +120,12 @@ class LoginActivity : Activity() {
         }
     }
     /**
+     * Once log in is successful after checking server
+     * Update local storage from server response
+     * and
      * Takes you to home page
      */
-    fun login(uname: String?, pass: String?, privacy: Boolean?, alert: String?){
+    fun loginSubmit(uname: String?, pass: String?, privacy: Boolean?, alert: String?){
         // save existent things to local
         val sp = getSharedPreferences(USER_INFO,0)
         val editor = sp.edit()

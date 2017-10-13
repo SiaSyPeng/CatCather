@@ -133,6 +133,11 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
                 .unregisterOnSharedPreferenceChangeListener(this)
     }
 
+    /*
+     * When user change setting preference fragements,
+     * Update local storage and server storage
+     *
+     */
     override fun onSharedPreferenceChanged(prefs: SharedPreferences?, key: String?) {
         val jsonReq = JSONObject()
 
@@ -144,27 +149,30 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         val uName = prefs.getString(USER_STRING,null)
         val pass = prefs.getString(PASS_STRING,null)
         val realName = prefs.getString(NAME_STRING,null)
+
         // Get the new settings
         var privacy = prefs.getBoolean(PRIV_STRING, true)
         var alert = prefs.getString(ALER_STRING, null)
 
+        // Update json object
         jsonReq.put("name", uName)
         jsonReq.put("password", pass)
         jsonReq.put("realName", realName)
 
 
         when (key) {
-            getString(R.string.prefs_privacy_key) -> { //Checkbox preference for privacy
+            //Checkbox preference for privacy
+            getString(R.string.prefs_privacy_key) -> {
                 //Get the new setting
                 privacy = activity.defaultSharedPreferences.getBoolean(key,true)
 
-                //Put it into sharedPrefs
+                //Put it into sharedPrefs storage
                 activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
                         .edit()
                         .putBoolean(key,privacy)
                         .apply()
 
-                //Put it into server
+                //Update json request
                 try {
                     jsonReq.put(key, privacy)
                     jsonReq.put(ALER_STRING, alert)
@@ -175,16 +183,17 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
                 }
             }
 
-            getString(R.string.prefs_alert_key) -> { //List preference for alerts
+            //List preference for alerts
+            getString(R.string.prefs_alert_key) -> {
                 alert = activity.defaultSharedPreferences.getString(key,"r")
 
-                //Put it into sharedPrefs
+                //Put it into sharedPrefs storage
                 activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
                         .edit()
                         .putString(key,alert)
                         .apply()
 
-                //Put it into server
+                //Update json request
                 try {
                     jsonReq.put(key, alert)
                     jsonReq.put(PRIV_STRING,privacy)
@@ -198,6 +207,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
             }
         }
 
+        // POST jsonrequest to the reserver
         val joRequest = object: JsonObjectRequest(SAVE_URL, // POST is presumed
                 jsonReq,
                 Response.Listener<JSONObject> { response ->
@@ -208,7 +218,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
                         Log.d("Setting JSON", e.toString())
                     }
                 }, Response.ErrorListener { error ->
-            when (error) {
+            when (error) { // Handle POST error cases by making a toast
                 is NoConnectionError ->
                     toast("Connection Error")
                 is TimeoutError ->

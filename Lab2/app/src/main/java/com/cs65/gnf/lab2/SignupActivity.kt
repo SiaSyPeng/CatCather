@@ -302,7 +302,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
             jsonReq.put(getString(R.string.prefs_privacy_key), true)
             jsonReq.put(getString(R.string.prefs_alert_key), "r")
 
-        } catch (e: JSONException) {
+        } catch (e: JSONException) { // Handle error cases
             // Warn the user that something is wrong; do not connect
             Log.d("JSON", "Invalid JSON: " + e.toString())
 
@@ -313,7 +313,6 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
 
         // Request a Json response from the provided URL.
-
         val joRequest = object: JsonObjectRequest (url, // POST is presumed
                 jsonReq,
                 Response.Listener<JSONObject> { response ->
@@ -337,7 +336,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                     } catch (e: Exception) {
                         Log.d("JSON", e.toString())
                     }
-                }, Response.ErrorListener { error ->
+                }, Response.ErrorListener { error -> // Handle error cases
                     when (error) {
                         is NoConnectionError ->
                             Toast.makeText(this, "Connection Error" , Toast.LENGTH_LONG).show()
@@ -374,6 +373,11 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         queue.add(joRequest)
     }
 
+    /*
+     * Helper method to save_profile
+     * Will check status of POST response,
+     * and catch additional error not caught by volley exception
+     */
     fun checkSubmit(status: String?, name: String?){
         if (status == "OK") {
             Toast.makeText(this, "Welcome "+ name.toString(), Toast.LENGTH_LONG).show()
@@ -460,7 +464,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     }
 
     override fun onDialogPositiveClick(dialog: DialogFragment) {
-        ifPassMatch = mDialog.ifMatch
+        ifPassMatch = mDialog.checkMatch()
     }
 
     //A lot of buttons
