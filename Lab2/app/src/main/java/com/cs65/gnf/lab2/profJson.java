@@ -13,6 +13,10 @@ public class profJson {
     private String realName;
     @SerializedName("password")
     private String password;
+    @SerializedName("privacy")
+    private boolean privacy;
+    @SerializedName("alert")
+    private String alert;
 
     public String getRealName() {
         return realName;
@@ -21,7 +25,13 @@ public class profJson {
     public String getPassword() {
         return password;
     }
+
     public String getname() {
         return name;
     }
+
+    public String getAlert() {return alert; }
+
+    public boolean getPrivacy() {return privacy;}
+
 }

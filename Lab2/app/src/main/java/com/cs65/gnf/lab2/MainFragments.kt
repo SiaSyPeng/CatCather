@@ -12,6 +12,11 @@ import android.view.ViewGroup
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
+import com.android.volley.*
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import com.google.gson.GsonBuilder
 import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.toast
 import org.json.JSONException
@@ -59,9 +64,23 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
     private val USER_PREFS = "profile_data" //Shared with other activities
     private val SAVE_URL = "http://cs65.cs.dartmouth.edu/profile.pl"
 
+    // Constant key to get value from sharedPref
+    private val USER_STRING = "Username"
+    private val PASS_STRING = "Password"
+    private val NAME_STRING = "Name"
+    private val PRIV_STRING = "privacy"
+    private val ALER_STRING = "alert"
+
+    //volley request
+    private lateinit var queue: RequestQueue
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         addPreferencesFromResource(R.xml.fragment_preferences)
+
+        // Instantiate the RequestQueue.
+        queue = Volley.newRequestQueue(activity)
 
         //Set default values (depending on whether values have previously been set)
         PreferenceManager.setDefaultValues(context, USER_PREFS,
@@ -70,7 +89,8 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         val signoutPref = findPreference(getString(R.string.prefs_signout_key))
         val aboutPref = findPreference(getString(R.string.prefs_about_key))
 
-        signoutPref.setOnPreferenceClickListener { _ -> //If  user signs out
+        // Clean up when the user sign out
+        signoutPref.setOnPreferenceClickListener { _ ->
 
             //Remove everything from default sharedPrefs
             activity.defaultSharedPreferences
@@ -90,7 +110,8 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
             true
         }
 
-        aboutPref.setOnPreferenceClickListener { _ -> //If user clicks on the "about" page
+        //If user clicks on the "about" page, go to cs web
+        aboutPref.setOnPreferenceClickListener { _ ->
             val url = "https://web.cs.dartmouth.edu" //Dartmouth CS page
             val intent = Intent()
 
@@ -117,11 +138,29 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
     override fun onSharedPreferenceChanged(prefs: SharedPreferences?, key: String?) {
         val jsonReq = JSONObject()
 
+        // POST Request must have name and password, we get it from sharedpref, which is saved/updated when login
+        // And since POST in server right now use overwrite not update, we'll have to keep track of all the fields
+        // This can be done by a GET request,
+        // or just simply get from sharedpref since we saved data from GET into local when logging in
+        val prefs = activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
+        val uName = prefs.getString(USER_STRING,null)
+        val pass = prefs.getString(PASS_STRING,null)
+        val realName = prefs.getString(NAME_STRING,null)
+        // Get the new settings
+        var privacy = prefs.getBoolean(PRIV_STRING, true)
+        var alert = prefs.getString(ALER_STRING, null)
+
+        Log.d("test", privacy.toString() + alert)
+
+        jsonReq.put("name", uName)
+        jsonReq.put("password", pass)
+        jsonReq.put("realName", realName)
+
+
         when (key) {
             getString(R.string.prefs_privacy_key) -> { //Checkbox preference for privacy
-
                 //Get the new setting
-                val privacy = activity.defaultSharedPreferences.getBoolean(key,true)
+                privacy = activity.defaultSharedPreferences.getBoolean(key,true)
 
                 //Put it into sharedPrefs
                 activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
@@ -131,7 +170,8 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
 
                 //Put it into server
                 try {
-                    jsonReq.put(key,privacy)
+                    jsonReq.put(key, privacy)
+                    jsonReq.put(ALER_STRING, alert)
                 } catch (e: JSONException) {
                     // Warn the user that something is wrong; do not connect
                     Log.d("JSON", "Invalid JSON: " + e.toString())
@@ -150,7 +190,8 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
 
                 //Put it into server
                 try {
-                    jsonReq.put(key,alert)
+                    jsonReq.put(key, alert)
+                    jsonReq.put(PRIV_STRING,privacy)
                 } catch (e: JSONException) {
                     // Warn the user that something is wrong; do not connect
                     Log.d("JSON", "Invalid JSON: " + e.toString())
@@ -161,6 +202,48 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
             }
         }
 
+        val joRequest = object: JsonObjectRequest(SAVE_URL, // POST is presumed
+                jsonReq,
+                Response.Listener<JSONObject> { response ->
+                    try {
+                        Log.d("Setting JSON", response.toString() )
 
+                    } catch (e: Exception) {
+                        Log.d("Setting JSON", e.toString())
+                    }
+                }, Response.ErrorListener { error ->
+            when (error) {
+                is NoConnectionError ->
+                    toast("Connection Error")
+                is TimeoutError ->
+                    toast("Timeout Error")
+                is AuthFailureError ->
+                    toast("AuthFailure Error")
+                is NetworkError ->
+                    toast("Network Error")
+                is ParseError ->
+                    toast("Parse Error" )
+                is ServerError ->
+                    toast("Server Error" )
+                else -> toast("Error: " + error)
+            }
+        }) {
+            // This to set custom headers:
+            //   https://stackoverflow.com/questions/17049473/how-to-set-custom-header-in-volley-request
+            @Throws(AuthFailureError::class)
+            override  fun getHeaders(): Map<String, String> {
+                run {
+                    val params = HashMap<String, String>()
+                    // params.put("Accept", "application/json");
+                    params.put("Accept-Encoding", "identity")
+                    params.put("Content-Type", "application/json")
+
+                    return params
+                }
+            }
+        }
+
+        // Add the request to the RequestQueue.
+        queue.add(joRequest)
     }
 }

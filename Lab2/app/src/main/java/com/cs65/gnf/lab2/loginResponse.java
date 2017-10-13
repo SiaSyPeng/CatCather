@@ -11,8 +11,15 @@ import com.google.gson.annotations.SerializedName;
 public class loginResponse {
     @SerializedName("name")
     private String name;
+    @SerializedName("realName")
+    private String realName;
     @SerializedName("password")
     private String password;
+    @SerializedName("privacy")
+    private boolean privacy;
+    @SerializedName("alert")
+    private String alert;
+
     @SerializedName("error")
     private String error;
     @SerializedName("code")
@@ -23,9 +30,17 @@ public class loginResponse {
         return name;
     }
 
+    public String getRealName() {
+        return realName;
+    }
+
     public String getPassword() {
         return password;
     }
+
+    public String getAlert() {return alert; }
+
+    public boolean getPrivacy() {return privacy;}
 
     public String getError() {
         return error;

@@ -7,9 +7,5 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
-    <style name="PreferenceTheme" parent="@style/Theme.AppCompat.Light.DarkActionBar">
-        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
-        <item name="android:background">@android:color/white</item>
-    </style>
 
 </resources>

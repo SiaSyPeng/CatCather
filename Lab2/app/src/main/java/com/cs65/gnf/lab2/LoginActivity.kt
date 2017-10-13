@@ -23,8 +23,8 @@ class LoginActivity : Activity() {
     private val USER_STRING = "Username"
     private val NAME_STRING = "Name"
     private val PASS_STRING = "Password"
-    private val ALERT_STRING = "alert"
-    private val PRIVACY_STRING = "privacy"
+    private val ALERT_STRING = "Alert"
+    private val PRIVACY_STRING = "Priv"
 
     //Views needed many times
     private lateinit var mUsername: EditText
@@ -78,14 +78,13 @@ class LoginActivity : Activity() {
                 val stringRequest = object : StringRequest(Request.Method.GET, url,
                         Response.Listener<String> { response ->
                             try {
-                                Log.d("JSON", response.toString())
+                                Log.d("LOGIN RESPONSE", response.toString())
                                 // parse the string, based on provided class object as template
                                 val gson = GsonBuilder().create()
                                 val loginRes = gson.fromJson(response, loginResponse::class.java)
                                 val error = loginRes.error
                                 if (error != null) { // error
                                     val code = loginRes.code // get error type
-
                                     if (code == "AUTH_FAIL") {
                                         toast("Passwords don't match")
                                     } else if (code == "NAME_NOT_FOUND") {
@@ -93,7 +92,8 @@ class LoginActivity : Activity() {
                                     }
                                 } else {
                                     // if no error, authenticated, log in the the home page
-                                    login(loginRes.name, loginRes.password)
+                                    // update the newest user infor and preferences from the server
+                                    login(loginRes.name, loginRes.password, loginRes.privacy, loginRes.alert)
                                 }
                             } catch (e: Exception) {
                                 Log.d("JSON", e.toString())
@@ -127,13 +127,14 @@ class LoginActivity : Activity() {
     /**
      * Takes you to home page
      */
-    fun login(uname: String?, pass: String?){
-
+    fun login(uname: String?, pass: String?, privacy: Boolean?, alert: String?){
         // save existent things to local
         val sp = getSharedPreferences(USER_INFO,0)
         val editor = sp.edit()
         if (uname is String) editor.putString(USER_STRING, uname)
         if (pass is String) editor.putString(PASS_STRING, pass)
+        if (privacy is Boolean) editor.putBoolean(PRIVACY_STRING, privacy)
+        if (alert is String) editor.putString(ALERT_STRING, alert)
         editor.apply()
 
         //Start main activity
