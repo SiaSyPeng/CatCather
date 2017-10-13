@@ -145,14 +145,12 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         // And since POST in server right now use overwrite not update, we'll have to keep track of all the fields
         // This can be done by a GET request,
         // or just simply get from sharedpref since we saved data from GET into local when logging in
-        val prefs = activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
-        val uName = prefs.getString(USER_STRING,null)
-        val pass = prefs.getString(PASS_STRING,null)
-        val realName = prefs.getString(NAME_STRING,null)
-
-        // Get the new settings
-        var privacy = prefs.getBoolean(PRIV_STRING, true)
-        var alert = prefs.getString(ALER_STRING, null)
+        val userPrefs = activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
+        val uName = userPrefs.getString(USER_STRING,null)
+        val pass = userPrefs.getString(PASS_STRING,null)
+        val realName = userPrefs.getString(NAME_STRING,null)
+        var privacy = userPrefs.getBoolean(PRIV_STRING, true)
+        var alert = userPrefs.getString(ALER_STRING, null)
 
         // Update json object
         jsonReq.put("name", uName)

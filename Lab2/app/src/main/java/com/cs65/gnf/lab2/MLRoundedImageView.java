@@ -14,7 +14,11 @@ import android.util.AttributeSet;
 import android.support.v7.widget.AppCompatImageView;
 
 /**
- * Taken from https://gist.github.com/melanke/7158342
+ * Taken from https://gist.github.com/melanke/7158342 (user said it was open for use)
+ *
+ * Third party class, which is why there's no comments
+ *
+ * Opens an ImageView that automatically cuts off corners to display only a circle
  */
 public class MLRoundedImageView extends AppCompatImageView {
 
