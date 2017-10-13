@@ -315,7 +315,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         }
 
 
-        // Request a string response from the provided URL.
+        // Request a Json response from the provided URL.
 
         val joRequest = object: JsonObjectRequest (url, // POST is presumed
                 jsonReq,
@@ -335,7 +335,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 //                        val dataJsonObj = JSONObject(data)
 //                        val name = dataJsonObj.getString("name")
 
-                        Log.d("JSON", response.toString() )
+                        Log.d("JSON", response.toString())
                         checkSubmit(status, name)
                     } catch (e: Exception) {
                         Log.d("JSON", e.toString())
@@ -359,8 +359,6 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         })
 
         {
-
-
           // This to set custom headers:
           //   https://stackoverflow.com/questions/17049473/how-to-set-custom-header-in-volley-request
         @Throws(AuthFailureError::class)
