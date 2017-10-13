@@ -11,8 +11,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.toast
+import org.json.JSONException
+import org.json.JSONObject
 
 
 /**
@@ -53,7 +56,8 @@ class RankingFrag: Fragment() {
  */
 class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceChangeListener {
 
-    val USER_PREFS = "user_prefs"
+    private val USER_PREFS = "profile_data" //Shared with other activities
+    private val SAVE_URL = "http://cs65.cs.dartmouth.edu/profile.pl"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,20 +67,18 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         PreferenceManager.setDefaultValues(context, USER_PREFS,
                 Context.MODE_PRIVATE, R.xml.fragment_preferences, false)
 
-        //TODO Start with existing values, if any, for the prefs
-
         val signoutPref = findPreference(getString(R.string.prefs_signout_key))
         val aboutPref = findPreference(getString(R.string.prefs_about_key))
 
         signoutPref.setOnPreferenceClickListener { _ -> //If  user signs out
 
-            //Remove everything from internal sharedPrefs
+            //Remove everything from default sharedPrefs
             activity.defaultSharedPreferences
                     .edit()
                     .clear()
                     .apply()
 
-            //Remove everything from User sharedPrefs
+            //Remove everything from user sharedPrefs
             activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
                     .edit()
                     .clear()
@@ -85,7 +87,6 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
             //Go back to login
             val i = Intent(activity.applicationContext,LoginActivity::class.java)
             startActivity(i)
-
             true
         }
 
@@ -114,29 +115,52 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
     }
 
     override fun onSharedPreferenceChanged(prefs: SharedPreferences?, key: String?) {
+        val jsonReq = JSONObject()
+
         when (key) {
             getString(R.string.prefs_privacy_key) -> { //Checkbox preference for privacy
+
+                //Get the new setting
                 val privacy = activity.defaultSharedPreferences.getBoolean(key,true)
 
-                //TODO send to server
-
+                //Put it into sharedPrefs
                 activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
                         .edit()
                         .putBoolean(key,privacy)
                         .apply()
 
-                toast("Displays score to others: " + privacy)
+                //Put it into server
+                try {
+                    jsonReq.put(key,privacy)
+                } catch (e: JSONException) {
+                    // Warn the user that something is wrong; do not connect
+                    Log.d("JSON", "Invalid JSON: " + e.toString())
+                    toast("Invalid JSON")
+                }
             }
+
             getString(R.string.prefs_alert_key) -> { //List preference for alerts
                 val alert = activity.defaultSharedPreferences.getString(key,"r")
 
-                //TODO Send to server
-
+                //Put it into sharedPrefs
                 activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
                         .edit()
                         .putString(key,alert)
                         .apply()
+
+                //Put it into server
+                try {
+                    jsonReq.put(key,alert)
+                } catch (e: JSONException) {
+                    // Warn the user that something is wrong; do not connect
+                    Log.d("JSON", "Invalid JSON: " + e.toString())
+                    toast("Invalid JSON")
+
+                    return
+                }
             }
         }
+
+
     }
 }

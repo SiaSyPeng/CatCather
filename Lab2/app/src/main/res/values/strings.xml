@@ -8,6 +8,7 @@
     <string name="signup_clear_button_text">Clear</string>
     <string name="signup_username_hint">Username</string>
     <string name="signup_username_available">Available</string>
+    <string name="signup_username_notavailable">Unavailable</string>
     <string name="signup_full_name_hint">Full Name</string>
     <string name="signup_password_hint">Password</string>
     <string name="signup_submit_button">Sign Up!</string>
