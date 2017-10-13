@@ -30,6 +30,7 @@ import java.io.*
 import com.google.gson.GsonBuilder
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
+import org.jetbrains.anko.uiThread
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
@@ -584,10 +585,16 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         //Assign that to the view
         v.setBackgroundResource(R.color.colorPrimaryDark)
         v.startAnimation(blink)
-        Timer().schedule(object : TimerTask() {
-            override fun run() {
+//        Timer().schedule(object : TimerTask() {
+//            override fun run() {
+//                v.setBackgroundResource(R.color.transparent)
+//            }
+//        }, 2000)
+        doAsync {
+            Thread.sleep(2000)
+            uiThread {
                 v.setBackgroundResource(R.color.transparent)
             }
-        }, 2000)
+        }
     }
 }
