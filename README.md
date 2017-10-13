@@ -10,7 +10,8 @@ Sia Peng 20'
 ## Submition
 
 for lab1, please see the final code on lab1Submit
-for lab2, please see the final code on lab2Submit
+
+for lab2, please see the final code on master
 
 
 ## Usage
