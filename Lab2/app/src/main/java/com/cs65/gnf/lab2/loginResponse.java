@@ -5,10 +5,12 @@ import android.net.Uri;
 import com.google.gson.annotations.SerializedName;
 
 /**
+ * java reflection to catch the POST response from server at login
  * Created by siapeng on 10/12/17.
  */
 
 public class loginResponse {
+    // Success case, will fetch all fields user saved
     @SerializedName("name")
     private String name;
     @SerializedName("realName")
@@ -20,12 +22,14 @@ public class loginResponse {
     @SerializedName("alert")
     private String alert;
 
+    // Error case, will fetch status(error) and what error the user get(code)
     @SerializedName("error")
     private String error;
     @SerializedName("code")
     private String code;
 
 
+    // Getters
     public String getName() {
         return name;
     }

@@ -23,6 +23,8 @@ class AuthDialog : DialogFragment() {
     // public members to pass to host
     var ifMatch: Boolean = false
 
+    fun checkMatch(): Boolean {return ifMatch}
+
     /* The activity that creates an instance of this dialog fragment must
     * implement this interface in order to receive event callbacks.
     * Each method passes the DialogFragment in case the host needs to query it. */
@@ -42,6 +44,7 @@ class AuthDialog : DialogFragment() {
                 .setTitle(R.string.confirm_dialog_pass_dialog)
 
                 .setPositiveButton(android.R.string.ok, { dialog, _ ->
+                    mListener.onDialogPositiveClick(this)
                     dialog.dismiss()
                 })
                 .setNegativeButton("Cancel", { dialog, _ ->

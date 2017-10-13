@@ -50,6 +50,7 @@ class MainActivity: Activity() {
             return tabs[position]
         }
 
+        // Four fields for tab
         override fun getPageTitle(position: Int): CharSequence? {
             when (position) {
                 0 -> return "Play"
