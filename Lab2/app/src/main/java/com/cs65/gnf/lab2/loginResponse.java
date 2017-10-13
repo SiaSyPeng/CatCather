@@ -1,5 +1,7 @@
 package com.cs65.gnf.lab2;
 
+import android.net.Uri;
+
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -11,19 +13,14 @@ public class loginResponse {
     private String name;
     @SerializedName("password")
     private String password;
-    @SerializedName("realName")
-    private String realName;
     @SerializedName("error")
     private String error;
     @SerializedName("code")
     private String code;
 
+
     public String getName() {
         return name;
-    }
-
-    public String getRealName() {
-        return realName;
     }
 
     public String getPassword() {

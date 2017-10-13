@@ -9,20 +9,16 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.view.View
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.text.Editable
 import android.text.TextWatcher
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
-import android.os.Handler
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
 import android.util.Log
 import android.view.animation.AlphaAnimation
-import android.view.animation.Animation
 import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
@@ -36,13 +32,8 @@ import java.io.*
 import com.google.gson.GsonBuilder
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
-import org.jetbrains.anko.uiThread
-import com.google.gson.JsonObject
 import org.json.JSONException
 import org.json.JSONObject
-import java.lang.reflect.Method
-import java.net.SocketException
-
 
 class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
@@ -50,10 +41,9 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     private var ifPassMatch: Boolean = false // (if password has been reentered and matched)
     private var ifNameAvailable: Boolean = false // if the username is available
     
-    private var SHARED_PREF = "profile_data"
-    
-    private lateinit var mdialog: AuthDialog //Dialog declared globally so it can be accessed later
-    
+    private var USER_PREFS = "profile_data"
+
+    @SuppressWarnings
     private val IMAGE_REQUEST_CODE = 1 //To send intent to Android's camera app
     private val CAMERA_REQUEST_CODE = 2 //To request use of camera
     private val WRITE_REQUEST_CODE = 3 //To request use of writing files
@@ -66,58 +56,41 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     private val MATCH_STRING = "match"
     private val ENTER_STRING = "anything"
     private val NAME_AVAIL_STRING = "ifNameAvailable"
+    private val IMAGE_STRING = "image"
 
     //Server stuff
     private val REQ_URL = "http://cs65.cs.dartmouth.edu/nametest.pl?name="
     private val SAVE_URL = "http://cs65.cs.dartmouth.edu/profile.pl"
-    private val SERVER_FIELDS = arrayListOf("name","realName","password")
 
     //Views and other fields needed multiple times
     private lateinit var mDialog: AuthDialog //Dialog declared globally so it can be accessed later
     private lateinit var mUsername: EditText //Username field
     private lateinit var mName: EditText //Full Name field
     private lateinit var mPassword: EditText //Password field
-    private lateinit var mPic: ImageView // User picture
+    private lateinit var mImg: ImageView // User picture
     private lateinit var mAvail: TextView // Name Availability
-    //private lateinit var dl: Handler
-    //private lateinit var ctx: Activity
-    private lateinit var queue: RequestQueue
+    private lateinit var queue: RequestQueue //Request
+    private var imgUri: Uri? = null //Location of user's picture
     private lateinit var jsonReq: JSONObject
+    private lateinit var sp: SharedPreferences
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("ERROR","test")
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_signup)
 
-        //dl = Handler()
-        //ctx = this
         // Instantiate the RequestQueue.
         queue = Volley.newRequestQueue(this)
 
-        //Set variables for layout items
-        mPic = findViewById(R.id.pict_button)
+        //Set variables for global items
+        mImg = findViewById(R.id.pict_button)
         mPassword = findViewById(R.id.passwrd)
         mName = findViewById(R.id.full_name)
         mUsername = findViewById(R.id.username)
         mAvail = findViewById(R.id.availability)
 
-
-        //If a picture has previously been saved, set it (defaults to src file specified in xml)
-        val file = File(filesDir,"user_image.png")
-        if (file.exists()) mPic.setImageBitmap(BitmapFactory.decodeFile(file.path))
-
-        //fill text fields with shared preferences (or, if they don't exist, with null)
-        val sp = getSharedPreferences(SHARED_PREF, 0)
-        mUsername.setText(sp.getString(USER_STRING, null))
-        mName.setText(sp.getString(NAME_STRING, null))
-        mPassword.setText(sp.getString(PASS_STRING, null))
-
-        //keep the booleans as they were when information was last saved
-        ifPassMatch=sp.getBoolean(MATCH_STRING,false)
-        enterAnything(sp.getBoolean(ENTER_STRING, false))
-
-
+        sp = getSharedPreferences(USER_PREFS, Context.MODE_PRIVATE)
 
         //Ask for permissions
         if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.CAMERA)
@@ -185,26 +158,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         outState?.putBoolean(ENTER_STRING, anythingEntered)
         outState?.putBoolean(MATCH_STRING,ifPassMatch)
         outState?.putBoolean(NAME_AVAIL_STRING,ifNameAvailable)
-
-        //Save the picture to internal storage
-        doAsync {
-            var fos: FileOutputStream? = null
-            try {
-                fos = openFileOutput("temporary_picture.png", Context.MODE_PRIVATE)
-                val mBitmap = (mPic.drawable as BitmapDrawable).bitmap
-                mBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
-                fos?.flush()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            } finally {
-                try {
-                    if (fos != null) fos.close()
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
-            }
-            uiThread { Log.d("THREAD","Picture saved") }
-        }
+        outState?.putString(IMAGE_STRING,imgUri.toString())
     }
 
     /**
@@ -220,17 +174,8 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         enterAnything(savedInstanceState.getBoolean(ENTER_STRING,false))
         ifPassMatch = savedInstanceState.getBoolean(MATCH_STRING,false)
         ifNameAvailable = savedInstanceState.getBoolean(NAME_AVAIL_STRING,false)
-        
-        //Open and set picture
-        doAsync {
-            val file = File(filesDir, "temporary_picture.png")
-            mPic.setImageBitmap(BitmapFactory.decodeFile(file.absolutePath))
-
-            //Delete that file (as it was only meant to be temporary)
-            file.delete()
-
-            uiThread { Log.d("THREAD","Picture loaded") }
-        }
+        val imgString = savedInstanceState.getString(IMAGE_STRING)
+        if (imgString!=null) imgUri= Uri.parse(imgString)
 
     }
 
@@ -252,7 +197,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                     val result = CropImage.getActivityResult(data)
                     val uri = result.uri //This comes from usage of this 3rd party app, documented
                     //on their github wiki
-                    mPic.setImageBitmap(BitmapFactory.decodeFile(uri.path)) //set the new image
+                    mImg.setImageURI(uri) //set the new image
                     File(filesDir, "uncropped.png").delete() //delete the uncropped image
                 }
             }
@@ -310,24 +255,28 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         queue.add(stringRequest)
     }
 
-    /*
+    /**
      * Helper method to check_name
      * Will update "Availability" textView in the UI
      *
      */
     private fun updateAvail(res: String?) {
-        if (res == "true") {
-            mAvail.setText("Available")
-            ifNameAvailable = true
-        } else if (res == "false") {
-            mAvail.setText("Unavailable")
-            ifNameAvailable = false
-        } else {
-            Toast.makeText(this, res, Toast.LENGTH_LONG).show()
+        when (res) {
+            "true" -> {
+                mAvail.text = getString(R.string.signup_available)
+                mAvail.setTextColor(getColor(R.color.Black))
+                ifNameAvailable = true
+            }
+            "false" -> {
+                mAvail.text = getString(R.string.signup_unavailable)
+                mAvail.setTextColor(getColor(R.color.colorPrimaryDark))
+                ifNameAvailable = false
+            }
+            is String -> toast(res)
         }
     }
 
-    /*
+    /**
      * A POST Request to the server, post profile information
      * Called when submit button is clicked and every fields is ok
      * Create a Json object with username, name, password
@@ -341,13 +290,16 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         val passToSave = mPassword.text.toString()
 
         val url = SAVE_URL
-        //TODO Also save default preferences
         // put into json objects
         try {
             jsonReq = JSONObject()
-            jsonReq.put(SERVER_FIELDS[0], usernameToSave)
-            jsonReq.put(SERVER_FIELDS[1], nameToSave)
-            jsonReq.put(SERVER_FIELDS[2], passToSave)
+            jsonReq.put("name", usernameToSave)
+            jsonReq.put("realName", nameToSave)
+            jsonReq.put("password", passToSave)
+
+            //Save default preferences to the server
+            jsonReq.put(getString(R.string.prefs_privacy_key), true)
+            jsonReq.put(getString(R.string.prefs_alert_key), "r")
 
         } catch (e: JSONException) {
             // Warn the user that something is wrong; do not connect
@@ -370,8 +322,8 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                         val profo = gson.fromJson(response.toString(), profileObject::class.java)
 
                         // get two fields from profile object
-                        val status = profo.getStatus()
-                        val profJson = profo.getJson()
+                        val status = profo.status
+                        val profJson = profo.json
                         val name = profJson.getname()
 
 //                        // alternative method to getname: create a sub-jsonobject to access the inner member of data field
@@ -380,7 +332,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 //                        val name = dataJsonObj.getString("name")
 
                         Log.d("JSON", response.toString() )
-                        check_submit(status, name)
+                        checkSubmit(status, name)
                     } catch (e: Exception) {
                         Log.d("JSON", e.toString())
                     }
@@ -413,7 +365,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                     val params = HashMap<String, String>()
                     // params.put("Accept", "application/json");
                     params.put("Accept-Encoding", "identity")
-                    params.put("Content-Type", "application/json");
+                    params.put("Content-Type", "application/json")
 
                     return params
                 }
@@ -423,7 +375,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         queue.add(joRequest)
     }
 
-    fun check_submit(status: String?, name: String?){
+    fun checkSubmit(status: String?, name: String?){
         if (status == "OK") {
             Toast.makeText(this, "Welcome "+ name.toString(), Toast.LENGTH_LONG).show()
         } else if (status == "ERROR"){
@@ -494,11 +446,6 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         //store it in sharedPrefs)
         val topButton: Button = findViewById(R.id.login_or_clear)
         topButton.text = if (entered) "Clear" else "Login" //changes text of the top button
-        if (ifNameAvailable == true) {
-            mAvail.setText("Available")
-        } else if (ifNameAvailable == false) {
-            mAvail.setText("Unavailable")
-        }
     }
 
     /**
@@ -528,7 +475,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
             mName.text = null
             mPassword.text = null
             //Reset image
-            mPic.setImageResource(R.drawable.cat_cut)
+            mImg.setImageResource(R.drawable.cat_cut)
             //Reset booleans
             enterAnything(false)
             ifPassMatch = false
@@ -544,6 +491,8 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
      * Called when the picture is pressed
      */
     fun pictButton(v: View) {
+        v.requestFocus()
+
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE) //start the camera intent
         enterAnything(true) //set anythingEntered
 
@@ -574,45 +523,26 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                 toast("Please enter a password")
                 highlight(mPassword)
             }
+            !ifNameAvailable -> {
+                Toast.makeText(applicationContext, "Username must be available", Toast.LENGTH_LONG).show()
+            }
             !ifPassMatch -> { //if password is not matched
                 mPassword.requestFocus()
                 mPassword.clearFocus() //call the pass match dialog
                 v.requestFocus()
                 toast("Please confirm password")
             }
-            !ifNameAvailable -> {
-                Toast.makeText(applicationContext, "Username must be available", Toast.LENGTH_LONG).show()
-            }
             else -> { //once everything is checked
 
-                //Store fields and booleans
-                val sp = getSharedPreferences(SHARED_PREF, 0)
-                val editor = sp.edit()
-                editor.putString(USER_STRING, mUsername.text.toString())
-                editor.putString(NAME_STRING, mName.text.toString())
-                editor.putBoolean(MATCH_STRING, ifPassMatch)
-                editor.putBoolean(ENTER_STRING, anythingEntered)
-                editor.apply()
-
-                // Images can't be put safely into sharedPrefs, so the userimage is saved internally
-                doAsync {
-                    val bitmap = (mPic.drawable as BitmapDrawable).bitmap //pull the bitmap
-                    var fos: FileOutputStream? = null
-                    try {
-                        fos = openFileOutput("user_image.png",Context.MODE_PRIVATE)
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
-                        fos.flush()
-                    }
-                    catch (e: IOException) {e.printStackTrace()}
-                    finally {
-                        try {
-                            fos?.close()
-                        }
-                        catch (e: IOException) {e.printStackTrace()}
-                    }
-
-                    uiThread { Log.d("THREAD","Picture saved") }
-                }
+                //Store fields and also default values for the server
+                sp.edit()
+                        .putString(USER_STRING, mUsername.text.toString())
+                        .putString(NAME_STRING, mName.text.toString())
+                        .putString(PASS_STRING, mPassword.text.toString())
+                        .putBoolean(MATCH_STRING, ifPassMatch)
+                        .putBoolean(ENTER_STRING, anythingEntered)
+                        .putString(IMAGE_STRING,imgUri.toString())
+                        .apply()
 
                 //2. Save profile to server
                 saveProfile()

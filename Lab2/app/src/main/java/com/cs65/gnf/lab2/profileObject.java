@@ -15,9 +15,19 @@ public class profileObject {
     private String data;
     @SerializedName("json")
     private profJson json;
+    @SerializedName("privacy")
+    private boolean privacy;
+    @SerializedName("alert")
+    private String alert;
+
 
 
     public String getData(){ return data; }
+
+
+    public String getAlert() {return alert; }
+
+    public boolean getPrivacy() {return privacy;}
 
     public String getStatus() {return status;}
 
