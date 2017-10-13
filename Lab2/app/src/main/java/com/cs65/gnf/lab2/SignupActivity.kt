@@ -1,7 +1,6 @@
 package com.cs65.gnf.lab2
 
 import android.Manifest
-import android.app.Activity
 import android.app.DialogFragment
 import android.content.Context
 import android.support.v7.app.AppCompatActivity
@@ -20,7 +19,6 @@ import android.support.v4.content.FileProvider
 import android.util.Log
 import android.view.animation.AlphaAnimation
 import android.view.animation.DecelerateInterpolator
-import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import com.android.volley.*
 import com.android.volley.toolbox.JsonObjectRequest
@@ -34,16 +32,18 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.json.JSONException
 import org.json.JSONObject
+import java.util.*
 
 class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
+    //Global bools
     private var anythingEntered = false //(used to help set login button to clear)
     private var ifPassMatch: Boolean = false // (if password has been reentered and matched)
     private var ifNameAvailable: Boolean = false // if the username is available
-    
-    private var USER_PREFS = "profile_data"
 
-    @SuppressWarnings
+    private var USER_PREFS = "profile_data" //shared Preference String
+
+    //Request codes
     private val IMAGE_REQUEST_CODE = 1 //To send intent to Android's camera app
     private val CAMERA_REQUEST_CODE = 2 //To request use of camera
     private val WRITE_REQUEST_CODE = 3 //To request use of writing files
@@ -58,11 +58,11 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     private val NAME_AVAIL_STRING = "ifNameAvailable"
     private val IMAGE_STRING = "image"
 
-    //Server stuff
+    //Server URLs
     private val REQ_URL = "http://cs65.cs.dartmouth.edu/nametest.pl?name="
     private val SAVE_URL = "http://cs65.cs.dartmouth.edu/profile.pl"
 
-    //Views and other fields needed multiple times
+    //Global views and other vars that require frequent access
     private lateinit var mDialog: AuthDialog //Dialog declared globally so it can be accessed later
     private lateinit var mUsername: EditText //Username field
     private lateinit var mName: EditText //Full Name field
@@ -76,7 +76,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.d("ERROR","test")
+        //init
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_signup)
 
@@ -90,6 +90,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mUsername = findViewById(R.id.username)
         mAvail = findViewById(R.id.availability)
 
+        //get shared preferences
         sp = getSharedPreferences(USER_PREFS, Context.MODE_PRIVATE)
 
         //Ask for permissions
@@ -105,7 +106,6 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
             override fun afterTextChanged(p0: Editable?) {
                 enterAnything(p0?.length != 0)
             }
-
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
         })
@@ -114,7 +114,6 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
             override fun afterTextChanged(p0: Editable?) {
                 enterAnything(p0?.length != 0)
             }
-
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
         })
@@ -122,10 +121,9 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         mPassword.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
                 enterAnything(p0?.length != 0)
-                ifPassMatch = false //additionally, if the password changes, it may no longer match
-                //the reentered password
+                //If password changes it no longer matches
+                ifPassMatch = false
             }
-
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
         })
@@ -159,7 +157,6 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         outState?.putBoolean(MATCH_STRING,ifPassMatch)
         outState?.putBoolean(NAME_AVAIL_STRING,ifNameAvailable)
         outState?.putParcelable(IMAGE_STRING,imgUri)
-        Log.d("TAG",imgUri.toString())
     }
 
     /**
@@ -168,7 +165,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
 
-        //Set back text fields and booleans
+        //Set back text fields, booleans, and the image
         mUsername.setText(savedInstanceState.getString(USER_STRING, null))
         mName.setText(savedInstanceState.getString(NAME_STRING), null)
         mPassword.setText(savedInstanceState.getString(PASS_STRING), null)
@@ -483,8 +480,6 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
             //Reset booleans
             enterAnything(false)
             ifPassMatch = false
-
-            hideKeyboard(v)
         } else {
             val i = Intent(this,LoginActivity::class.java)
             startActivity(i)
@@ -573,31 +568,22 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
     }
 
     /**
-     * Helper method that hides the keyboard
-     */
-    private fun hideKeyboard(v:View){
-        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.hideSoftInputFromWindow(v.windowToken, 0)
-    }
-
-    /**
      * Highlights a view if something was forgotten there
      */
-    private fun highlight(v: View) {
-        doAsync {
-            //Change background to red
-            v.setBackgroundColor(getColor(R.color.colorPrimaryDark))
+    private fun highlight(v: EditText) {
+        //Create a blinking animation
+        val blink = AlphaAnimation(1f,0f)
+        blink.interpolator = DecelerateInterpolator()
+        blink.duration = 1000
+        blink.repeatCount = 1
 
-            //Create a blinking animation
-            val fadeIn = AlphaAnimation(1f,0f)
-            fadeIn.interpolator = DecelerateInterpolator()
-            fadeIn.duration = 1000
-            fadeIn.repeatCount = 0
-
-            //Assign that to the view
-            v.animation = fadeIn
-
-            v.background.alpha = 0
-        }
+        //Assign that to the view
+        v.setBackgroundResource(R.color.colorPrimaryDark)
+        v.startAnimation(blink)
+        Timer().schedule(object : TimerTask() {
+            override fun run() {
+                v.setBackgroundResource(R.color.transparent)
+            }
+        }, 2000)
     }
 }

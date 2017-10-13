@@ -62,6 +62,8 @@ class RankingFrag: Fragment() {
 class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceChangeListener {
 
     private val USER_PREFS = "profile_data" //Shared with other activities
+
+    //URL for server
     private val SAVE_URL = "http://cs65.cs.dartmouth.edu/profile.pl"
 
     // Constant key to get value from sharedPref
@@ -76,6 +78,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        //init
         super.onCreate(savedInstanceState)
         addPreferencesFromResource(R.xml.fragment_preferences)
 
@@ -86,19 +89,12 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         PreferenceManager.setDefaultValues(context, USER_PREFS,
                 Context.MODE_PRIVATE, R.xml.fragment_preferences, false)
 
-
-
+        //Get the preferences we'll be assigning listeners to here
         val signoutPref = findPreference(getString(R.string.prefs_signout_key))
         val aboutPref = findPreference(getString(R.string.prefs_about_key))
 
         // Clean up when the user sign out
         signoutPref.setOnPreferenceClickListener { _ ->
-
-            //Remove everything from default sharedPrefs
-            activity.defaultSharedPreferences
-                    .edit()
-                    .clear()
-                    .apply()
 
             //Remove everything from user sharedPrefs
             activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
@@ -152,8 +148,6 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         var privacy = prefs.getBoolean(PRIV_STRING, true)
         var alert = prefs.getString(ALER_STRING, null)
 
-        Log.d("test", privacy.toString() + alert)
-
         jsonReq.put("name", uName)
         jsonReq.put("password", pass)
         jsonReq.put("realName", realName)
@@ -182,7 +176,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
             }
 
             getString(R.string.prefs_alert_key) -> { //List preference for alerts
-                val alert = activity.defaultSharedPreferences.getString(key,"r")
+                alert = activity.defaultSharedPreferences.getString(key,"r")
 
                 //Put it into sharedPrefs
                 activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)

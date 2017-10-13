@@ -29,14 +29,17 @@ class MainActivity: Activity() {
         tabs.add(RankingFrag())
         tabs.add(SettingsFrag())
 
-        //Assign viewPager
+        //Assign adapter (see below)
         mViewPager.adapter = adapter
 
-        //Set Tab Stuff
+        //Set tab to evenly distribute, and then connect it to the viewPager
         tabStrip.setDistributeEvenly(true)
         tabStrip.setViewPager(mViewPager)
     }
 
+    /**
+     * Adapter for the tab in this activity
+     */
     inner class TabAdapter constructor(fm: FragmentManager): FragmentPagerAdapter(fm) {
 
         override fun getCount(): Int {

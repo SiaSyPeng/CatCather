@@ -7,15 +7,13 @@ import android.util.Log
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.DecelerateInterpolator
-import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
-import com.google.android.flexbox.FlexboxLayout
-import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import com.android.volley.*
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.gson.GsonBuilder
+import java.util.*
 
 class LoginActivity : Activity() {
 
@@ -23,8 +21,8 @@ class LoginActivity : Activity() {
     private val USER_STRING = "Username"
     private val NAME_STRING = "Name"
     private val PASS_STRING = "Password"
-    private val ALERT_STRING = "Alert"
-    private val PRIVACY_STRING = "Priv"
+    private val ALERT_STRING = "alert"
+    private val PRIVACY_STRING = "privacy"
 
     //Views needed many times
     private lateinit var mUsername: EditText
@@ -35,24 +33,16 @@ class LoginActivity : Activity() {
     private lateinit var queue: RequestQueue //Used to see if username/password combo is good
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        //init
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+
+        //set global vars
         mUsername = findViewById(R.id.login_username)
         mPassword = findViewById(R.id.login_password)
 
         // Instantiate the RequestQueue.
         queue = Volley.newRequestQueue(this)
-
-        //Hides keyboard if EditTexts lose focus
-        mUsername.setOnFocusChangeListener({v,hasFocus ->
-            if (!hasFocus) hideKeyboard(v)
-        })
-        mPassword.setOnFocusChangeListener({v,hasFocus ->
-            if (!hasFocus) hideKeyboard(v)
-        })
-
-        val screen: FlexboxLayout = findViewById(R.id.log_in_screen)
-        screen.setOnFocusChangeListener { v, _ ->  hideKeyboard(v)}
     }
 
     /**
@@ -159,7 +149,9 @@ class LoginActivity : Activity() {
         outState?.putString(PASS_STRING, mPassword.text.toString())
     }
 
-    //Get back everything when phone is flipped
+    /**
+     * Gets everything back when phone is flipped
+     */
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         mUsername.setText(savedInstanceState.getString(USER_STRING, null))
@@ -167,28 +159,22 @@ class LoginActivity : Activity() {
     }
 
     /**
-     * Helper method that hides keyboard
+     * Highlights a view if something was forgotten there
      */
-    private fun hideKeyboard(v:View){
-        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.hideSoftInputFromWindow(v.windowToken, 0)
-    }
+    private fun highlight(v: EditText) {
+        //Create a blinking animation
+        val blink = AlphaAnimation(1f,0f)
+        blink.interpolator = DecelerateInterpolator()
+        blink.duration = 1000
+        blink.repeatCount = 1
 
-    private fun highlight(v: View) {
-        doAsync {
-            //Change background to red
-            v.setBackgroundColor(getColor(R.color.colorPrimaryDark))
-
-            //Create a blinking animation
-            val fadeIn = AlphaAnimation(1f,0f)
-            fadeIn.interpolator = DecelerateInterpolator()
-            fadeIn.duration = 1000
-            fadeIn.repeatCount = 0
-
-            //Assign that to the view
-            v.animation = fadeIn
-
-            v.background.alpha = 0
-        }
+        //Assign that to the view
+        v.setBackgroundResource(R.color.colorPrimaryDark)
+        v.startAnimation(blink)
+        Timer().schedule(object : TimerTask() {
+            override fun run() {
+                v.setBackgroundResource(R.color.transparent)
+            }
+        }, 2000)
     }
 }

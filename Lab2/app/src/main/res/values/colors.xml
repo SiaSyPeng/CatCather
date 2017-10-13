@@ -14,5 +14,7 @@
     <color name="LGreen">#BBC7BA</color>
     <color name="LLGreen">#D7DBD1</color>
 
+    <color name="transparent">#00000000</color>
+
 
 </resources>

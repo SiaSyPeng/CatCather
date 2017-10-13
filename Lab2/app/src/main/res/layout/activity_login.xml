@@ -31,6 +31,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
         android:padding="10dp"
         android:textColor="@color/Black"
         android:text="@string/login_username"
@@ -39,6 +40,8 @@
         android:id="@+id/login_username"
         android:layout_width="match_parent"
         android:padding="10dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
         android:layout_height="wrap_content"
         android:singleLine="true"
         android:backgroundTint="@color/DPink"
@@ -47,7 +50,9 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
         android:padding="10dp"
+        android:layout_marginTop="10dp"
         android:text="@string/login_pass"
         android:textColor="@color/Black"
         />
@@ -57,6 +62,9 @@
         android:layout_height="wrap_content"
         android:padding="10dp"
         android:singleLine="true"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
+        android:layout_marginBottom="10dp"
         android:inputType="textPassword"
         android:backgroundTint="@color/DPink"
         android:textColor="@color/Black"
@@ -64,6 +72,8 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
         android:paddingBottom="10dp"
         >
         <Button
