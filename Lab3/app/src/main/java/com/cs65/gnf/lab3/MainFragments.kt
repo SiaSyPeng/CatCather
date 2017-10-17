@@ -12,15 +12,19 @@ import android.view.ViewGroup
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.widget.TextView
 import android.widget.Toast
 import com.android.volley.*
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.gson.GsonBuilder
+import com.squareup.moshi.KotlinJsonAdapterFactory
+import com.squareup.moshi.Moshi
 import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.toast
 import org.json.JSONException
 import org.json.JSONObject
+import org.w3c.dom.Text
 
 
 /**
@@ -40,8 +44,36 @@ class PlayFrag: Fragment() {
 class HistoryFrag: Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+
+        val view = inflater.inflate(R.layout.fragment_history, container, false)
+
+        //TRYING KOTLIN STUFFS
+
+        val egJson = """
+            {
+                "xPos": 5.0,
+                "yPos": 2.3,
+                "name": "Catter"
+            }
+        """
+        val moshi = Moshi.Builder()
+                .add(KotlinJsonAdapterFactory())
+                .build()
+
+        val catAdaptor = moshi.adapter(Cat::class.java)
+
+        val newCat = catAdaptor.fromJson(egJson)
+
+        val textView: TextView = view.findViewById(R.id.HistoryID)
+
+        textView.text = newCat.toString()
+
+
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_history, container, false)
+        return view
+
+
+
     }
 }
 
