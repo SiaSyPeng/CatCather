@@ -72,7 +72,7 @@ class LoginActivity : Activity() {
                                 Log.d("LOGIN RESPONSE", response.toString())
                                 // parse the string, based on provided class object as template
                                 val gson = GsonBuilder().create()
-                                val loginRes = gson.fromJson(response, loginResponse::class.java)
+                                val loginRes = gson.fromJson(response, LoginResponse::class.java)
                                 // Check the status of login response
                                 // if error is null, then get succesful response
                                 // if error exists, get failure response

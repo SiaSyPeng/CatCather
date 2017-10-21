@@ -13,19 +13,18 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.widget.TextView
-import android.widget.Toast
 import com.android.volley.*
 import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import com.google.gson.GsonBuilder
+import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.toast
 import org.json.JSONException
 import org.json.JSONObject
-import org.w3c.dom.Text
-
 
 /**
  * Fragment for "Play" Tab
@@ -47,33 +46,147 @@ class HistoryFrag: Fragment() {
 
         val view = inflater.inflate(R.layout.fragment_history, container, false)
 
-        //TRYING KOTLIN STUFFS
+        val user = "DarthPoseidon"
 
-        val egJson = """
-            {
-                "xPos": 5.0,
-                "yPos": 2.3,
-                "name": "Catter"
-            }
-        """
-        val moshi = Moshi.Builder()
-                .add(KotlinJsonAdapterFactory())
-                .build()
+        val pass = "qwerty"
 
-        val catAdaptor = moshi.adapter(Cat::class.java)
+        val newPass = "newPass"
 
-        val newCat = catAdaptor.fromJson(egJson)
+        val mode = "easy"
 
-        val textView: TextView = view.findViewById(R.id.HistoryID)
+        val lat = 43.706863
 
-        textView.text = newCat.toString()
+        val id = 1
+
+        val lng = -72.28744
+
+        val baseUrl = "http://cs65.cs.dartmouth.edu/"
+        val catListUrl = "catlist.pl?name=$user&password=$pass&mode=$mode"
+        val petUrl = "pat.pl?name=$user&password=$pass&catid=$id&lat=$lat&lng=$lng"
+        val resetUrl = "resetlist.pl?name=$user&password=$pass"
+        val passChangeUrl = "changepass.pl?name=$user&password=$pass&newpass=$newPass"
+
+        val queue = Volley.newRequestQueue(activity)
+
+        //Getting the cat list
+        val listReq = StringRequest(Request.Method.GET,baseUrl+catListUrl,
+                Response.Listener<String> {response ->
+                    try {
+                        val moshi = Moshi.Builder()
+                                .add(KotlinJsonAdapterFactory())
+                                .add(StringToFloatAdapter())
+                                .add(StringToIntAdapter())
+                                .add(StringToBoolAdapter())
+                                .build()
+
+                        //First, check to see if there is an error message, set it to null if not
+                        val errorObject: JSONObject? = try {
+                            JSONObject(response) //Try to create an object
+                        }
+                        catch (e: JSONException) { //If it can't be changed to an object
+                            Log.d("JSON","I guess this is our list!")
+                            null //set it to null
+                        }
+
+                        if (errorObject!=null) { //if there is an error
+                            Log.d("SERVOR ERROR",errorObject.getString("error"))
+                        }
+                        else { //if there was no error
+                            //we need to set our Cat List
+                            val type = Types.newParameterizedType(List::class.java,Cat::class.java)
+
+                            val catAdaptor: JsonAdapter<List<Cat>> = moshi.adapter(type)
+
+                            val listOfCats: List<Cat>? = catAdaptor.fromJson(response) //we have our list
+
+                            val textView: TextView = view.findViewById(R.id.HistoryID)
+
+                            textView.text = listOfCats.toString()
+
+                        }
+
+                    }
+                    catch (e: Exception) {e.printStackTrace()}
+                },
+                Response.ErrorListener { error -> // Handle error cases
+                    when (error) {
+                        is NoConnectionError ->
+                            toast("Connection Error")
+                        is TimeoutError->
+                            toast("Timeout Error")
+                        is AuthFailureError ->
+                            toast("AuthFail Error")
+                        is NetworkError ->
+                            toast("Network Error")
+                        is ParseError ->
+                            toast("Parse Error")
+                        is ServerError ->
+                            toast("Server Error")
+                        else -> toast("Error: " + error)
+                    }
+                }
+            )
+
+        //Pet the cat
+        val petReq = StringRequest(Request.Method.GET,baseUrl+petUrl,
+                Response.Listener<String> { response ->
+
+                    Log.d("PETRESPONSE",response)
+                    try {
+                        val moshi = Moshi.Builder()
+                                .add(KotlinJsonAdapterFactory())
+                                .add(StringToIntAdapter())
+                                .build()
+
+                        Log.d("HI","hi")
+
+                        val petAdaptor: JsonAdapter<PetResult> = moshi.adapter(PetResult::class.java)
+
+                        val petRes = petAdaptor.fromJson(response)
+
+                        val textView: TextView = view.findViewById(R.id.HistoryID)
+
+                        textView.text = petRes.toString()
+                    }
+                    catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                },
+                Response.ErrorListener { error -> // Handle error cases
+                    when (error) {
+                        is NoConnectionError ->
+                            toast("Connection Error")
+                        is TimeoutError->
+                            toast("Timeout Error")
+                        is AuthFailureError ->
+                            toast("AuthFail Error")
+                        is NetworkError ->
+                            toast("Network Error")
+                        is ParseError ->
+                            toast("Parse Error")
+                        is ServerError ->
+                            toast("Server Error")
+                        else -> toast("Error: " + error)
+                    }
+                }
+        )
+
+        //Reset cat list
+        val resetReq = StringRequest(Request.Method.GET,baseUrl+resetUrl,
+                Response.Listener<String> {response->
+
+                },
+                Response.ErrorListener {
+
+                }
+                )
+
+        queue.add(petReq)
+//        queue.add(listReq)
 
 
         // Inflate the layout for this fragment
         return view
-
-
-
     }
 }
 
