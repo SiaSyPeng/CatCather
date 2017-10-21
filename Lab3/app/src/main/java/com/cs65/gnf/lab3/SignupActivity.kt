@@ -227,8 +227,8 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                     try {
                         // parse the string, based on provided class object as template
                         val gson = GsonBuilder().create()
-                        val nameo = gson.fromJson(response, unameObject::class.java)
-                        val av = nameo.navail
+                        val nameo = gson.fromJson(response, UnameObject::class.java)
+                        val av = nameo.avail
                         updateAvail(av)
                     } catch (e: Exception) {
                         Log.d("JSON", e.toString())
@@ -320,12 +320,12 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                     try {
                         // parse the string, based on provided class object as template
                         val gson = GsonBuilder().create()
-                        val profo = gson.fromJson(response.toString(), profileObject::class.java)
+                        val profo = gson.fromJson(response.toString(), ProfileObject::class.java)
 
                         // get two fields from profile object
                         val status = profo.status
                         val profJson = profo.json
-                        val name = profJson.getname()
+                        val name = profJson?.name
 
 //                        // alternative method to getname: create a sub-jsonobject to access the inner member of data field
 //                        val data = profo.getData()
