@@ -29,6 +29,7 @@
                 android:resource="@xml/provider_paths"/>
         </provider>
 
+        <!-- This will be the first activity to launch -->
         <activity
             android:name=".LoginActivity"
             android:windowSoftInputMode="stateHidden">
