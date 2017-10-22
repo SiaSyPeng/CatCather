@@ -1,8 +1,16 @@
 package com.cs65.gnf.lab3
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -12,10 +20,16 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
+import org.jetbrains.anko.toast
+
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
+    private var permCheck : Boolean = false
+//    private lateinit var mgr : LocationManager
+    private lateinit var loc : LatLng
+    private val LOC_REQUEST_CODE = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +39,24 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 .findFragmentById(R.id.map) as SupportMapFragment
 
         mapFragment.getMapAsync(this)
+
+        permCheck = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) ==  PackageManager.PERMISSION_GRANTED
+
+        if( ! permCheck ){
+            Toast.makeText(this, "GPS permission FAILED", Toast.LENGTH_LONG).show()
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA),
+                    LOC_REQUEST_CODE)
+        }
+        else{
+            Toast.makeText(this, "GPS permission OK", Toast.LENGTH_LONG).show()
+
+//            mgr = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+//            // why error below?
+//            mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, /* milliseconds */
+//                    5f /* meters */ , this);
+        }
+
     }
 
     /**
@@ -46,6 +78,15 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         val y : Double = -72.28422369807957
 
         val hanover = LatLng( x, y )
+//        var l : Location? = null // remains null if Location is disabled in the phone
+//        try {
+//            l = mgr.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+//        }
+//        catch( e: SecurityException ){
+//            Log.d("PERM", "Security Exception getting last known location. Using Hanover.")
+//        }
+
+//        loc = if (l != null)  LatLng(l.latitude, l.longitude) else hanover
         Log.d("Coords", x.toString() + " " + y.toString() )
 
         mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
@@ -59,5 +100,31 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 mMap.addMarker(MarkerOptions().position(p0).title(p0.toString()))
             }
         }
+    }
+
+//    override fun onLocationChanged(location : Location){
+//        Log.d("LOCATION", "CHANGED: " + location.latitude + " " + location.longitude)
+//        Toast.makeText(this, "LOC: " + location.latitude + " " + location.longitude,
+//                Toast.LENGTH_LONG).show()
+//
+//        val newPoint = LatLng( location.latitude, location.longitude )
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(newPoint))
+//        mMap.moveCamera(CameraUpdateFactory.zoomTo(17f))
+//
+//    }
+//
+//    override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
+//        // Called when the provider status changes.
+//    }
+
+
+    /*
+     * OnClick Pat button
+     * Will send request to server and pat the cat
+     */
+    fun onPat(v: View) {
+        //enable/disable button
+        toast("You pat it!")
+
     }
 }

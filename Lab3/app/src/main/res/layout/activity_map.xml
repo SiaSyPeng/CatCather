@@ -1,89 +1,98 @@
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:map="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/map"
-    android:name="com.google.android.gms.maps.SupportMapFragment"
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.flexbox.FlexboxLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/map_screen"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.cs65.gnf.lab3.MapActivity" />
+    android:layout_height="wrap_content"
+    app:flexDirection="column"
+    app:alignItems="flex_start"
+    app:alignContent="stretch"
+    app:flexWrap="nowrap"
+    android:background="@color/LGreen"
+    android:clickable="true"
+    android:focusable="true"
+    android:fillViewport="true"
+    >
+
+    <fragment
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="wrap_content"
+        android:layout_height="500dp"
+        app:layout_flexGrow="4"
+        class="com.google.android.gms.maps.SupportMapFragment">
+    </fragment>
+
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/map_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:flexDirection="row"
+        app:alignContent="stretch"
+        app:flexWrap="nowrap"
+        android:background="@color/LGreen"
+        android:padding="20dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_flexGrow="1"
+
+        >
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="70dp"
+            android:src="@drawable/pointer"
+            android:scaleType="fitCenter"
+            android:padding="10dp"
+            app:layout_alignSelf="flex_start"
+            app:layout_flexGrow="1"
+            />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_flexGrow="2"
+            >
+            <TextView
+                android:id="@+id/map_panel_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:padding="10dp"
+                android:textColor="@color/Black"
+                android:text="@string/map_panel_default"
+                />
+            <TextView
+                android:id="@+id/map_panel_distance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" "
+                android:paddingEnd="10dp"
+                android:paddingStart="10dp"
+                android:textColor="@color/LGrey"
+                />
+        </LinearLayout>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pat_button"
+            android:background="@color/LPink"
+            android:padding="10dp"
+            android:layout_centerInParent="true"
+            app:layout_flexGrow="1"
+            android:onClick="onPat"
+            />
+
+    </com.google.android.flexbox.FlexboxLayout>
+</com.google.android.flexbox.FlexboxLayout>
 
 
-    <!--<?xml version="1.0" encoding="utf-8"?>-->
-<!--<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--xmlns:tools="http://schemas.android.com/tools"-->
-<!--android:layout_height="match_parent"-->
-<!--android:layout_width="match_parent"-->
-<!--xmlns:app="http://schemas.android.com/apk/res-auto"-->
-<!--tools:context=".MainActivity">-->
-<!--<fragment-->
+    <!--<fragment xmlns:android="http://schemas.android.com/apk/res/android"-->
     <!--xmlns:map="http://schemas.android.com/apk/res-auto"-->
+    <!--xmlns:tools="http://schemas.android.com/tools"-->
     <!--android:id="@+id/map"-->
     <!--android:name="com.google.android.gms.maps.SupportMapFragment"-->
     <!--android:layout_width="match_parent"-->
     <!--android:layout_height="match_parent"-->
     <!--tools:context="com.cs65.gnf.lab3.MapActivity" />-->
-
-<!--<com.google.android.flexbox.FlexboxLayout-->
-    <!--android:id="@+id/log_in_screen"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--app:flexDirection="column"-->
-    <!--app:alignItems="flex_start"-->
-    <!--app:alignContent="stretch"-->
-    <!--app:flexWrap="nowrap"-->
-    <!--android:background="@color/LGreen"-->
-    <!--android:clickable="true"-->
-    <!--android:focusable="true"-->
-    <!--&gt;-->
-    <!--<ImageView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:contentDescription="@string/login_picture_description"-->
-        <!--android:layout_height="270dp"-->
-        <!--android:src="@drawable/login_cat"-->
-        <!--android:scaleType="fitCenter"-->
-        <!--android:padding="20dp"-->
-        <!--app:layout_alignSelf="center"-->
-        <!--app:layout_flexShrink="1"-->
-        <!--/>-->
-    <!--<RelativeLayout-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginTop="10dp"-->
-        <!--android:layout_marginBottom="10dp"-->
-        <!--android:paddingBottom="10dp"-->
-        <!--&gt;-->
-        <!--<TextView-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginStart="20dp"-->
-            <!--android:padding="10dp"-->
-            <!--android:textColor="@color/Black"-->
-            <!--android:text="@string/login_username"-->
-            <!--/>-->
-        <!--<TextView-->
-            <!--android:id="@+id/account_create"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="@string/login_signup"-->
-            <!--android:paddingEnd="10dp"-->
-            <!--android:paddingStart="10dp"-->
-            <!--android:layout_alignParentEnd="true"-->
-            <!--android:layout_centerVertical="true"-->
-            <!--android:textColor="@color/Black"-->
-            <!--/>-->
-    <!--</RelativeLayout>-->
-    <!--<Button-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="@string/login_login_button"-->
-        <!--android:background="@color/LPink"-->
-        <!--android:paddingEnd="10dp"-->
-        <!--android:paddingStart="10dp"-->
-        <!--android:layout_centerInParent="true"-->
-        <!--android:onClick="pat"-->
-        <!--/>-->
-
-<!--</com.google.android.flexbox.FlexboxLayout>-->
-
-<!--</RelativeLayout>-->
-
