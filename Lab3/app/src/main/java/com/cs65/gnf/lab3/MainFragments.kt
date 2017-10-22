@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.widget.EditText
 import android.widget.TextView
 import com.android.volley.*
 import com.android.volley.toolbox.JsonObjectRequest
@@ -22,6 +23,7 @@ import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import org.jetbrains.anko.defaultSharedPreferences
+import org.jetbrains.anko.find
 import org.jetbrains.anko.toast
 import org.json.JSONException
 import org.json.JSONObject
@@ -66,7 +68,11 @@ class HistoryFrag: Fragment() {
         val resetUrl = "resetlist.pl?name=$user&password=$pass"
         val passChangeUrl = "changepass.pl?name=$user&password=$pass&newpass=$newPass"
 
-        val queue = Volley.newRequestQueue(activity)
+        val list = getCatList(this,user,pass,mode)
+
+        val text: TextView = view.findViewById(R.id.HistoryID)
+
+        text.text = list.toString()
 
         //Getting the cat list
         val listReq = StringRequest(Request.Method.GET,baseUrl+catListUrl,
@@ -176,12 +182,26 @@ class HistoryFrag: Fragment() {
                 Response.Listener<String> {response->
 
                 },
-                Response.ErrorListener {
-
+                Response.ErrorListener { error -> // Handle error cases
+                    when (error) {
+                        is NoConnectionError ->
+                            toast("Connection Error")
+                        is TimeoutError->
+                            toast("Timeout Error")
+                        is AuthFailureError ->
+                            toast("AuthFail Error")
+                        is NetworkError ->
+                            toast("Network Error")
+                        is ParseError ->
+                            toast("Parse Error")
+                        is ServerError ->
+                            toast("Server Error")
+                        else -> toast("Error: " + error)
+                    }
                 }
                 )
 
-        queue.add(petReq)
+//        queue.add(petReq)
 //        queue.add(listReq)
 
 

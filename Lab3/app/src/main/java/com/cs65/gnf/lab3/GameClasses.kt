@@ -1,5 +1,6 @@
 package com.cs65.gnf.lab3
 
+import android.util.Log
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import com.squareup.moshi.JsonQualifier
@@ -91,6 +92,7 @@ enum class Status {
 data class Cat(
         @StringToInt val catId: Int,
         val picUrl: String,
+        val name: String,
         @StringToFloat val lat: Float,
         @StringToFloat val lng: Float,
         @StringToBool val petted: Boolean
