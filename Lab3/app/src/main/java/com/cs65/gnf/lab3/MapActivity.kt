@@ -51,6 +51,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         else{
             Toast.makeText(this, "GPS permission OK", Toast.LENGTH_LONG).show()
 
+            // TODO: make mgr working
 //            mgr = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 //            // why error below?
 //            mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, /* milliseconds */
