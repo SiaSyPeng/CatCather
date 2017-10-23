@@ -68,6 +68,15 @@
         <item>n</item>
     </string-array>
 
+    <!--Play Tab -->
+    <string name="play_username">Hi, XX!</string>
+    <string name="play_cat_num">Now you have x cats</string>
+    <string name="play_button">PLAY</string>
+
+    <!--Map -->
+    <string name="map_panel_default">Try to click the markers</string>
+    <string name="pat_button">PAT</string>
+
     <string name="prefs_about_title">About us</string>
     <string name="prefs_about_key">About</string>
     <string name="prefs_about_summary">(opens in browser)</string>

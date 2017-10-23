@@ -4,8 +4,10 @@ import android.app.Activity
 import android.os.Bundle
 import android.app.FragmentManager
 import android.app.Fragment
+import android.content.Intent
 import android.support.v13.app.FragmentPagerAdapter
 import android.support.v4.view.ViewPager
+import android.view.View
 
 class MainActivity: Activity() {
 
@@ -60,6 +62,15 @@ class MainActivity: Activity() {
             }
             return null
         }
+    }
+
+    /*
+     * OnClick Play button
+     * Will direct user to Map Activity
+     */
+    fun toPlay(v: View) {
+        val intent = Intent(applicationContext,MapActivity::class.java)
+        startActivity(intent)
     }
 
 
