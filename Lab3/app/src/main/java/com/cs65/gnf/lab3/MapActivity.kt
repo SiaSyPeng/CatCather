@@ -45,7 +45,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         if( ! permCheck ){
             Toast.makeText(this, "GPS permission FAILED", Toast.LENGTH_LONG).show()
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA),
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                     LOC_REQUEST_CODE)
         }
         else{
