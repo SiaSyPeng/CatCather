@@ -114,5 +114,5 @@ data class PetResult(
 data class OpResult(
         @StringToStatus val status: Status,
         val code: String?,
-        val error: String
+        val error: String?
 )
