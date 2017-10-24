@@ -65,7 +65,7 @@ class HistoryFrag: Fragment() {
 //        petCat(this,user,pass,4)
 //        resetList(this,user,pass)
 //        changePassword(this,user,newPass,pass)
-        toast("Closest cat is ${getClosestCat()}")
+//        toast("Closest cat is ${getClosestCat()}")
 
         // Inflate the layout for this fragment
         return view
