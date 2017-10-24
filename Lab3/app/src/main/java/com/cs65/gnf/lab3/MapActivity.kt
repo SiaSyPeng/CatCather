@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
+import android.location.LocationListener
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
@@ -23,11 +24,11 @@ import com.google.android.gms.maps.model.MarkerOptions
 import org.jetbrains.anko.toast
 
 
-class MapActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
 
     private lateinit var mMap: GoogleMap
     private var permCheck : Boolean = false
-//    private lateinit var mgr : LocationManager
+    private lateinit var mgr : LocationManager
     private lateinit var loc : LatLng
     private val LOC_REQUEST_CODE = 1
 
@@ -45,17 +46,16 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         if( ! permCheck ){
             Toast.makeText(this, "GPS permission FAILED", Toast.LENGTH_LONG).show()
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA),
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                     LOC_REQUEST_CODE)
         }
         else{
             Toast.makeText(this, "GPS permission OK", Toast.LENGTH_LONG).show()
 
-            // TODO: make mgr working
-//            mgr = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-//            // why error below?
-//            mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, /* milliseconds */
-//                    5f /* meters */ , this);
+            // Get location updates
+            mgr = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, /* milliseconds */
+                    5f /* meters */ , this);
         }
 
     }
@@ -74,27 +74,36 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // Add a marker in Hanover and move the camera
         // Right now it's just a default
-        // TODO: get latitude & long of cats and add markers
+        /*
+         *TODO: iterate through cat lists and get latitude & long of cats,
+         * create locations, LatLng(x, y) for each cat
+         */
         val x : Double = 43.70805181058869
         val y : Double = -72.28422369807957
-
         val hanover = LatLng( x, y )
-//        var l : Location? = null // remains null if Location is disabled in the phone
-//        try {
-//            l = mgr.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-//        }
-//        catch( e: SecurityException ){
-//            Log.d("PERM", "Security Exception getting last known location. Using Hanover.")
-//        }
 
-//        loc = if (l != null)  LatLng(l.latitude, l.longitude) else hanover
+        // get last known location
+        var l : Location? = null // remains null if Location is disabled in the phone
+        try {
+            l = mgr.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        }
+        catch( e: SecurityException ){
+            Log.d("PERM", "Security Exception getting last known location. Using Hanover.")
+        }
+
+        loc = if (l != null)  LatLng(l.latitude, l.longitude) else hanover
         Log.d("Coords", x.toString() + " " + y.toString() )
 
+        //TODO: add markers to cat locations
         mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         mMap.addMarker(MarkerOptions().position(hanover).title("Marker in Hanover"))
+
+        // Move camera: zoom in and out
         mMap.moveCamera(CameraUpdateFactory.newLatLng(hanover))
         mMap.moveCamera(CameraUpdateFactory.zoomTo(17f))
 
+        //When Map is clcked
+        //TODO: i.e. when clicked marker, update cat information in panel
         mMap.setOnMapClickListener { p0: LatLng? ->
             Log.d( "Map", p0.toString())
             if( p0 != null ) {
@@ -103,21 +112,35 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-//    override fun onLocationChanged(location : Location){
-//        Log.d("LOCATION", "CHANGED: " + location.latitude + " " + location.longitude)
-//        Toast.makeText(this, "LOC: " + location.latitude + " " + location.longitude,
-//                Toast.LENGTH_LONG).show()
-//
-//        val newPoint = LatLng( location.latitude, location.longitude )
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(newPoint))
-//        mMap.moveCamera(CameraUpdateFactory.zoomTo(17f))
-//
-//    }
-//
-//    override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
-//        // Called when the provider status changes.
-//    }
+    /*
+     * when user location is changed,
+     * create a new point of latitude and longtitude for this location
+     * update it on map
+     * TODO: get closest cat to this location
+     */
+    override fun onLocationChanged(location : Location){
+        Log.d("LOCATION", "CHANGED: " + location.latitude + " " + location.longitude)
+        Toast.makeText(this, "LOC: " + location.latitude + " " + location.longitude,
+                Toast.LENGTH_LONG).show()
 
+        // new location latitude and longtitude
+        val newPoint = LatLng( location.latitude, location.longitude )
+        // move camera around
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(newPoint))
+        mMap.moveCamera(CameraUpdateFactory.zoomTo(17f))
+    }
+
+    override fun onProviderDisabled(s: String) {
+        // required for interface, not used
+    }
+
+    override fun onProviderEnabled(s: String) {
+        // required for interface, not used
+    }
+
+    override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
+        // Called when the provider status changes.
+    }
 
     /*
      * OnClick Pat button
