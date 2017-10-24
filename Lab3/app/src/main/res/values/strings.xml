@@ -77,6 +77,14 @@
     <string name="map_panel_default">Try to click the markers</string>
     <string name="pat_button">PAT</string>
 
+    <!--Success-->
+    <string name="success">Success</string>
+    <string name="success_infor">Score...</string>
+    <string name="success_again">AGAIN</string>
+    <string name="success_done">DONE</string>
+
+
+    <!--Prefs -->
     <string name="prefs_about_title">About us</string>
     <string name="prefs_about_key">About</string>
     <string name="prefs_about_summary">(opens in browser)</string>

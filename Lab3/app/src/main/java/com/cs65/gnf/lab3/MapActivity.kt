@@ -2,6 +2,7 @@ package com.cs65.gnf.lab3
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
@@ -12,15 +13,14 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.Toast
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import org.jetbrains.anko.toast
 
 
@@ -31,6 +31,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
     private lateinit var mgr : LocationManager
     private lateinit var loc : LatLng
     private val LOC_REQUEST_CODE = 1
+    private var if_pat: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +42,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
 
         mapFragment.getMapAsync(this)
 
+        //check and request location permits
         permCheck = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) ==  PackageManager.PERMISSION_GRANTED
 
@@ -70,7 +72,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
      * installed Google Play services and returned to the app.
      */
     override fun onMapReady(googleMap: GoogleMap) {
+        // set map when ready
         mMap = googleMap
+        mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
 
         // Add a marker in Hanover and move the camera
         // Right now it's just a default
@@ -90,24 +94,34 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
         catch( e: SecurityException ){
             Log.d("PERM", "Security Exception getting last known location. Using Hanover.")
         }
-
         loc = if (l != null)  LatLng(l.latitude, l.longitude) else hanover
+        mMap.addMarker(MarkerOptions().position(loc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker)));
+
         Log.d("Coords", x.toString() + " " + y.toString() )
 
+
         //TODO: add markers to cat locations
-        mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-        mMap.addMarker(MarkerOptions().position(hanover).title("Marker in Hanover"))
+        //grey marker
+        mMap.addMarker(MarkerOptions().position(hanover).title("Marker in Hanover").icon(BitmapDescriptorFactory.fromResource(R.drawable.grey_marker)));
 
         // Move camera: zoom in and out
         mMap.moveCamera(CameraUpdateFactory.newLatLng(hanover))
         mMap.moveCamera(CameraUpdateFactory.zoomTo(17f))
 
-        //When Map is clcked
+        //When cat is clcked
+        //Green marker
         //TODO: i.e. when clicked marker, update cat information in panel
         mMap.setOnMapClickListener { p0: LatLng? ->
+            // update panel
+            if_pat = true
+            val pat_button: View = findViewById(R.id.pat_button)
+            pat_button.setVisibility(View.VISIBLE)
+
+            // temporary onclick effect
             Log.d( "Map", p0.toString())
             if( p0 != null ) {
-                mMap.addMarker(MarkerOptions().position(p0).title(p0.toString()))
+                mMap.addMarker(MarkerOptions().position(p0).title(p0.toString()).icon(BitmapDescriptorFactory.fromResource(R.drawable.green_marker)))
+
             }
         }
     }
@@ -116,7 +130,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
      * when user location is changed,
      * create a new point of latitude and longtitude for this location
      * update it on map
-     * TODO: get closest cat to this location
+     * TODO: get closest cat to this location; erase previous curr loc marker
      */
     override fun onLocationChanged(location : Location){
         Log.d("LOCATION", "CHANGED: " + location.latitude + " " + location.longitude)
@@ -124,9 +138,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
                 Toast.LENGTH_LONG).show()
 
         // new location latitude and longtitude
-        val newPoint = LatLng( location.latitude, location.longitude )
+        // add red marker
+        val ncurrLoc = LatLng( location.latitude, location.longitude )
+        mMap.addMarker(MarkerOptions().position(ncurrLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker)));
+
         // move camera around
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(newPoint))
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(ncurrLoc))
         mMap.moveCamera(CameraUpdateFactory.zoomTo(17f))
     }
 
@@ -149,6 +166,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
     fun onPat(v: View) {
         //enable/disable button
         toast("You pat it!")
-
+        val intent = Intent(applicationContext,SuccessActivity::class.java)
+        startActivity(intent)
     }
 }
