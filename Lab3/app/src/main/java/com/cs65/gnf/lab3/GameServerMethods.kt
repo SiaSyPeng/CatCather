@@ -17,80 +17,10 @@ import org.json.JSONObject
 import org.jetbrains.anko.toast
 import java.lang.StrictMath.pow
 
-
-/**
- * Does something with a list of cats, from a queue, username, password, and game mode
- */
-fun getCatList(frag: Fragment, user: String, pass: String, mode: String?) {
-    val url = "http://cs65.cs.dartmouth.edu/catlist.pl?name=$user&password=$pass&mode=$mode"
-
-    Volley.newRequestQueue(frag.activity)
-            .add(StringRequest(Request.Method.GET,url, Response.Listener<String> { response ->
-
-                Log.d("HIER",response)
-
-                val moshi = Moshi.Builder()
-                        .add(KotlinJsonAdapterFactory())
-                        .add(StringToDoubleAdapter())
-                        .add(StringToIntAdapter())
-                        .add(StringToBoolAdapter())
-                        .build()
-
-                //First, check to see if there is an error message, set it to null if not
-                val errorObject: JSONObject? = try {
-                    JSONObject(response) //Try to create an object
-                }
-                catch (e: JSONException) { //If it can't be changed to an object
-                    Log.d("JSON","I guess this is our list!")
-                    null //set it to null
-                }
-
-                if (errorObject!=null) { //if there is an error
-                    Log.d("SERVOR ERROR",errorObject.getString("error"))
-                }
-                else { //if there was no error
-                    //we need to set our Cat List
-                    val type = Types.newParameterizedType(List::class.java,Cat::class.java)
-
-                    val catAdaptor: JsonAdapter<List<Cat>> = moshi.adapter(type)
-
-                    val listOfCats = catAdaptor.fromJson(response)
-
-                    if (listOfCats==null) { //if the list doesn't work
-                        Log.d("ERROR","The List of Cats is null")
-                        frag.toast("We couldn't get your list of cats.")
-                    }
-                    else {//if the list was successfully made
-                        //TODO Now, do whatever you need to do with that list using the fragment
-                        val text: TextView = frag.view.findViewById(R.id.HistoryID)
-                        text.text = listOfCats.toString()
-                    }
-                }
-            },
-                    Response.ErrorListener { error -> // Handle error cases
-                        when (error) {
-                            is NoConnectionError ->
-                                frag.toast("Connection Error")
-                            is TimeoutError ->
-                                frag.toast("Timeout Error")
-                            is AuthFailureError ->
-                                frag.toast("AuthFail Error")
-                            is NetworkError ->
-                                frag.toast("Network Error")
-                            is ParseError ->
-                                frag.toast("Parse Error")
-                            is ServerError ->
-                                frag.toast("Server Error")
-                            else -> frag.toast("Error: " + error)
-                        }
-                    }
-            ))
-}
-
 /**
  * Pets a cat, from catID, latitude and longitude of user
  */
-fun petCat(act: Activity, user: String, pass: String, id: Int) {
+fun petCat(act: Activity, user: String, pass: String, id: Int): PetResult? {
     //TODO Get location
 
     //TODO remove the next two lines
@@ -98,6 +28,8 @@ fun petCat(act: Activity, user: String, pass: String, id: Int) {
     val lat = 43.70484
 
     val url = "http://cs65.cs.dartmouth.edu/pat.pl?name=$user&password=$pass&catid=$id&lat=$lat&lng=$lng"
+
+    var petRes: PetResult? = null
 
     Volley.newRequestQueue(act)
             .add(StringRequest(Request.Method.GET,url,
@@ -112,13 +44,13 @@ fun petCat(act: Activity, user: String, pass: String, id: Int) {
 
                         val petAdaptor = moshi.adapter(PetResult::class.java)
 
-                        val petRes = petAdaptor.fromJson(response)
+                        petRes = petAdaptor.fromJson(response)
 
                         if (petRes==null) {
                             Log.d("ERROR","Pat result is null")
                         }
                         else {
-                            when (petRes.status) {
+                            when (petRes?.status) {
                                 Status.OK -> {
                                     val txt: TextView = act.findViewById(R.id.HistoryID)
                                     txt.text = response
@@ -126,7 +58,7 @@ fun petCat(act: Activity, user: String, pass: String, id: Int) {
                                 }
                                 Status.ERROR -> {
                                     //TODO this toast or whatever else you want to do if it fails
-                                    act.toast(petRes.reason.toString())
+                                    act.toast(petRes?.reason.toString())
                                 }
                             }
                         }
@@ -149,6 +81,8 @@ fun petCat(act: Activity, user: String, pass: String, id: Int) {
                         }
                     }
             ))
+
+    return petRes
 
 }
 
