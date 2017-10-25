@@ -97,6 +97,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
     private val PRIV_STRING = "privacy"
     private val ALER_STRING = "alert"
     private val NEWPASS_STRING = "newPass"
+    private val MODE_STRING = "mode"
 
     //volley request
     private lateinit var queue: RequestQueue
@@ -150,20 +151,19 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         newGamePref.setOnPreferenceClickListener { _ ->
             true
         }
-
         //TODO: depending on different mode, get different result from the server
-        modePref.setOnPreferenceChangeListener(object: Preference.OnPreferenceChangeListener {
-            override fun onPreferenceChange(p0: Preference?, p1: Any?): Boolean {
-                val isOn = p1 as Boolean
-                if (isOn) {
-
-                }
-                else {
-
-                }
-                return true
-            }
-        })
+//        modePref.setOnPreferenceChangeListener(object: Preference.OnPreferenceChangeListener {
+//            override fun onPreferenceChange(p0: Preference?, p1: Any?): Boolean {
+//                val isOn = p1 as Boolean
+//                if (isOn) {
+//
+//                }
+//                else {
+//
+//                }
+//                return true
+//            }
+//        })
     }
 
     override fun onResume() {
@@ -197,7 +197,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         var privacy = userPrefs.getBoolean(PRIV_STRING, true)
         var alert = userPrefs.getString(ALER_STRING, null)
         var newPass = userPrefs.getString(NEWPASS_STRING,null)
-
+        var mode = userPrefs.getBoolean(MODE_STRING,false)
 
         // Update json object
         jsonReq.put("name", uName)
@@ -222,6 +222,19 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
 
             }
 
+            getString(R.string.prefs_mode_key) -> {
+
+                mode = activity.defaultSharedPreferences.getBoolean(key,false)
+
+                //Put it into sharedPrefs storage
+                activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
+                        .edit()
+                        .putString(key, newPass)
+                        .apply()
+
+                //TODO: send this password to server
+
+            }
 
             getString(R.string.prefs_privacy_key) -> {
                 //Get the new setting
