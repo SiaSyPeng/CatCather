@@ -229,7 +229,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
                 //Put it into sharedPrefs storage
                 activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
                         .edit()
-                        .putString(key, newPass)
+                        .putBoolean(key, mode)
                         .apply()
 
                 //TODO: send this password to server
