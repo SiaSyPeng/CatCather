@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.content.Intent
 import android.net.Uri
+import android.preference.Preference
 import android.util.Log
 import android.widget.EditText
 import android.widget.TextView
@@ -95,6 +96,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
     private val NAME_STRING = "Name"
     private val PRIV_STRING = "privacy"
     private val ALER_STRING = "alert"
+    private val NEWPASS_STRING = "newPass"
 
     //volley request
     private lateinit var queue: RequestQueue
@@ -115,6 +117,8 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         //Get the preferences we'll be assigning listeners to here
         val signoutPref = findPreference(getString(R.string.prefs_signout_key))
         val aboutPref = findPreference(getString(R.string.prefs_about_key))
+        val newGamePref = findPreference(getString(R.string.prefs_newgame_key))
+        val modePref = findPreference(getString(R.string.prefs_mode_key))
 
         // Clean up when the user sign out
         signoutPref.setOnPreferenceClickListener { _ ->
@@ -142,6 +146,24 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
             true
         }
 
+        //TODO: send request to server to get new cat list
+        newGamePref.setOnPreferenceClickListener { _ ->
+            true
+        }
+
+        //TODO: depending on different mode, get different result from the server
+        modePref.setOnPreferenceChangeListener(object: Preference.OnPreferenceChangeListener {
+            override fun onPreferenceChange(p0: Preference?, p1: Any?): Boolean {
+                val isOn = p1 as Boolean
+                if (isOn) {
+
+                }
+                else {
+
+                }
+                return true
+            }
+        })
     }
 
     override fun onResume() {
@@ -174,6 +196,8 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         val realName = userPrefs.getString(NAME_STRING,null)
         var privacy = userPrefs.getBoolean(PRIV_STRING, true)
         var alert = userPrefs.getString(ALER_STRING, null)
+        var newPass = userPrefs.getString(NEWPASS_STRING,null)
+
 
         // Update json object
         jsonReq.put("name", uName)
@@ -183,6 +207,22 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
 
         when (key) {
         //Checkbox preference for privacy
+
+            getString(R.string.prefs_newpass_key) -> {
+
+                newPass = activity.defaultSharedPreferences.getString(key,null)
+
+                //Put it into sharedPrefs storage
+                activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
+                        .edit()
+                        .putString(key, newPass)
+                        .apply()
+
+                //TODO: send this password to server
+
+            }
+
+
             getString(R.string.prefs_privacy_key) -> {
                 //Get the new setting
                 privacy = activity.defaultSharedPreferences.getBoolean(key,true)

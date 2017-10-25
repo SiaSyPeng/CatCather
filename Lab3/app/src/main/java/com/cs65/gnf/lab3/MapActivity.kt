@@ -251,7 +251,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         // new location latitude and longtitude
         // add red marker
         val ncurrLoc = LatLng( location.latitude, location.longitude )
+        //val m: Marker;
         mMap.addMarker(MarkerOptions().position(ncurrLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker)));
+        //m.setP
         // move camera around
         mMap.moveCamera(CameraUpdateFactory.newLatLng(ncurrLoc))
         mMap.moveCamera(CameraUpdateFactory.zoomTo(17f))
