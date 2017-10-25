@@ -35,11 +35,8 @@ class PlayFrag: Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_play, container, false)
-
-        return view
+        return inflater.inflate(R.layout.fragment_play, container, false)
     }
-
 }
 
 /**
@@ -65,7 +62,6 @@ class HistoryFrag: Fragment() {
 //        petCat(this,user,pass,4)
 //        resetList(this,user,pass)
 //        changePassword(this,user,newPass,pass)
-        toast("Closest cat is ${getClosestCat()}")
 
         // Inflate the layout for this fragment
         return view
@@ -186,7 +182,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
 
 
         when (key) {
-            //Checkbox preference for privacy
+        //Checkbox preference for privacy
             getString(R.string.prefs_privacy_key) -> {
                 //Get the new setting
                 privacy = activity.defaultSharedPreferences.getBoolean(key,true)
@@ -208,7 +204,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
                 }
             }
 
-            //List preference for alerts
+        //List preference for alerts
             getString(R.string.prefs_alert_key) -> {
                 alert = activity.defaultSharedPreferences.getString(key,"r")
 
