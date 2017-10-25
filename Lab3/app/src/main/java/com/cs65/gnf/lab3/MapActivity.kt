@@ -14,7 +14,6 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.View
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -49,13 +48,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var selectedCatID: ListenableCatID
     private lateinit var mgr : LocationManager
     private val LOC_REQUEST_CODE = 1
-    private var if_pat: Boolean = false
 
     //For from shared preferences
     private val USER_PREFS = "profile_data" //Shared with other activities
     private val USER_STRING = "Username"
     private val PASS_STRING = "Password"
-    private val MODE_STRING = "mode" //TODO change to whatever the actual key is
+    private val MODE_STRING = "mode"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,7 +79,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
             // Get location updates
             mgr = getSystemService(Context.LOCATION_SERVICE) as LocationManager
             mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, /* milliseconds */
-                    5f /* meters */ , this);
+                    5f /* meters */ , this)
         }
 
         //Set an onChangeListener for the CatID
@@ -113,7 +111,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     override fun onMapReady(googleMap: GoogleMap) {
         // set map when ready
         mMap = googleMap
-        mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+        mMap.mapType = GoogleMap.MAP_TYPE_HYBRID
 
         mMap.setOnMarkerClickListener(this) //Defined after onMapReady function
 
@@ -123,7 +121,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         val prefs = getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
         val user = prefs.getString(USER_STRING,null)
         val pass = prefs.getString(PASS_STRING,null)
-        val mode = prefs.getString(MODE_STRING,null) //TODO or however the mode is saved
+        //mode as string is "hard" if mode is true, "easy" otherwise
+        val mode = if (prefs.getBoolean(MODE_STRING,false)) "hard" else "easy"
 
         //Step 2— Make the URL
         val listUrl = "http://cs65.cs.dartmouth.edu/catlist.pl?name=$user&password=$pass&mode=$mode"
@@ -206,8 +205,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
 
 
         // Add a marker in Hanover and move the camera
-        val x : Double = 43.70805181058869
-        val y : Double = -72.28422369807957
+        val x = 43.70805181058869
+        val y = -72.28422369807957
         val hanover = LatLng( x, y )
 
         // get last known location
@@ -226,7 +225,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         Log.d("Coords", x.toString() + " " + y.toString() )
 
         //grey marker
-        mMap.addMarker(MarkerOptions().position(hanover).title("Marker in Hanover").icon(BitmapDescriptorFactory.fromResource(R.drawable.grey_marker)));
+        mMap.addMarker(MarkerOptions().position(hanover).title("Marker in Hanover").icon(BitmapDescriptorFactory.fromResource(R.drawable.grey_marker)))
 
         // Move camera: zoom in and out
         mMap.moveCamera(CameraUpdateFactory.newLatLng(hanover))
@@ -245,7 +244,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
      * when user location is changed,
      * create a new point of latitude and longtitude for this location
      * update it on map
-     * TODO: get closest cat to this location; erase previous curr loc marker
+     * TODO: erase previous curr loc marker
      */
     override fun onLocationChanged(location : Location){
         Log.d("LOCATION", "CHANGED: " + location.latitude + " " + location.longitude)
@@ -269,7 +268,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         mMap.moveCamera(CameraUpdateFactory.newLatLng(currLoc))
         mMap.moveCamera(CameraUpdateFactory.zoomTo(17f))
 
-        //TODO see if close to cat
+        val selectedCat = mapOfCats[selectedCatID.id]
+        if (selectedCat!=null) {
+            val lat = selectedCat.lat
+            val lng = selectedCat.lng
+            val latlng = LatLng(lat,lng)
+        }
 
     }
 

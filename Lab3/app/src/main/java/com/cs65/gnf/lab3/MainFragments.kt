@@ -11,20 +11,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.content.Intent
 import android.net.Uri
-import android.preference.Preference
 import android.util.Log
-import android.widget.EditText
-import android.widget.TextView
 import com.android.volley.*
 import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.KotlinJsonAdapterFactory
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
 import org.jetbrains.anko.defaultSharedPreferences
-import org.jetbrains.anko.find
 import org.jetbrains.anko.toast
 import org.json.JSONException
 import org.json.JSONObject
@@ -47,25 +38,7 @@ class HistoryFrag: Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
-        val view = inflater.inflate(R.layout.fragment_history, container, false)
-
-        val user = "DarthPoseidon"
-
-        val pass = "qwerty"
-
-        val newPass = "newPass"
-
-        val mode = "easy"
-
-        val id = 4
-
-//        getCatList(this,user,pass,mode)
-//        petCat(this,user,pass,4)
-//        resetList(this,user,pass)
-//        changePassword(this,user,newPass,pass)
-
-        // Inflate the layout for this fragment
-        return view
+        return inflater.inflate(R.layout.fragment_history, container, false)
     }
 }
 
@@ -96,7 +69,6 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
     private val NAME_STRING = "Name"
     private val PRIV_STRING = "privacy"
     private val ALER_STRING = "alert"
-    private val NEWPASS_STRING = "newPass"
     private val MODE_STRING = "mode"
 
     //volley request
@@ -119,7 +91,6 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         val signoutPref = findPreference(getString(R.string.prefs_signout_key))
         val aboutPref = findPreference(getString(R.string.prefs_about_key))
         val newGamePref = findPreference(getString(R.string.prefs_newgame_key))
-        val modePref = findPreference(getString(R.string.prefs_mode_key))
 
         // Clean up when the user sign out
         signoutPref.setOnPreferenceClickListener { _ ->
@@ -147,23 +118,17 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
             true
         }
 
-        //TODO: send request to server to get new cat list
         newGamePref.setOnPreferenceClickListener { _ ->
+            //Get username and password
+            val prefs = activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
+            val user = prefs.getString(USER_STRING,null)
+            val pass = prefs.getString(PASS_STRING,null)
+
+            //Reset the list
+            resetList(this,user,pass)
+
             true
         }
-        //TODO: depending on different mode, get different result from the server
-//        modePref.setOnPreferenceChangeListener(object: Preference.OnPreferenceChangeListener {
-//            override fun onPreferenceChange(p0: Preference?, p1: Any?): Boolean {
-//                val isOn = p1 as Boolean
-//                if (isOn) {
-//
-//                }
-//                else {
-//
-//                }
-//                return true
-//            }
-//        })
     }
 
     override fun onResume() {
@@ -196,7 +161,6 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         val realName = userPrefs.getString(NAME_STRING,null)
         var privacy = userPrefs.getBoolean(PRIV_STRING, true)
         var alert = userPrefs.getString(ALER_STRING, null)
-        var newPass = userPrefs.getString(NEWPASS_STRING,null)
         var mode = userPrefs.getBoolean(MODE_STRING,false)
 
         // Update json object
@@ -206,34 +170,40 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
 
 
         when (key) {
-        //Checkbox preference for privacy
 
+            //Changing password
             getString(R.string.prefs_newpass_key) -> {
 
-                newPass = activity.defaultSharedPreferences.getString(key,null)
+                //Get the new password
+                val newPass = activity.defaultSharedPreferences.getString(key,null)
 
-                //Put it into sharedPrefs storage
-                activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
-                        .edit()
-                        .putString(key, newPass)
+                //Send password change req to server
+                changePassword(this,uName,pass,newPass) //ask the server to change password
+                jsonReq.put("password",newPass) //change the object being sent to the server
+
+                //Change password in local storage
+                userPrefs.edit()
+                        .putString(PASS_STRING,newPass)
                         .apply()
 
-                //TODO: send this password to server
-
+                //Clear the preference
+                activity.defaultSharedPreferences
+                        .edit()
+                        .putString(key,null)
+                        .apply()
             }
 
+            //Changing game mode
             getString(R.string.prefs_mode_key) -> {
 
+                //Get mode (true = hard, false = easy)
                 mode = activity.defaultSharedPreferences.getBoolean(key,false)
 
                 //Put it into sharedPrefs storage
                 activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
                         .edit()
-                        .putBoolean(key, mode)
+                        .putBoolean(key,mode)
                         .apply()
-
-                //TODO: send this password to server
-
             }
 
             getString(R.string.prefs_privacy_key) -> {
@@ -245,16 +215,6 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
                         .edit()
                         .putBoolean(key,privacy)
                         .apply()
-
-                //Update json request
-                try {
-                    jsonReq.put(key, privacy)
-                    jsonReq.put(ALER_STRING, alert)
-                } catch (e: JSONException) {
-                    // Warn the user that something is wrong; do not connect
-                    Log.d("JSON", "Invalid JSON: " + e.toString())
-                    toast("Invalid JSON")
-                }
             }
 
         //List preference for alerts
@@ -266,19 +226,18 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
                         .edit()
                         .putString(key,alert)
                         .apply()
-
-                //Update json request
-                try {
-                    jsonReq.put(key, alert)
-                    jsonReq.put(PRIV_STRING,privacy)
-                } catch (e: JSONException) {
-                    // Warn the user that something is wrong; do not connect
-                    Log.d("JSON", "Invalid JSON: " + e.toString())
-                    toast("Invalid JSON")
-
-                    return
-                }
             }
+        }
+
+        //Update json request
+        try {
+            jsonReq.put(PRIV_STRING, privacy)
+            jsonReq.put(ALER_STRING, alert)
+            jsonReq.put(MODE_STRING,mode)
+        } catch (e: JSONException) {
+            // Warn the user that something is wrong; do not connect
+            Log.d("JSON", "Invalid JSON: " + e.toString())
+            toast("Invalid JSON")
         }
 
         // POST jsonrequest to the reserver
@@ -314,7 +273,6 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
             override  fun getHeaders(): Map<String, String> {
                 run {
                     val params = HashMap<String, String>()
-                    // params.put("Accept", "application/json");
                     params.put("Accept-Encoding", "identity")
                     params.put("Content-Type", "application/json")
 
