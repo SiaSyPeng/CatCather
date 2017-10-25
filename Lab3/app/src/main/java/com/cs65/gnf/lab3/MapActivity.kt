@@ -41,11 +41,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     GoogleMap.OnMarkerClickListener, LocationListener {
 
     private lateinit var mMap: GoogleMap
+    private lateinit var currLoc: LatLng
+    private lateinit var currLocMarker: MarkerOptions
+
     private var permCheck : Boolean = false
     private var mapOfCats : HashMap<Int,Cat> = HashMap()
     private lateinit var selectedCatID: ListenableCatID
     private lateinit var mgr : LocationManager
-    private lateinit var loc : LatLng
     private val LOC_REQUEST_CODE = 1
     private var if_pat: Boolean = false
 
@@ -216,8 +218,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         catch( e: SecurityException ){
             Log.d("PERM", "Security Exception getting last known location. Using Hanover.")
         }
-        loc = if (l != null)  LatLng(l.latitude, l.longitude) else hanover
-        mMap.addMarker(MarkerOptions().position(loc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker)));
+        currLoc = if (l != null)  LatLng(l.latitude, l.longitude) else hanover
+        currLocMarker = MarkerOptions().position(currLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker))
+        //mMap.addMarker(MarkerOptions().position(currLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker)));
+        mMap.addMarker(currLocMarker)
 
         Log.d("Coords", x.toString() + " " + y.toString() )
 
@@ -250,12 +254,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
 
         // new location latitude and longtitude
         // add red marker
-        val ncurrLoc = LatLng( location.latitude, location.longitude )
+        //val ncurrLoc = LatLng( location.latitude, location.longitude )
         //val m: Marker;
-        mMap.addMarker(MarkerOptions().position(ncurrLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker)));
-        //m.setP
+        val currLoc = LatLng( location.latitude, location.longitude )
+        //mMap.addMarker(MarkerOptions().position(ncurrLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker)));
+       if (currLocMarker!= null){
+           currLocMarker.position(currLoc)
+       }else{
+           currLocMarker = MarkerOptions().position(currLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker))
+           mMap.addMarker(currLocMarker)
+       }
+
         // move camera around
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(ncurrLoc))
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(currLoc))
         mMap.moveCamera(CameraUpdateFactory.zoomTo(17f))
 
         //TODO see if close to cat
