@@ -12,6 +12,8 @@
 
     </PreferenceCategory>
 
+    <!--We need a password change thing here, and a mode easy/hard thing here-->
+
     <PreferenceCategory android:title="@string/prefs_group_preferences">
 
         <CheckBoxPreference

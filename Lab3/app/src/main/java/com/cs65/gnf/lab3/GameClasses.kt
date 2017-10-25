@@ -1,16 +1,15 @@
 package com.cs65.gnf.lab3
 
-import android.util.Log
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import com.squareup.moshi.JsonQualifier
 
-//These annotations will be used to change strings to floats, ints, and booleans
+//These annotations will be used to change strings to doubles, ints, and booleans
 @JsonQualifier
 @Retention(AnnotationRetention.RUNTIME) annotation class StringToInt
 
 @JsonQualifier
-@Retention(AnnotationRetention.RUNTIME) annotation class StringToFloat
+@Retention(AnnotationRetention.RUNTIME) annotation class StringToDouble
 
 @JsonQualifier
 @Retention(AnnotationRetention.RUNTIME) annotation class StringToBool
@@ -37,15 +36,15 @@ class StringToIntAdapter {
 /**
  * Adapter that changes strings to floats when converting from JSON and vice versa
  */
-class StringToFloatAdapter {
+class StringToDoubleAdapter {
     @FromJson
-    @StringToFloat
-    fun fromJson(value: String): Float {
-        return value.toFloat()
+    @StringToDouble
+    fun fromJson(value: String): Double {
+        return value.toDouble()
     }
 
     @ToJson
-    fun toJson(@StringToFloat value: Float): String {
+    fun toJson(@StringToDouble value: Double): String {
         return value.toString()
     }
 }
@@ -93,8 +92,8 @@ data class Cat(
         @StringToInt val catId: Int,
         val picUrl: String,
         val name: String,
-        @StringToFloat val lat: Float,
-        @StringToFloat val lng: Float,
+        @StringToDouble val lat: Double,
+        @StringToDouble val lng: Double,
         @StringToBool val petted: Boolean
 )
 
@@ -116,3 +115,19 @@ data class OpResult(
         val code: String?,
         val error: String?
 )
+
+/**
+ * Custom class whose changes we can listen to
+ */
+class ListenableCatID(private val listener: ChangeListener){
+    var id: Int = 0
+    set(value) {
+        field = value
+        listener.onChange()
+    }
+
+    interface ChangeListener {
+        fun onChange()
+    }
+
+}

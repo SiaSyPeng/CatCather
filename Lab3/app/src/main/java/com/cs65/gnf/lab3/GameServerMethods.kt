@@ -1,6 +1,8 @@
 package com.cs65.gnf.lab3
 
+import android.app.Activity
 import android.app.Fragment
+import android.content.Context
 import android.util.Log
 import android.widget.TextView
 import com.android.volley.*
@@ -24,10 +26,12 @@ fun getCatList(frag: Fragment, user: String, pass: String, mode: String?) {
 
     Volley.newRequestQueue(frag.activity)
             .add(StringRequest(Request.Method.GET,url, Response.Listener<String> { response ->
+
                 Log.d("HIER",response)
+
                 val moshi = Moshi.Builder()
                         .add(KotlinJsonAdapterFactory())
-                        .add(StringToFloatAdapter())
+                        .add(StringToDoubleAdapter())
                         .add(StringToIntAdapter())
                         .add(StringToBoolAdapter())
                         .build()
@@ -86,7 +90,7 @@ fun getCatList(frag: Fragment, user: String, pass: String, mode: String?) {
 /**
  * Pets a cat, from catID, latitude and longitude of user
  */
-fun petCat(frag: Fragment, user: String, pass: String, id: Int) {
+fun petCat(act: Activity, user: String, pass: String, id: Int) {
     //TODO Get location
 
     //TODO remove the next two lines
@@ -95,7 +99,7 @@ fun petCat(frag: Fragment, user: String, pass: String, id: Int) {
 
     val url = "http://cs65.cs.dartmouth.edu/pat.pl?name=$user&password=$pass&catid=$id&lat=$lat&lng=$lng"
 
-    Volley.newRequestQueue(frag.activity)
+    Volley.newRequestQueue(act)
             .add(StringRequest(Request.Method.GET,url,
                     Response.Listener<String> { response ->
 
@@ -116,13 +120,13 @@ fun petCat(frag: Fragment, user: String, pass: String, id: Int) {
                         else {
                             when (petRes.status) {
                                 Status.OK -> {
-                                    val txt: TextView = frag.view.findViewById(R.id.HistoryID)
+                                    val txt: TextView = act.findViewById(R.id.HistoryID)
                                     txt.text = response
                                     //TODO whatever is done when pet was success
                                 }
                                 Status.ERROR -> {
                                     //TODO this toast or whatever else you want to do if it fails
-                                    frag.toast(petRes.reason.toString())
+                                    act.toast(petRes.reason.toString())
                                 }
                             }
                         }
@@ -130,18 +134,18 @@ fun petCat(frag: Fragment, user: String, pass: String, id: Int) {
                     Response.ErrorListener { error -> // Handle error cases
                         when (error) {
                             is NoConnectionError ->
-                                frag.toast("Connection Error")
+                                act.toast("Connection Error")
                             is TimeoutError->
-                                frag.toast("Timeout Error")
+                                act.toast("Timeout Error")
                             is AuthFailureError ->
-                                frag.toast("AuthFail Error")
+                                act.toast("AuthFail Error")
                             is NetworkError ->
-                                frag.toast("Network Error")
+                                act.toast("Network Error")
                             is ParseError ->
-                                frag.toast("Parse Error")
+                                act.toast("Parse Error")
                             is ServerError ->
-                                frag.toast("Server Error")
-                            else -> frag.toast("Error: " + error)
+                                act.toast("Server Error")
+                            else -> act.toast("Error: " + error)
                         }
                     }
             ))

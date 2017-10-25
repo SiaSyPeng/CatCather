@@ -15,23 +15,41 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
-
+import com.android.volley.*
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.*
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.KotlinJsonAdapterFactory
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import org.jetbrains.anko.toast
+import org.json.JSONException
+import org.json.JSONObject
 
-
-class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
+class MapActivity : AppCompatActivity(), OnMapReadyCallback, 
+    GoogleMap.OnMarkerClickListener, LocationListener {
 
     private lateinit var mMap: GoogleMap
     private var permCheck : Boolean = false
+    private var listOfCats : List<Cat>? = null
+    private lateinit var selectedCatID: ListenableCatID
     private lateinit var mgr : LocationManager
     private lateinit var loc : LatLng
     private val LOC_REQUEST_CODE = 1
     private var if_pat: Boolean = false
+
+    //For from shared preferences
+    private val USER_PREFS = "profile_data" //Shared with other activities
+    private val USER_STRING = "Username"
+    private val PASS_STRING = "Password"
+    private val MODE_STRING = "mode" //TODO change to whatever the actual key is
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +78,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
                     5f /* meters */ , this);
         }
 
+        //Set an onChangeListener for the CatID
+        selectedCatID = ListenableCatID(object: ListenableCatID.ChangeListener {
+            override fun onChange() {
+                //TODO update panel
+            }
+        })
     }
 
     /**
@@ -75,6 +99,92 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
         // set map when ready
         mMap = googleMap
         mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+
+        mMap.setOnMarkerClickListener(this) //Defined after onMapReady function
+
+        //WE NEED TO GET THE LIST OF CATS AND MAKE MARKERS ON THE SCREEN
+
+        //Step 1— Get the username, password and mode
+        val prefs = getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
+        val user = prefs.getString(USER_STRING,null)
+        val pass = prefs.getString(PASS_STRING,null)
+        val mode = prefs.getString(MODE_STRING,null) //TODO or however the mode is saved
+
+        //Step 2— Make the URL
+        val listUrl = "http://cs65.cs.dartmouth.edu/catlist.pl?name=$user&password=$pass&mode=$mode"
+
+        //Step 3— Open a Volley request queue and pass a string request
+        Volley.newRequestQueue(this)
+                .add(
+                        StringRequest(Request.Method.GET,listUrl,
+                                Response.Listener<String> { response ->
+                                    val moshi = Moshi.Builder() //Build the Moshi, adding all needed adapters
+                                            .add(KotlinJsonAdapterFactory())
+                                            .add(StringToDoubleAdapter())
+                                            .add(StringToIntAdapter())
+                                            .add(StringToBoolAdapter())
+                                            .build()
+
+                                    //Try to change to a JSON object
+                                    val errorObject: JSONObject? = try {
+                                        JSONObject(response) //If it can be done, set  that to error object
+                                    }
+                                    catch (e: JSONException) { //If it can't be changed to an object it may be a list
+                                        null //set the "error object" to null
+                                    }
+
+                                    if (errorObject!=null) { //if there was an error object made
+                                        Log.d("SERVOR ERROR",errorObject.getString("error"))
+                                    }
+                                    else { //if no error object was found we can set our cat list
+                                        val type = Types.newParameterizedType(List::class.java,Cat::class.java)
+
+                                        val catAdaptor: JsonAdapter<List<Cat>> = moshi.adapter(type)
+
+                                        //Step 4— set the list of cats
+                                        listOfCats = catAdaptor.fromJson(response)
+
+                                        if (listOfCats==null) { //if the list cannot be made
+                                            Log.d("ERROR","List of cats not found")
+                                        }
+                                        else {
+                                            //Step 5— add the markers
+                                            for (kitty in listOfCats!!) { //for every cat
+                                                val pos = LatLng(kitty.lat,kitty.lng) //get cat's position
+                                                mMap.addMarker(MarkerOptions() //add marker
+                                                        .position(pos) //at that position
+                                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.green_marker)))
+                                                        .tag = kitty.catId //set its tag to the catId
+                                            }
+                                            //Step 6— Set the closest cat to SelectedCat to begin with
+                                            selectedCatID.id = getClosestCat(listOfCats!!)
+                                            //TODO comment
+                                            val pat_button: View = findViewById(R.id.pat_button)
+                                            pat_button.setVisibility(View.VISIBLE)
+
+                                        }
+                                    }
+                                },
+                                Response.ErrorListener { error -> // Handle error cases
+                                    when (error) {
+                                        is NoConnectionError ->
+                                            toast("Connection Error")
+                                        is TimeoutError ->
+                                            toast("Timeout Error")
+                                        is AuthFailureError ->
+                                            toast("AuthFail Error")
+                                        is NetworkError ->
+                                            toast("Network Error")
+                                        is ParseError ->
+                                            toast("Parse Error")
+                                        is ServerError ->
+                                            toast("Server Error")
+                                        else -> toast("Error: " + error)
+                                    }
+                                }
+                        ))
+
+
 
         // Add a marker in Hanover and move the camera
         // Right now it's just a default
@@ -99,31 +209,20 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
 
         Log.d("Coords", x.toString() + " " + y.toString() )
 
-
-        //TODO: add markers to cat locations
         //grey marker
         mMap.addMarker(MarkerOptions().position(hanover).title("Marker in Hanover").icon(BitmapDescriptorFactory.fromResource(R.drawable.grey_marker)));
 
         // Move camera: zoom in and out
         mMap.moveCamera(CameraUpdateFactory.newLatLng(hanover))
         mMap.moveCamera(CameraUpdateFactory.zoomTo(17f))
+    }
 
-        //When cat is clcked
-        //Green marker
-        //TODO: i.e. when clicked marker, update cat information in panel
-        mMap.setOnMapClickListener { p0: LatLng? ->
-            // update panel
-            if_pat = true
-            val pat_button: View = findViewById(R.id.pat_button)
-            pat_button.setVisibility(View.VISIBLE)
+    override fun onMarkerClick(p0: Marker?): Boolean {
+        val markerId = p0?.tag //Get the associated Cat ID we saved in the marker
+        if (markerId is Int) selectedCatID.id = markerId //set selected cat to that
+                                                         //this will call the listener function
 
-            // temporary onclick effect
-            Log.d( "Map", p0.toString())
-            if( p0 != null ) {
-                mMap.addMarker(MarkerOptions().position(p0).title(p0.toString()).icon(BitmapDescriptorFactory.fromResource(R.drawable.green_marker)))
-
-            }
-        }
+        return true //Suppresses default behaviour of clicking on the marker
     }
 
     /*
@@ -164,9 +263,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
      * Will send request to server and pat the cat
      */
     fun onPat(v: View) {
+        //get Username / password
+
         //enable/disable button
+
         toast("You pat it!")
+        //TODO do stuff
         val intent = Intent(applicationContext,SuccessActivity::class.java)
         startActivity(intent)
+
     }
 }
