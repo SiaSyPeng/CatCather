@@ -50,6 +50,21 @@
     <string name="prefs_signout_key">Signout</string>
     <string name="prefs_signout_summary">Remove your account from this device</string>
 
+    <string name="prefs_newgame_title">New Game</string>
+    <string name="prefs_newgame_key">newGame</string>
+    <string name="prefs_newgame_summary">Start a new game with new cats</string>
+
+    <string name="prefs_newpass_title">New Password</string>
+    <string name="prefs_newpass_key">newPass</string>
+    <string name="prefs_newpass_summary">Reset your password</string>
+
+    <string name="prefs_mode_title">Game Mode</string>
+    <string name="prefs_mode_key">mode</string>
+    <string name="prefs_mode_hard">Hard</string>
+    <string name="prefs_mode_easy">Easy</string>
+
+    <string name="prefs_mode_summary">Would you like to play on easy or hard mode</string>
+
     <string name="prefs_privacy_title">Privacy Settings</string>
     <string name="prefs_privacy_key">privacy</string>
     <string name="prefs_privacy_summary">Allow other users to see your score?</string>
