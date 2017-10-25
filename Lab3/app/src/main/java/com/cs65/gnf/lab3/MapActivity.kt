@@ -95,19 +95,43 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                 val selectedCat = mapOfCats[selectedCatID.id] //get the selected cat
 
 
-                //Update Cat pic
-                val url = selectedCat?.picUrl
-                val mImg: ImageView = findViewById(R.id.panel_img)
-                Picasso.with(applicationContext).load(url).placeholder(R.drawable.pointer).into(mImg)
+                if(selectedCat != null){
+                    //Update Cat pic
+                    val url = selectedCat.picUrl
+                    val mImg: ImageView = findViewById(R.id.panel_img)
+                    Picasso.with(applicationContext).load(url).placeholder(R.drawable.pointer).into(mImg)
 
 
-                //Update Cat name
-                mName = findViewById(R.id.map_panel_name)
-                mName.setText(selectedCat?.name)
+                    //Update Cat name
+                    mName = findViewById(R.id.map_panel_name)
+                    mName.setText(selectedCat.name)
 
-                //Update Distance
-                mDis = findViewById(R.id.map_panel_distance)
-                //val distanceInMeters = selectedCatID?.
+                    //Update Distance
+
+                    if (currLoc!= null){
+
+                        // get cat location
+                        var catLoc: Location = Location("cat Location")
+                        catLoc.setLatitude((selectedCat.lat)/ 1E6)
+                        catLoc.setLongitude((selectedCat.lng)/ 1E6)
+
+                        // get curr location
+                        var currLocation: Location = Location("curr Location")
+                        currLocation.setLatitude((currLoc.latitude)/ 1E6)
+                        currLocation.setLongitude((currLoc.longitude)/ 1E6)
+
+                        // calculate distance between cat and curr
+                        val distance = catLoc.distanceTo(currLocation)
+
+                        // update view
+                        mDis = findViewById(R.id.map_panel_distance)
+                        mDis.setText(distance.toString())
+
+
+                    }else{
+                        toast("Cannot get current location")
+                    }
+                }
 
             }
         })
