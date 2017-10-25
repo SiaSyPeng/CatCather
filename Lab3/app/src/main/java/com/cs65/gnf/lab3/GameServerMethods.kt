@@ -2,25 +2,20 @@ package com.cs65.gnf.lab3
 
 import android.app.Activity
 import android.app.Fragment
-import android.content.Context
 import android.util.Log
 import android.widget.TextView
 import com.android.volley.*
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
-import org.json.JSONException
-import org.json.JSONObject
 import org.jetbrains.anko.toast
 import java.lang.StrictMath.pow
 
 /**
  * Pets a cat, from catID, latitude and longitude of user
  */
-fun petCat(act: Activity, user: String, pass: String, id: Int): PetResult? {
+fun petCat(act: Activity, user: String?, pass: String?, id: Int): PetResult? {
     //TODO Get location
 
     //TODO remove the next two lines
@@ -89,7 +84,7 @@ fun petCat(act: Activity, user: String, pass: String, id: Int): PetResult? {
 /**
  * Resets the cat list
  * */
-fun resetList(frag: Fragment,user: String, pass: String) {
+fun resetList(frag: Fragment,user: String?, pass: String?) {
     val url = "http://cs65.cs.dartmouth.edu/resetlist.pl?name=$user&password=$pass"
 
     Volley.newRequestQueue(frag.activity)
@@ -144,7 +139,7 @@ fun resetList(frag: Fragment,user: String, pass: String) {
 /**
  * Changes the user's password, from username, old password and new password
  * */
-fun changePassword(frag: Fragment, user: String, pass: String, newPass: String) {
+fun changePassword(frag: Fragment, user: String?, pass: String?, newPass: String?) {
     val url = "http://cs65.cs.dartmouth.edu/changepass.pl?name=$user&password=$pass&newpass=$newPass"
 
     Volley.newRequestQueue(frag.activity)
