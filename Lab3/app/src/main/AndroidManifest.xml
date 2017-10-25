@@ -6,8 +6,6 @@
         android:name="android.hardware.camera2"
         android:required="false" />
 
-    <uses-feature android:name="android.hardware.location.gps"/>
-
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -60,6 +58,7 @@
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
+        <activity android:name=".SuccessActivity"></activity>
     </application>
 
 </manifest>
