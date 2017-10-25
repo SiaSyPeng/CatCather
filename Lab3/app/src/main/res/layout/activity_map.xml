@@ -41,6 +41,7 @@
 
         >
         <ImageView
+            android:id="@+id/panel_img"
             android:layout_width="wrap_content"
             android:layout_height="70dp"
             android:src="@drawable/pointer"
