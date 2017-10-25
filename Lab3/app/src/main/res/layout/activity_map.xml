@@ -26,7 +26,7 @@
         class="com.google.android.gms.maps.SupportMapFragment">
     </fragment>
 
-    <com.google.android.flexbox.Flexbogit cxLayout
+    <com.google.android.flexbox.FlexboxLayout
         android:id="@+id/map_panel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -86,7 +86,7 @@
             android:onClick="onPat"
             />
 
-    </com.google.android.flexbox.FlexbogitxLayout>
+    </com.google.android.flexbox.FlexboxLayout>
 </com.google.android.flexbox.FlexboxLayout>
 
 

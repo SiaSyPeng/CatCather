@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import android.location.LocationListener
+import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
@@ -14,6 +15,8 @@ import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import com.android.volley.*
 import com.android.volley.toolbox.StringRequest
@@ -39,7 +42,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
 
     private lateinit var mMap: GoogleMap
     private var permCheck : Boolean = false
-    private var listOfCats : List<Cat>? = null
+    private var mapOfCats : HashMap<Int,Cat> = HashMap()
     private lateinit var selectedCatID: ListenableCatID
     private lateinit var mgr : LocationManager
     private lateinit var loc : LatLng
@@ -82,7 +85,16 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         //Set an onChangeListener for the CatID
         selectedCatID = ListenableCatID(object: ListenableCatID.ChangeListener {
             override fun onChange() {
-                //TODO update panel
+                val selectedCat = mapOfCats[selectedCatID.id] //get the selected cat
+
+                //Get Image URI
+                val uri = Uri.parse(selectedCat?.picUrl)
+
+                //TODO change this to the actual view that should be displaying the picture
+                val mImg = ImageView(applicationContext).setImageURI(uri)
+
+                //TODO change this to the actual view that should be displaying the name
+                val mText = TextView(applicationContext).setText(selectedCat?.name)
             }
         })
     }
@@ -143,22 +155,26 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                                         val catAdaptor: JsonAdapter<List<Cat>> = moshi.adapter(type)
 
                                         //Step 4— set the list of cats
-                                        listOfCats = catAdaptor.fromJson(response)
+                                        val listOfCats = catAdaptor.fromJson(response)
 
                                         if (listOfCats==null) { //if the list cannot be made
                                             Log.d("ERROR","List of cats not found")
                                         }
                                         else {
                                             //Step 5— add the markers
-                                            for (kitty in listOfCats!!) { //for every cat
+                                            for (kitty in listOfCats) { //for every cat
                                                 val pos = LatLng(kitty.lat,kitty.lng) //get cat's position
                                                 mMap.addMarker(MarkerOptions() //add marker
                                                         .position(pos) //at that position
                                                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.green_marker)))
                                                         .tag = kitty.catId //set its tag to the catId
+
+                                                //Put every cat into a map for easily accessing a specific cat
+                                                mapOfCats.put(kitty.catId,kitty)
                                             }
+
                                             //Step 6— Set the closest cat to SelectedCat to begin with
-                                            selectedCatID.id = getClosestCat(listOfCats!!)
+                                            selectedCatID.id = getClosestCat(listOfCats)
 
                                             val patButton: View = findViewById(R.id.pat_button)
                                             patButton.visibility = (View.VISIBLE)
