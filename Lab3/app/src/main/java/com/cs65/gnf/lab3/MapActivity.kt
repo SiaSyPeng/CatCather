@@ -33,6 +33,7 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
+import com.squareup.picasso.Picasso
 import org.jetbrains.anko.toast
 import org.json.JSONException
 import org.json.JSONObject
@@ -42,7 +43,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
 
     private lateinit var mMap: GoogleMap
     private lateinit var currLoc: LatLng
-    private lateinit var currLocMarker: MarkerOptions
+    private lateinit var currLocMarker: Marker
+    private lateinit var mImg: ImageView
+    private lateinit var mName: TextView
+    private lateinit var mDis: TextView
 
     private var permCheck : Boolean = false
     private var mapOfCats : HashMap<Int,Cat> = HashMap()
@@ -85,18 +89,26 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         }
 
         //Set an onChangeListener for the CatID
+        //Update panel
         selectedCatID = ListenableCatID(object: ListenableCatID.ChangeListener {
             override fun onChange() {
                 val selectedCat = mapOfCats[selectedCatID.id] //get the selected cat
 
-                //Get Image URI
-                val uri = Uri.parse(selectedCat?.picUrl)
 
-                //TODO change this to the actual view that should be displaying the picture
-                val mImg = ImageView(applicationContext).setImageURI(uri)
+                //Update Cat pic
+                val url = selectedCat?.picUrl
+                val mImg: ImageView = findViewById(R.id.panel_img)
+                Picasso.with(applicationContext).load(url).placeholder(R.drawable.pointer).into(mImg)
 
-                //TODO change this to the actual view that should be displaying the name
-                val mText = TextView(applicationContext).setText(selectedCat?.name)
+
+                //Update Cat name
+                mName = findViewById(R.id.map_panel_name)
+                mName.setText(selectedCat?.name)
+
+                //Update Distance
+                mDis = findViewById(R.id.map_panel_distance)
+                //val distanceInMeters = selectedCatID?.
+
             }
         })
     }
@@ -219,9 +231,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
             Log.d("PERM", "Security Exception getting last known location. Using Hanover.")
         }
         currLoc = if (l != null)  LatLng(l.latitude, l.longitude) else hanover
-        currLocMarker = MarkerOptions().position(currLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker))
-        //mMap.addMarker(MarkerOptions().position(currLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker)));
-        mMap.addMarker(currLocMarker)
+        //currLocMarker = MarkerOptions().position(currLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker))
+        currLocMarker = mMap.addMarker(MarkerOptions().position(currLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker)));
+        //mMap.addMarker(currLocMarker)
 
         Log.d("Coords", x.toString() + " " + y.toString() )
 
@@ -259,10 +271,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         val currLoc = LatLng( location.latitude, location.longitude )
         //mMap.addMarker(MarkerOptions().position(ncurrLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker)));
        if (currLocMarker!= null){
-           currLocMarker.position(currLoc)
+           currLocMarker.setPosition(currLoc)
+           //currLocMarker.position(currLoc)
+           //mMap.addMarker(currLocMarker)
        }else{
-           currLocMarker = MarkerOptions().position(currLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker))
-           mMap.addMarker(currLocMarker)
+           currLocMarker = mMap.addMarker(MarkerOptions().position(currLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker)))
        }
 
         // move camera around
