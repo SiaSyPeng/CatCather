@@ -22,6 +22,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
@@ -158,9 +159,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                                             }
                                             //Step 6— Set the closest cat to SelectedCat to begin with
                                             selectedCatID.id = getClosestCat(listOfCats!!)
-                                            //TODO comment
-                                            val pat_button: View = findViewById(R.id.pat_button)
-                                            pat_button.setVisibility(View.VISIBLE)
+
+                                            val patButton: View = findViewById(R.id.pat_button)
+                                            patButton.visibility = (View.VISIBLE)
 
                                         }
                                     }
@@ -187,11 +188,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
 
 
         // Add a marker in Hanover and move the camera
-        // Right now it's just a default
-        /*
-         *TODO: iterate through cat lists and get latitude & long of cats,
-         * create locations, LatLng(x, y) for each cat
-         */
         val x : Double = 43.70805181058869
         val y : Double = -72.28422369807957
         val hanover = LatLng( x, y )
@@ -240,14 +236,16 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         // add red marker
         val ncurrLoc = LatLng( location.latitude, location.longitude )
         mMap.addMarker(MarkerOptions().position(ncurrLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker)));
-
         // move camera around
         mMap.moveCamera(CameraUpdateFactory.newLatLng(ncurrLoc))
         mMap.moveCamera(CameraUpdateFactory.zoomTo(17f))
+
+        //TODO see if close to cat
+
     }
 
     override fun onProviderDisabled(s: String) {
-        // required for interface, not used
+        // required for  interface, not used
     }
 
     override fun onProviderEnabled(s: String) {
@@ -264,13 +262,23 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
      */
     fun onPat(v: View) {
         //get Username / password
+        val prefs = getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
+        val user = prefs.getString(USER_STRING,null)
+        val pass = prefs.getString(PASS_STRING,null)
 
-        //enable/disable button
+        //get the pet result
+        val petResult = petCat(this,user,pass,selectedCatID.id)
 
-        toast("You pat it!")
-        //TODO do stuff
-        val intent = Intent(applicationContext,SuccessActivity::class.java)
-        startActivity(intent)
-
+        when (petResult?.status) {
+            Status.OK -> {
+                toast("mrowwwww")
+                val intent = Intent(applicationContext,SuccessActivity::class.java)
+                startActivity(intent)
+            }
+            Status.ERROR -> {
+                if (petResult.reason!=null) toast(petResult.reason) //Tell the user why the petting
+                                                                    //was unsuccessful
+            }
+        }
     }
 }
