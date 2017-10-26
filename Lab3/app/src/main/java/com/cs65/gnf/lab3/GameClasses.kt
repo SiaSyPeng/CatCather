@@ -94,7 +94,7 @@ data class Cat(
         val name: String,
         @StringToDouble val lat: Double,
         @StringToDouble val lng: Double,
-        @StringToBool val petted: Boolean
+        @StringToBool var petted: Boolean
 )
 
 /**

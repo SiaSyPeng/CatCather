@@ -203,7 +203,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                                                 val pos = LatLng(kitty.lat,kitty.lng) //get cat's position
                                                 mMap.addMarker(MarkerOptions() //add marker
                                                         .position(pos) //at that position
-                                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.green_marker)))
+                                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.rsz_ready_cat)))
                                                         .tag = kitty.catId //set its tag to the catId
 
                                                 //Put every cat into a map for easily accessing a specific cat
@@ -254,14 +254,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
             Log.d("PERM", "Security Exception getting last known location. Using Hanover.")
         }
         currLoc = if (l != null)  LatLng(l.latitude, l.longitude) else hanover
-        //currLocMarker = MarkerOptions().position(currLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker))
-        currLocMarker = mMap.addMarker(MarkerOptions().position(currLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker)));
-        //mMap.addMarker(currLocMarker)
+        currLocMarker = mMap.addMarker(MarkerOptions().position(currLoc)
+                .title("Curr loc")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.rsz_user_marker)))
 
         Log.d("Coords", x.toString() + " " + y.toString() )
 
         //grey marker
-        mMap.addMarker(MarkerOptions().position(hanover).title("Marker in Hanover").icon(BitmapDescriptorFactory.fromResource(R.drawable.grey_marker)))
+        mMap.addMarker(MarkerOptions().position(hanover).title("Marker in Hanover").icon(BitmapDescriptorFactory.fromResource(R.drawable.rsz_gray_cat)))
 
         // Move camera: zoom in and out
         mMap.moveCamera(CameraUpdateFactory.newLatLng(hanover))
@@ -298,19 +298,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
            //currLocMarker.position(currLoc)
            //mMap.addMarker(currLocMarker)
        }else{
-           currLocMarker = mMap.addMarker(MarkerOptions().position(currLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.red_marker)))
+           currLocMarker = mMap.addMarker(MarkerOptions().position(currLoc).title("Curr loc").icon(BitmapDescriptorFactory.fromResource(R.drawable.rsz_user_marker)))
        }
 
         // move camera around
         mMap.moveCamera(CameraUpdateFactory.newLatLng(currLoc))
         mMap.moveCamera(CameraUpdateFactory.zoomTo(17f))
-
-        val selectedCat = mapOfCats[selectedCatID.id]
-        if (selectedCat!=null) {
-            val lat = selectedCat.lat
-            val lng = selectedCat.lng
-            val latlng = LatLng(lat,lng)
-        }
 
     }
 
@@ -342,6 +335,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         when (petResult?.status) {
             Status.OK -> {
                 toast("mrowwwww")
+                mapOfCats[selectedCatID.id]?.petted = true
                 val intent = Intent(applicationContext,SuccessActivity::class.java)
                 startActivity(intent)
             }
