@@ -109,21 +109,22 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                     if (currLoc!= null){
 
                         // get cat location
-                        var catLoc: Location = Location("cat Location")
-                        catLoc.setLatitude((selectedCat.lat)/ 1E6)
-                        catLoc.setLongitude((selectedCat.lng)/ 1E6)
+                        val catLoc = Location("cat Location")
+                        catLoc.latitude = selectedCat.lat
+                        catLoc.longitude = selectedCat.lng
 
                         // get curr location
-                        var currLocation: Location = Location("curr Location")
-                        currLocation.setLatitude((currLoc.latitude)/ 1E6)
-                        currLocation.setLongitude((currLoc.longitude)/ 1E6)
+                        val currLocation = Location("curr Location")
+                        currLocation.latitude = currLoc.latitude
+                        currLocation.longitude = currLoc.longitude
 
                         // calculate distance between cat and curr
                         val distance = catLoc.distanceTo(currLocation)
+                        val readableDist = distance.toInt().toString() + " metres"
 
                         // update view
                         mDis = findViewById(R.id.map_panel_distance)
-                        mDis.setText(distance.toString())
+                        mDis.text = readableDist
 
 
                     }else{
