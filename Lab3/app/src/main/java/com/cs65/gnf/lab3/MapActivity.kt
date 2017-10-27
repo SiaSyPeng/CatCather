@@ -44,17 +44,24 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private var mgr : LocationManager? = null
     private val LOC_REQUEST_CODE = 1
 
-    private val RADIUS_OF_SHOWN_MARKERS: Float = 400f
+    //private val RADIUS_OF_SHOWN_MARKERS: Float = 400f
+    private var RADIUS_OF_SHOWN_MARKERS: Float = 500f
+    //View
+    private lateinit var patButton: View
 
     //For from shared preferences
     private val USER_PREFS = "profile_data" //Shared with other activities
     private val USER_STRING = "Username"
     private val PASS_STRING = "Password"
     private val MODE_STRING = "mode"
+    private val DIS_STRING = "dis"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+
+        //setup views
+        patButton = findViewById(com.cs65.gnf.lab3.R.id.pat_button)
 
         requestPermissions()
 
@@ -65,9 +72,22 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                 //Redraw the map, also generating the map of visible cats
                 drawThings()
 
+
                 //Get the selected cat
                 val selectedCat = visibleCats[selectedCatID.id]!!
 
+                //enable or disable button depending on the
+                val ifPetted: Boolean = selectedCat.petted
+                if (ifPetted) {
+                    patButton.setEnabled(false)
+                } else {
+                    patButton.setEnabled(true)
+                }
+
+                /*
+                 * Update the panel with the following:
+                 * cat pic, cat name, and cat distance to current location
+                 */
                 //Update Cat pic
                 val url = selectedCat.picUrl
                 val mImg: ImageView = findViewById(R.id.panel_img)
@@ -127,6 +147,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         val pass = prefs.getString(PASS_STRING,null)
         //mode as string is "hard" if mode is true, "easy" otherwise
         val mode = if (prefs.getBoolean(MODE_STRING,false)) "hard" else "easy"
+        RADIUS_OF_SHOWN_MARKERS = when (prefs.getString(DIS_STRING, "l")) {
+            "l" -> 500f
+            "m" -> 200f
+            "s" -> 100f
+            else -> 500f
+        }
+        Log.d("onMapReady","mode: $mode radius: $RADIUS_OF_SHOWN_MARKERS")
 
         //Step 2— Make the URL
         val listUrl = "http://cs65.cs.dartmouth.edu/catlist.pl?name=$user&password=$pass&mode=$mode"
@@ -249,6 +276,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                         grantResults[2] == PackageManager.PERMISSION_GRANTED)) {
                     // permissions not obtained
                     requestPermissions()
+                } else {
+                    val mapFrag = supportFragmentManager
+                            .findFragmentById(R.id.map) as SupportMapFragment
+                    mapFrag.getMapAsync(this)
                 }
             }
         }
