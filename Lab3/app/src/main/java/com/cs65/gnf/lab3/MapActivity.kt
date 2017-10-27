@@ -35,17 +35,18 @@ import org.json.JSONObject
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, 
     GoogleMap.OnMarkerClickListener, LocationListener {
 
+    // Map variables
     private lateinit var mMap: GoogleMap
     private var currLoc: LatLng? = null
+    private var mgr : LocationManager? = null
+    private val LOC_REQUEST_CODE = 1
+    private var RADIUS_OF_SHOWN_MARKERS: Float = 500f
 
+    // Cat variables
     private var listOfCats: List<Cat>? = null
     private var visibleCats : HashMap<Int,Cat> = HashMap()
     private lateinit var selectedCatID: ListenableCatID
-    private var mgr : LocationManager? = null
-    private val LOC_REQUEST_CODE = 1
 
-    //private val RADIUS_OF_SHOWN_MARKERS: Float = 400f
-    private var RADIUS_OF_SHOWN_MARKERS: Float = 500f
     //View
     private lateinit var patButton: View
 
@@ -67,7 +68,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         requestPermissions()
 
         //Set an onChangeListener for the CatID
-        //Update panel
+        //Update panel accordingly
         selectedCatID = ListenableCatID(object: ListenableCatID.ChangeListener {
             override fun onChange() {
                 //Redraw the map, also generating the map of visible cats
@@ -107,7 +108,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                             currLoc!!.latitude,currLoc!!.longitude,
                             dist
                     )
-
+                    // cast distance to string
                     val readableDist = dist[0].toInt().toString() + " metres"
 
                     // update view
@@ -276,36 +277,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        when (requestCode) {
-            LOC_REQUEST_CODE -> {
-                // If request is cancelled, the result arrays are empty.
-                if (!(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED &&
-                        grantResults[1] == PackageManager.PERMISSION_GRANTED &&
-                        grantResults[2] == PackageManager.PERMISSION_GRANTED)) {
-                    // permissions not obtained
-                    requestPermissions()
-                } else {
-                    val mapFrag = supportFragmentManager
-                            .findFragmentById(R.id.map) as SupportMapFragment
-                    mapFrag.getMapAsync(this)
-                }
-            }
-        }
-    }
-
-    override fun onProviderDisabled(s: String) {
-        // required for  interface, not used
-    }
-
-    override fun onProviderEnabled(s: String) {
-        // required for interface, not used
-    }
-
-    override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
-        // Called when the provider status changes.
-    }
-
     /*
      * OnClick Pat button
      * Will send request to server and pat the cat
@@ -362,6 +333,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
+    /*
+     * Check and request location permits:
+     * Fine, coarse, internet
+     * Once location request granted, request map manager and get map asynchronously
+     */
     private fun requestPermissions() {
         // Here, thisActivity is the current activity
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
@@ -372,9 +348,28 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                     LOC_REQUEST_CODE)
         }
         else {
+            // get map manager
             val mapFrag = supportFragmentManager
                     .findFragmentById(R.id.map) as SupportMapFragment
             mapFrag.getMapAsync(this)
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        when (requestCode) {
+            LOC_REQUEST_CODE -> {
+                // If request is cancelled, the result arrays are empty.
+                if (!(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+                        grantResults[1] == PackageManager.PERMISSION_GRANTED &&
+                        grantResults[2] == PackageManager.PERMISSION_GRANTED)) {
+                    // permissions not obtained
+                    requestPermissions()
+                } else {
+                    val mapFrag = supportFragmentManager
+                            .findFragmentById(R.id.map) as SupportMapFragment
+                    mapFrag.getMapAsync(this)
+                }
+            }
         }
     }
 
@@ -391,7 +386,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         return criteria
     }
 
-    // You NEED to first check for location permissions before using the location.
+    // This is called after location permissions is granted
     // Make sure you declare the corresponding permission in your manifest.
     private fun getLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -434,4 +429,18 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
             }
         }
     }
+
+    // some interface fun
+    override fun onProviderDisabled(s: String) {
+        // required for  interface, not used
+    }
+
+    override fun onProviderEnabled(s: String) {
+        // required for interface, not used
+    }
+
+    override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
+        // Called when the provider status changes.
+    }
+
 }
