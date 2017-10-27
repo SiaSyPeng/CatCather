@@ -2,6 +2,8 @@ package com.cs65.gnf.lab3
 
 import android.app.Activity
 import android.app.Fragment
+import android.content.Intent
+import android.location.Location
 import android.util.Log
 import android.widget.TextView
 import com.android.volley.*
@@ -16,69 +18,61 @@ import java.lang.StrictMath.pow
 /**
  * Pets a cat, from catID, latitude and longitude of user
  */
-fun petCat(act: Activity, user: String?, pass: String?, id: Int, loc: LatLng?): PetResult? {
-    if (loc!=null) {
-        val lat = loc.latitude
-        val lng = loc.longitude
+fun petCat(act: Activity, user: String?, pass: String?, id: Int, loc: LatLng?) {
+    val lat = loc?.latitude
+    val lng = loc?.longitude
 
-        val url = "http://cs65.cs.dartmouth.edu/pat.pl?name=$user&password=$pass&catid=$id&lat=$lat&lng=$lng"
+    val url = "http://cs65.cs.dartmouth.edu/pat.pl?name=$user&password=$pass&catid=$id&lat=$lat&lng=$lng"
 
-        var petRes: PetResult? = null
+    Volley.newRequestQueue(act)
+            .add(StringRequest(Request.Method.GET,url,
+                    Response.Listener<String> { response ->
 
-        Volley.newRequestQueue(act)
-                .add(StringRequest(Request.Method.GET,url,
-                        Response.Listener<String> { response ->
+                        Log.d("PETRESPONSE",response)
+                        val moshi = Moshi.Builder()
+                                .add(KotlinJsonAdapterFactory())
+                                .add(StringToIntAdapter())
+                                .add(StringToStatusAdapter())
+                                .build()
 
-                            Log.d("PETRESPONSE",response)
-                            val moshi = Moshi.Builder()
-                                    .add(KotlinJsonAdapterFactory())
-                                    .add(StringToIntAdapter())
-                                    .add(StringToStatusAdapter())
-                                    .build()
+                        val petAdaptor = moshi.adapter(PetResult::class.java)
 
-                            val petAdaptor = moshi.adapter(PetResult::class.java)
+                        val petRes = petAdaptor.fromJson(response)
 
-                            petRes = petAdaptor.fromJson(response)
-
-                            if (petRes==null) {
-                                Log.d("ERROR","Pat result is null")
-                            }
-                            else {
-                                when (petRes?.status) {
-                                    Status.OK -> {
-                                        val txt: TextView = act.findViewById(R.id.HistoryID)
-                                        txt.text = response
-                                        //TODO whatever is done when pet was success
-                                    }
-                                    Status.ERROR -> {
-                                        //TODO this toast or whatever else you want to do if it fails
-                                        act.toast(petRes?.reason.toString())
-                                    }
+                        if (petRes==null) {
+                            Log.d("ERROR","Pat result is null")
+                        }
+                        else {
+                            when (petRes.status) {
+                                Status.ERROR -> {
+                                    act.toast(petRes.reason.toString())
+                                }
+                                Status.OK -> {
+                                    act.toast("mrowwwww")
+                                    val intent = Intent(act.applicationContext,SuccessActivity::class.java)
+                                    act.startActivity(intent)
                                 }
                             }
-                        },
-                        Response.ErrorListener { error -> // Handle error cases
-                            when (error) {
-                                is NoConnectionError ->
-                                    act.toast("Connection Error")
-                                is TimeoutError->
-                                    act.toast("Timeout Error")
-                                is AuthFailureError ->
-                                    act.toast("AuthFail Error")
-                                is NetworkError ->
-                                    act.toast("Network Error")
-                                is ParseError ->
-                                    act.toast("Parse Error")
-                                is ServerError ->
-                                    act.toast("Server Error")
-                                else -> act.toast("Error: " + error)
-                            }
                         }
-                ))
-
-        return petRes
-    }
-    return null
+                    },
+                    Response.ErrorListener { error -> // Handle error cases
+                        when (error) {
+                            is NoConnectionError ->
+                                act.toast("Connection Error")
+                            is TimeoutError->
+                                act.toast("Timeout Error")
+                            is AuthFailureError ->
+                                act.toast("AuthFail Error")
+                            is NetworkError ->
+                                act.toast("Network Error")
+                            is ParseError ->
+                                act.toast("Parse Error")
+                            is ServerError ->
+                                act.toast("Server Error")
+                            else -> act.toast("Error: " + error)
+                        }
+                    }
+            ))
 }
 
 /**
@@ -194,11 +188,15 @@ fun getClosestCat(list: List<Cat>, loc: LatLng): Int {
     val lng = loc.longitude
 
     var closestId = 0
-    var closestDist = 9999.9 //start with a high number
+    var closestDist = Float.MAX_VALUE //start with a high number
     for (kitty in list) { //for each cat
-        val dif = pow(lat-kitty.lat,2.0)+pow(lng-kitty.lng,2.0) //get dx^2+dy^2
-        if (dif<closestDist) { //if this distance is less than the closest distance
-            closestDist = dif
+        val dist = FloatArray(1)
+        Location.distanceBetween(
+                lat, lng,
+                kitty.lat, kitty.lng,
+                dist)
+        if (dist[0]<closestDist) { //if this distance is less than the closest distance
+            closestDist = dist[0]
             closestId = kitty.catId
         }
     }

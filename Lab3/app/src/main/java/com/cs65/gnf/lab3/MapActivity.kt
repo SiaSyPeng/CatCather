@@ -214,8 +214,30 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
      */
     override fun onLocationChanged(location : Location){
         Log.d("LOCATION", "CHANGED: " + location.latitude + " " + location.longitude)
+
+        //Change current location
         currLoc = LatLng(location.latitude,location.longitude)
+
+        //Repopulate the map
         drawThings()
+
+        //Update the panel distance
+        val selectedCat = visibleCats[selectedCatID.id]
+        if (currLoc!= null && selectedCat!= null) {
+            //get distance between cat and user
+            val dist = FloatArray(1)
+            Location.distanceBetween(
+                    selectedCat.lat, selectedCat.lng,
+                    currLoc!!.latitude, currLoc!!.longitude,
+                    dist
+            )
+
+            val readableDist = dist[0].toInt().toString() + " metres"
+
+            // update view
+            val mDis: TextView = findViewById(R.id.map_panel_distance)
+            mDis.text = readableDist
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -255,20 +277,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         val pass = prefs.getString(PASS_STRING,null)
 
         //get the pet result
-        val petResult = petCat(this,user,pass,selectedCatID.id,currLoc)
-
-        when (petResult?.status) {
-            Status.OK -> {
-                toast("mrowwwww")
-                visibleCats[selectedCatID.id]?.petted = true
-                val intent = Intent(applicationContext,SuccessActivity::class.java)
-                startActivity(intent)
-            }
-            Status.ERROR -> {
-                if (petResult.reason!=null) toast(petResult.reason) //Tell the user why the petting
-                                                                    //was unsuccessful
-            }
-        }
+        petCat(this,user,pass,selectedCatID.id,currLoc)
     }
 
     /**
