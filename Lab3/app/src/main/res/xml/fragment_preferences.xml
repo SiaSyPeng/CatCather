@@ -37,6 +37,15 @@
             android:switchTextOff="@string/prefs_mode_easy"
             android:defaultValue="false"/>
 
+        <ListPreference
+            android:title="@string/prefs_dis_title"
+            android:key="@string/prefs_dis_key"
+            android:summary="@string/prefs_dis_summary"
+            android:entries= "@array/prefs_dis_entries"
+            android:entryValues="@array/prefs_dis_entryValues"
+            android:defaultValue="l"
+            />
+
         <CheckBoxPreference
             android:title="@string/prefs_privacy_title"
             android:key="@string/prefs_privacy_key"
