@@ -25,6 +25,8 @@ for lab3, please see the final code on branch lab3Submit
 
 ### Lab3
 - have "hard" mode working
+- pre-selecting the cat closest to your location, and display information 
+	      	about that cat when the user opens the Map activity.
 - "Creating and interacting with GoogleMaps objects"
     - design our own markers
     - have a configurable setting in the 
@@ -32,8 +34,6 @@ for lab3, please see the final code on branch lab3Submit
         time interval) you receive location updates. i.e. When you request 
         updates from locationManager, use the min time from 
         the settings fragment.
--pre-selecting the cat closest to your location, and display information 
-	      	about that cat when the user opens the Map activity.
 
 ## Usage
 
