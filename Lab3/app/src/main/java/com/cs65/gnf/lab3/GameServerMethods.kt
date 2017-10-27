@@ -7,6 +7,7 @@ import android.widget.TextView
 import com.android.volley.*
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import com.google.android.gms.maps.model.LatLng
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
 import org.jetbrains.anko.toast
@@ -15,70 +16,69 @@ import java.lang.StrictMath.pow
 /**
  * Pets a cat, from catID, latitude and longitude of user
  */
-fun petCat(act: Activity, user: String?, pass: String?, id: Int): PetResult? {
-    //TODO Get location
+fun petCat(act: Activity, user: String?, pass: String?, id: Int, loc: LatLng?): PetResult? {
+    if (loc!=null) {
+        val lat = loc.latitude
+        val lng = loc.longitude
 
-    //TODO remove the next two lines
-    val lng = -72.289024
-    val lat = 43.70484
+        val url = "http://cs65.cs.dartmouth.edu/pat.pl?name=$user&password=$pass&catid=$id&lat=$lat&lng=$lng"
 
-    val url = "http://cs65.cs.dartmouth.edu/pat.pl?name=$user&password=$pass&catid=$id&lat=$lat&lng=$lng"
+        var petRes: PetResult? = null
 
-    var petRes: PetResult? = null
+        Volley.newRequestQueue(act)
+                .add(StringRequest(Request.Method.GET,url,
+                        Response.Listener<String> { response ->
 
-    Volley.newRequestQueue(act)
-            .add(StringRequest(Request.Method.GET,url,
-                    Response.Listener<String> { response ->
+                            Log.d("PETRESPONSE",response)
+                            val moshi = Moshi.Builder()
+                                    .add(KotlinJsonAdapterFactory())
+                                    .add(StringToIntAdapter())
+                                    .add(StringToStatusAdapter())
+                                    .build()
 
-                        Log.d("PETRESPONSE",response)
-                        val moshi = Moshi.Builder()
-                                .add(KotlinJsonAdapterFactory())
-                                .add(StringToIntAdapter())
-                                .add(StringToStatusAdapter())
-                                .build()
+                            val petAdaptor = moshi.adapter(PetResult::class.java)
 
-                        val petAdaptor = moshi.adapter(PetResult::class.java)
+                            petRes = petAdaptor.fromJson(response)
 
-                        petRes = petAdaptor.fromJson(response)
-
-                        if (petRes==null) {
-                            Log.d("ERROR","Pat result is null")
-                        }
-                        else {
-                            when (petRes?.status) {
-                                Status.OK -> {
-                                    val txt: TextView = act.findViewById(R.id.HistoryID)
-                                    txt.text = response
-                                    //TODO whatever is done when pet was success
-                                }
-                                Status.ERROR -> {
-                                    //TODO this toast or whatever else you want to do if it fails
-                                    act.toast(petRes?.reason.toString())
+                            if (petRes==null) {
+                                Log.d("ERROR","Pat result is null")
+                            }
+                            else {
+                                when (petRes?.status) {
+                                    Status.OK -> {
+                                        val txt: TextView = act.findViewById(R.id.HistoryID)
+                                        txt.text = response
+                                        //TODO whatever is done when pet was success
+                                    }
+                                    Status.ERROR -> {
+                                        //TODO this toast or whatever else you want to do if it fails
+                                        act.toast(petRes?.reason.toString())
+                                    }
                                 }
                             }
+                        },
+                        Response.ErrorListener { error -> // Handle error cases
+                            when (error) {
+                                is NoConnectionError ->
+                                    act.toast("Connection Error")
+                                is TimeoutError->
+                                    act.toast("Timeout Error")
+                                is AuthFailureError ->
+                                    act.toast("AuthFail Error")
+                                is NetworkError ->
+                                    act.toast("Network Error")
+                                is ParseError ->
+                                    act.toast("Parse Error")
+                                is ServerError ->
+                                    act.toast("Server Error")
+                                else -> act.toast("Error: " + error)
+                            }
                         }
-                    },
-                    Response.ErrorListener { error -> // Handle error cases
-                        when (error) {
-                            is NoConnectionError ->
-                                act.toast("Connection Error")
-                            is TimeoutError->
-                                act.toast("Timeout Error")
-                            is AuthFailureError ->
-                                act.toast("AuthFail Error")
-                            is NetworkError ->
-                                act.toast("Network Error")
-                            is ParseError ->
-                                act.toast("Parse Error")
-                            is ServerError ->
-                                act.toast("Server Error")
-                            else -> act.toast("Error: " + error)
-                        }
-                    }
-            ))
+                ))
 
-    return petRes
-
+        return petRes
+    }
+    return null
 }
 
 /**
@@ -188,12 +188,10 @@ fun changePassword(frag: Fragment, user: String?, pass: String?, newPass: String
 /**
  * Returns the ID of the closest cat in the cat list
  */
-fun getClosestCat(list: List<Cat>): Int {
-    //TODO get location
+fun getClosestCat(list: List<Cat>, loc: LatLng): Int {
 
-    //TODO delete the bottom two lines of code
-    val lng = -72.289034
-    val lat = 43.70414
+    val lat = loc.latitude
+    val lng = loc.longitude
 
     var closestId = 0
     var closestDist = 9999.9 //start with a high number

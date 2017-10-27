@@ -94,7 +94,8 @@ data class Cat(
         val name: String,
         @StringToDouble val lat: Double,
         @StringToDouble val lng: Double,
-        @StringToBool var petted: Boolean
+        @StringToBool var petted: Boolean,
+        var visible: Boolean = false
 )
 
 /**
@@ -117,7 +118,7 @@ data class OpResult(
 )
 
 /**
- * Custom class whose changes we can listen to
+ * Custom class whose changes we can listen to. We can also retrieve the last used ID.
  */
 class ListenableCatID(private val listener: ChangeListener){
     var id: Int = 0
