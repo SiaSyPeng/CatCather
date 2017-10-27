@@ -80,6 +80,20 @@
     <string name="prefs_mode_easy">Easy</string>
     <string name="prefs_mode_summary">Would you like to play on easy or hard mode</string>
 
+    <string name="prefs_dis_title">Radius of Visible Cats</string>
+    <string name="prefs_dis_key">dis</string>
+    <string name="prefs_dis_summary">How big the radius of visible cats do you want to see</string>
+    <string-array name="prefs_dis_entries">
+        <item>100</item>
+        <item>200</item>
+        <item>500</item>
+    </string-array>
+    <string-array name="prefs_dis_entryValues">
+        <item>s</item>
+        <item>m</item>
+        <item>l</item>
+    </string-array>
+
     <string name="prefs_privacy_title">Privacy Settings</string>
     <string name="prefs_privacy_key">privacy</string>
     <string name="prefs_privacy_summary">Allow other users to see your score?</string>
@@ -101,7 +115,7 @@
 
     <!--Play Tab -->
     <string name="play_username">Hi, XX!</string>
-    <string name="play_cat_num">Now you have x cats</string>
+    <string name="play_cat_num">Welcome!</string>
     <string name="play_button">PLAY</string>
 
     <!--Map -->

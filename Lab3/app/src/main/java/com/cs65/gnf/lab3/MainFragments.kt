@@ -12,6 +12,8 @@ import android.view.ViewGroup
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.widget.ImageView
+import android.widget.TextView
 import com.android.volley.*
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -24,10 +26,20 @@ import org.json.JSONObject
  * Fragment for "Play" Tab
  */
 class PlayFrag: Fragment() {
+    private val USER_PREFS = "profile_data" //Shared with other activities
+    private val USER_STRING = "Username"
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_play, container, false)
+        val view =  inflater.inflate(R.layout.fragment_play, container, false)
+        val mPlayName: TextView = view.findViewById(R.id.play_name)
+
+
+        val mUName= activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE).getString(USER_STRING, " ")
+        mPlayName.text="Hi, $mUName"
+
+        return view
     }
 }
 
@@ -70,6 +82,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
     private val PRIV_STRING = "privacy"
     private val ALER_STRING = "alert"
     private val MODE_STRING = "mode"
+    private val DIS_STRING = "dis"
 
     //volley request
     private lateinit var queue: RequestQueue
@@ -162,6 +175,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         var privacy = userPrefs.getBoolean(PRIV_STRING, true)
         var alert = userPrefs.getString(ALER_STRING, null)
         var mode = userPrefs.getBoolean(MODE_STRING,false)
+        var dis = userPrefs.getString(DIS_STRING, null)
 
         // Update json object
         jsonReq.put("name", uName)
@@ -206,6 +220,16 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
                         .apply()
             }
 
+            getString(R.string.prefs_dis_key) -> {
+                dis = activity.defaultSharedPreferences.getString(key,"l")
+
+                //Put it into sharedPrefs storage
+                activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
+                        .edit()
+                        .putString(key,dis)
+                        .apply()
+            }
+
             getString(R.string.prefs_privacy_key) -> {
                 //Get the new setting
                 privacy = activity.defaultSharedPreferences.getBoolean(key,true)
@@ -234,6 +258,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
             jsonReq.put(PRIV_STRING, privacy)
             jsonReq.put(ALER_STRING, alert)
             jsonReq.put(MODE_STRING,mode)
+            jsonReq.put(DIS_STRING, dis)
         } catch (e: JSONException) {
             // Warn the user that something is wrong; do not connect
             Log.d("JSON", "Invalid JSON: " + e.toString())

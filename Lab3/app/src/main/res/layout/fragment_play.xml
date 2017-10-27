@@ -25,15 +25,18 @@
             android:src="@drawable/cat_map"
             android:scaleType="fitCenter"
             android:padding="10dp"
+            android:paddingTop="20dp"
             app:layout_alignSelf="center"
             app:layout_flexShrink="1"
             />
         <TextView
+            android:id="@+id/play_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:padding="10dp"
             android:textColor="@color/Black"
+            android:textSize="20dp"
             android:text="@string/play_username"
             />
         <TextView
