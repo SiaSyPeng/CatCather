@@ -83,6 +83,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
     private val ALER_STRING = "alert"
     private val MODE_STRING = "mode"
     private val DIS_STRING = "dis"
+    private val TIME_STRING = "minTime"
 
     //volley request
     private lateinit var queue: RequestQueue
@@ -176,6 +177,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         var alert = userPrefs.getString(ALER_STRING, null)
         var mode = userPrefs.getBoolean(MODE_STRING,false)
         var dis = userPrefs.getString(DIS_STRING, null)
+        var time = userPrefs.getString(TIME_STRING,null)
 
         // Update json object
         jsonReq.put("name", uName)
@@ -220,6 +222,18 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
                         .apply()
             }
 
+            //Time
+            getString(R.string.prefs_mintime_key) -> {
+                time = activity.defaultSharedPreferences.getString(key,"f")
+
+                //Put it into sharedPrefs storage
+                activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
+                        .edit()
+                        .putString(key,time)
+                        .apply()
+            }
+
+            //Distance
             getString(R.string.prefs_dis_key) -> {
                 dis = activity.defaultSharedPreferences.getString(key,"l")
 
@@ -230,6 +244,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
                         .apply()
             }
 
+            //Privacy
             getString(R.string.prefs_privacy_key) -> {
                 //Get the new setting
                 privacy = activity.defaultSharedPreferences.getBoolean(key,true)
@@ -259,6 +274,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
             jsonReq.put(ALER_STRING, alert)
             jsonReq.put(MODE_STRING,mode)
             jsonReq.put(DIS_STRING, dis)
+            jsonReq.put(TIME_STRING,time)
         } catch (e: JSONException) {
             // Warn the user that something is wrong; do not connect
             Log.d("JSON", "Invalid JSON: " + e.toString())
