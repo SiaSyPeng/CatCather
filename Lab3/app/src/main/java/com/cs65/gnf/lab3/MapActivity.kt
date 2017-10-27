@@ -51,6 +51,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private val USER_STRING = "Username"
     private val PASS_STRING = "Password"
     private val MODE_STRING = "mode"
+    private val TIME_STRING = "minTime"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -221,9 +222,17 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         //Repopulate the map
         drawThings()
 
-        //Update the panel distance
+        //Get the selected cat from the visible cat list
         val selectedCat = visibleCats[selectedCatID.id]
-        if (currLoc!= null && selectedCat!= null) {
+
+        //if it's null that means the selected cat is now invisible
+        //So now set the closest cat to selected cat
+        if (selectedCat== null) {
+            selectedCatID.id = getClosestCat(listOfCats!!,currLoc!!)
+        }
+
+        //Otherwise update the distance between the cat and the user
+        else if (currLoc!= null) {
             //get distance between cat and user
             val dist = FloatArray(1)
             Location.distanceBetween(
@@ -379,7 +388,18 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                 // Move camera: zoom in and out
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(currLoc))
                 mMap.moveCamera(CameraUpdateFactory.zoomTo(17f))
-                mgr!!.requestLocationUpdates(provider, 0, 0f, this)
+
+                //Find out how long the user wants between location updates
+                val prefs = getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
+                val time: Long = when (prefs.getString(TIME_STRING,"f")) {
+                    "f" -> 0
+                    "m" -> 100
+                    "s" -> 1000
+                    else -> 0
+                }
+                Log.d("TIME",time.toString())
+                //Ask for location updates
+                mgr!!.requestLocationUpdates(provider, time, 0f, this)
             }
         }
     }
