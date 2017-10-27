@@ -16,6 +16,25 @@ for lab2, please see the final code on branch lab2Submit
 for lab3, please see the final code on branch lab3Submit
 
 
+## Extra Credit
+
+### Lab2
+
+- Login functioning
+- Update Profile functioning: User preference will be saved to server
+
+### Lab3
+- have "hard" mode working
+- "Creating and interacting with GoogleMaps objects"
+    - design our own markers
+    - have a configurable setting in the 
+        Settings fragment that controls how frequently (the minimum
+        time interval) you receive location updates. i.e. When you request 
+        updates from locationManager, use the min time from 
+        the settings fragment.
+-pre-selecting the cat closest to your location, and display information 
+	      	about that cat when the user opens the Map activity.
+
 ## Usage
 
 Catch Wild Cat! YAY! 
