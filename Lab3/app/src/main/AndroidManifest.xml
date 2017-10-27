@@ -35,22 +35,26 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".LoginActivity"
-            android:windowSoftInputMode="stateHidden">
+            android:name=".LaunchActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
-            android:name=".SignupActivity"
-            android:windowSoftInputMode="stateHidden">
+            android:name=".LoginActivity">
+        </activity>
+
+        <activity
+            android:name=".SignupActivity">
 
         </activity>
         <activity
             android:name=".MapActivity"
-            android:windowSoftInputMode="stateHidden">
+            android:screenOrientation="portrait"
+            >
 
         </activity>
         <activity
@@ -60,7 +64,7 @@
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
-        <activity android:name=".SuccessActivity"></activity>
+        <activity android:name=".SuccessActivity"/>
     </application>
 
 </manifest>
