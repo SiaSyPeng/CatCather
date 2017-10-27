@@ -15,14 +15,13 @@ buildscript {
         // in the individual module build.gradle files
     }
 }
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 allprojects {
     repositories {
         google()
         jcenter()
     }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }
