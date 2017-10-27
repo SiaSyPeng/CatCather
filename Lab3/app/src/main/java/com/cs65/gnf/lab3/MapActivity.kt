@@ -173,6 +173,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                                             val patButton: View = findViewById(R.id.pat_button)
                                             patButton.visibility = (View.VISIBLE)
 
+                                            //Step 6— Draw all markers
+                                            drawThings()
+
                                         }
                                     }
                                 },
@@ -194,8 +197,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                                     }
                                 }
                         ))
-
-        drawThings()
     }
 
     override fun onMarkerClick(p0: Marker?): Boolean {
@@ -226,11 +227,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                         grantResults[2] == PackageManager.PERMISSION_GRANTED)) {
                     // permissions not obtained
                     requestPermissions()
-                }
-                else {
-                    val mapFrag = supportFragmentManager
-                            .findFragmentById(R.id.map) as SupportMapFragment
-                    mapFrag.getMapAsync(this)
                 }
             }
         }
@@ -325,6 +321,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
             ActivityCompat.requestPermissions(this,
                     arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.INTERNET),
                     LOC_REQUEST_CODE)
+        }
+        else {
+            val mapFrag = supportFragmentManager
+                    .findFragmentById(R.id.map) as SupportMapFragment
+            mapFrag.getMapAsync(this)
         }
     }
 
