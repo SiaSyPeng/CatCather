@@ -38,7 +38,9 @@ class PlayFrag: Fragment() {
         val mUName= activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE).getString(USER_STRING, " ")
         // Update player name
         val mPlayName: TextView = view.findViewById(R.id.play_name)
-        mPlayName.text="Hi, $mUName"
+
+        val text = "Hi, $mUName"
+        mPlayName.text=text
 
         return view
     }
@@ -158,10 +160,9 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
                 .unregisterOnSharedPreferenceChangeListener(this)
     }
 
-    /*
+    /**
      * When user change setting preference fragements,
      * Update local storage and server storage
-     *
      */
     override fun onSharedPreferenceChanged(prefs: SharedPreferences?, key: String?) {
         val jsonReq = JSONObject()
