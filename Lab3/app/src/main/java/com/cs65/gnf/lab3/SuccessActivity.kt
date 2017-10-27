@@ -12,11 +12,19 @@ class SuccessActivity : AppCompatActivity() {
         setContentView(R.layout.activity_success)
     }
 
+    /*
+     * Onclick Again button,
+     * direct user to map activity
+     */
     fun onAgain(v: View){
         val intent = Intent(applicationContext,MapActivity::class.java)
         startActivity(intent)
     }
 
+    /*
+     * Onclick Done button,
+     * direct user to main activity
+     */
     fun onDone(v: View){
         val intent = Intent(applicationContext,MainActivity::class.java)
         startActivity(intent)

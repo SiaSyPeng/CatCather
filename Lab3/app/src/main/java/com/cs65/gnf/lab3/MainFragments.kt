@@ -33,10 +33,11 @@ class PlayFrag: Fragment() {
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         val view =  inflater.inflate(R.layout.fragment_play, container, false)
-        val mPlayName: TextView = view.findViewById(R.id.play_name)
 
-
+        // using the player name saved in local shared preference
         val mUName= activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE).getString(USER_STRING, " ")
+        // Update player name
+        val mPlayName: TextView = view.findViewById(R.id.play_name)
         mPlayName.text="Hi, $mUName"
 
         return view
