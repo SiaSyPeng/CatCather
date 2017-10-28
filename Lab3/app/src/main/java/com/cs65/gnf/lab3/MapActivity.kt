@@ -145,6 +145,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         val pass = prefs.getString(PASS_STRING,null)
         //mode as string is "hard" if mode is true, "easy" otherwise
         val mode = if (prefs.getBoolean(MODE_STRING,false)) "hard" else "easy"
+
+        //Set the radius
         RADIUS_OF_SHOWN_MARKERS = when (prefs.getString(DIS_STRING, "m")) {
             "l" -> 1000f
             "m" -> 500f
