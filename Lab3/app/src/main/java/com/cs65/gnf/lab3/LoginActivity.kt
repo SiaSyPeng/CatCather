@@ -188,11 +188,6 @@ class LoginActivity : Activity() {
         //Assign that to the view
         v.setBackgroundResource(R.color.colorPrimaryDark)
         v.startAnimation(blink)
-//        Timer().schedule(object : TimerTask() {
-//            override fun run() {
-//                v.setBackgroundResource(R.color.transparent)
-//            }
-//        }, 2000)
         doAsync {
             Thread.sleep(2000)
             uiThread {

@@ -4,6 +4,7 @@ package com.cs65.gnf.lab3
  * java reflection to catch the POST response from server at login
  * Created by siapeng on 10/12/17.
  * Edited to a Kotlin data class by Naman on 10/18/17
+ * More things added by Naman on 10/27/17
  */
 data class LoginResponse (
         // Success case, will fetch all fields user saved
@@ -35,13 +36,12 @@ data class ProfJson (
         val privacy: Boolean?,
         val alert: String?,
         val mode: Boolean?,
-        val dis: String?,
-        val minTime: String?
+        val minTime: String?,
+        val dis: String?
 )
 
 data class UnameObject (
         val name: String?,
         val avail: String?
-
 )
 

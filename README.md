@@ -62,7 +62,10 @@ for, say, changing JSON objects into programmable objects
 
 **Lab1**: Sign up page
 
-**Lab2**: Server authentication, tab, and preference fragements
+**Lab2**: Server authentication, tab, and preference fragment
+
+**Lab3**: Google Map and cat interactions with real-time location. Adding more
+preferences into preference fragment.
 
 **Lab3**: Google Map and cat interaction on real-time location
 

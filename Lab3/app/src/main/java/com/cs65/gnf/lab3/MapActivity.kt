@@ -47,7 +47,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private var visibleCats : HashMap<Int,Cat> = HashMap()
     private lateinit var selectedCatID: ListenableCatID
 
-    //For shared preferences
+    //For from shared preferences
     private val USER_PREFS = "profile_data" //Shared with other activities
     private val USER_STRING = "Username"
     private val PASS_STRING = "Password"
@@ -58,6 +58,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+
+        //setup views
+        val patButton: Button = findViewById(com.cs65.gnf.lab3.R.id.pat_button)
 
         requestPermissions()
 
@@ -131,8 +134,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         mMap.setOnMarkerClickListener(this) //Defined after onMapReady function
 
         getLocation()
-
-        //WE NEED TO GET THE LIST OF CATS AND MAKE MARKERS ON THE SCREEN
 
         //Step 1— Get the username, password and mode
         val prefs = getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
@@ -430,7 +431,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    // Unused interface functions
+    // some interface functions that we don't actually use
 
     override fun onProviderDisabled(s: String) {
         // required for  interface, not used
@@ -441,7 +442,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
-        // Called when the provider status changes.
+        // required for  interface, not used
     }
-
 }

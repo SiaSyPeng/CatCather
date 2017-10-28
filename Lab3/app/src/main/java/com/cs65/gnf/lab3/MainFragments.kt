@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import android.widget.ImageView
 import android.widget.TextView
 import com.android.volley.*
 import com.android.volley.toolbox.JsonObjectRequest
