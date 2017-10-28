@@ -73,6 +73,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
 
 
                 //Get the selected cat
+
                 val selectedCat = visibleCats[selectedCatID.id]!!
 
                 //enable or disable button depending on the
@@ -141,10 +142,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         val pass = prefs.getString(PASS_STRING,null)
         //mode as string is "hard" if mode is true, "easy" otherwise
         val mode = if (prefs.getBoolean(MODE_STRING,false)) "hard" else "easy"
-        RADIUS_OF_SHOWN_MARKERS = when (prefs.getString(DIS_STRING, "l")) {
-            "l" -> 500f
-            "m" -> 200f
-            "s" -> 100f
+        RADIUS_OF_SHOWN_MARKERS = when (prefs.getString(DIS_STRING, "m")) {
+            "l" -> 1000f
+            "m" -> 500f
+            "s" -> 250f
             else -> 500f
         }
 
@@ -186,7 +187,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                                             Log.d("ERROR","List of cats not found")
                                         }
                                         else {
-
                                             //Step 5— Set the closest cat to SelectedCat to begin with
                                             selectedCatID.id = getClosestCat(listOfCats!!,currLoc!!)
 
