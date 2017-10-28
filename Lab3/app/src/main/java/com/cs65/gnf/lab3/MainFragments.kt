@@ -101,12 +101,15 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
 
         //Set default values (depending on whether values have previously been set)
         PreferenceManager.setDefaultValues(context, USER_PREFS,
-                Context.MODE_PRIVATE, R.xml.fragment_preferences, false)
+                Context.MODE_PRIVATE, R.xml.fragment_preferences, true)
 
         //Get the preferences we'll be assigning listeners to here
         val signoutPref = findPreference(getString(R.string.prefs_signout_key))
         val aboutPref = findPreference(getString(R.string.prefs_about_key))
         val newGamePref = findPreference(getString(R.string.prefs_newgame_key))
+
+        val prefs = activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
+        val mode = prefs.getBoolean(MODE_STRING,false)
 
         // Clean up when the user sign out
         signoutPref.setOnPreferenceClickListener { _ ->

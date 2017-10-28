@@ -71,7 +71,6 @@ class LoginActivity : Activity() {
                 val stringRequest = object : StringRequest(Request.Method.GET, url,
                         Response.Listener<String> { response ->
                             try {
-                                Log.d("LOGIN RESPONSE", response.toString())
                                 // parse the string, based on provided class object as template
                                 val gson = GsonBuilder().create()
                                 val loginRes = gson.fromJson(response, LoginResponse::class.java)
