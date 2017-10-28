@@ -207,6 +207,5 @@ fun getClosestCat(list: List<Cat>, loc: LatLng): Int {
             closestId = kitty.catId
         }
     }
-
     return closestId //returns the closest cat's ID
 }

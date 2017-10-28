@@ -60,7 +60,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         setContentView(R.layout.activity_map)
 
         //setup views
-        val patButton: Button = findViewById(com.cs65.gnf.lab3.R.id.pat_button)
 
         requestPermissions()
 
@@ -71,48 +70,53 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                 //Redraw the map, also generating the map of visible cats
                 drawThings()
 
-
                 //Get the selected cat
-                val selectedCat = visibleCats[selectedCatID.id]!!
+                val selectedCat = visibleCats[selectedCatID.id]
+                if (selectedCat == null) {
+                    toast("You're too far away from any cats!")
+                }
+                else {
+                    //enable or disable button depending on if cat has been petted
+                    val ifPetted: Boolean = selectedCat.petted
+                    val patButton: Button = findViewById(R.id.pat_button)
+                    patButton.isEnabled = !ifPetted
+                  // Update the panel with the following:
+                  // cat pic, cat name, and cat distance to current location
 
-                //enable or disable button depending on the
-                val ifPetted: Boolean = selectedCat.petted
-                val patButton: Button = findViewById(R.id.pat_button)
-                patButton.isEnabled = !ifPetted
+                    //Update Cat pic
+                    val url = selectedCat.picUrl
+                    val mImg: ImageView = findViewById(R.id.panel_img)
+                    Picasso.with(applicationContext).load(url).placeholder(R.drawable.pointer).into(mImg)
 
-                /*
-                 * Update the panel with the following:
-                 * cat pic, cat name, and cat distance to current location
-                 */
-                //Update Cat pic
-                val url = selectedCat.picUrl
-                val mImg: ImageView = findViewById(R.id.panel_img)
-                Picasso.with(applicationContext).load(url).placeholder(R.drawable.pointer).into(mImg)
+                    //Update Cat name
+                    val mName: TextView = findViewById(R.id.map_panel_name)
+                    mName.text = selectedCat.name
 
-                //Update Cat name
-                val mName: TextView = findViewById(R.id.map_panel_name)
-                mName.text = selectedCat.name
+                    //Update Distance
+                    if (currLoc!= null){
+                        //get distance between cat and user
+                        val dist = FloatArray(1)
+                        Location.distanceBetween(
+                                selectedCat.lat,selectedCat.lng,
+                                currLoc!!.latitude,currLoc!!.longitude,
+                                dist
+                        )
+                        // cast distance to string
+                        val readableDist = dist[0].toInt().toString() + " metres"
 
-                //Update Distance
-                if (currLoc!= null){
-                    //get distance between cat and user
-                    val dist = FloatArray(1)
-                    Location.distanceBetween(
-                            selectedCat.lat,selectedCat.lng,
-                            currLoc!!.latitude,currLoc!!.longitude,
-                            dist
-                    )
-                    // cast distance to string
-                    val readableDist = dist[0].toInt().toString() + " metres"
+                        // update view
+                        val mDis: TextView = findViewById(R.id.map_panel_distance)
+                        mDis.text = readableDist
+                }
 
-                    // update view
-                    val mDis: TextView = findViewById(R.id.map_panel_distance)
-                    mDis.text = readableDist
+
+
+
+
 
                     //update the map
-                    if (listOfCats!= null) drawThings()
+                    drawThings()
                 }
-                else toast("Cannot get current location")
             }
         })
     }
