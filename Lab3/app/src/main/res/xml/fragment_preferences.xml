@@ -37,7 +37,7 @@
             android:summary="@string/prefs_dis_summary"
             android:entries= "@array/prefs_dis_entries"
             android:entryValues="@array/prefs_dis_entryValues"
-            android:defaultValue="l"
+            android:defaultValue="m"
             />
 
         <CheckBoxPreference

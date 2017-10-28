@@ -236,7 +236,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
 
             //Distance
             getString(R.string.prefs_dis_key) -> {
-                dis = activity.defaultSharedPreferences.getString(key,"l")
+                dis = activity.defaultSharedPreferences.getString(key,"m")
 
                 //Put it into sharedPrefs storage
                 activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
