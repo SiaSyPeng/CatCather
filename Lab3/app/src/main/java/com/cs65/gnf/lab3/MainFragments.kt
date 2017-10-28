@@ -159,10 +159,9 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
                 .unregisterOnSharedPreferenceChangeListener(this)
     }
 
-    /*
+    /**
      * When user change setting preference fragements,
      * Update local storage and server storage
-     *
      */
     override fun onSharedPreferenceChanged(prefs: SharedPreferences?, key: String?) {
         val jsonReq = JSONObject()

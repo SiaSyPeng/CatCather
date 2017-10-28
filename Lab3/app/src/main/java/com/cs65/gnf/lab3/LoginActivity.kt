@@ -17,13 +17,13 @@ import org.jetbrains.anko.uiThread
 
 class LoginActivity : Activity() {
 
-    //Safely save/retrieve
+    //Safely save/retrieve from shared preferences
     private val USER_STRING = "Username"
     private val PASS_STRING = "Password"
     private val ALERT_STRING = "alert"
     private val PRIVACY_STRING = "privacy"
     private val MODE_STRING = "mode"
-    private val DIS_STRING = "dis"
+    private val DIST_STRING = "dis"
     private val TIME_STRING = "minTime"
 
     //Views needed many times
@@ -129,8 +129,8 @@ class LoginActivity : Activity() {
      * and
      * Takes you to home page
      */
-    fun loginSubmit(uname: String?, pass: String?, privacy: Boolean?, alert: String?, mode: Boolean?,
-                    time: String?, distance: String?){
+    fun loginSubmit(uname: String?, pass: String?, privacy: Boolean?, alert: String?, mode:Boolean?,
+                    time: String?,dist:String?){
         // save existent things to local
         val sp = getSharedPreferences(USER_INFO,0)
         val editor = sp.edit()
@@ -138,9 +138,10 @@ class LoginActivity : Activity() {
         if (pass is String) editor.putString(PASS_STRING, pass)
         if (privacy is Boolean) editor.putBoolean(PRIVACY_STRING, privacy)
         if (alert is String) editor.putString(ALERT_STRING, alert)
-        if (mode is Boolean) editor.putBoolean(MODE_STRING, mode)
+        if (mode is Boolean) editor.putBoolean(MODE_STRING,mode)
         if (time is String) editor.putString(TIME_STRING,time)
-        if (distance is String) editor.putString(DIS_STRING,distance)
+        if (dist is String) editor.putString(DIST_STRING,dist)
+
         editor.apply()
 
         //Start main activity

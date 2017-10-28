@@ -67,6 +67,8 @@ for, say, changing JSON objects into programmable objects
 **Lab3**: Google Map and cat interactions with real-time location. Adding more
 preferences into preference fragment.
 
+**Lab3**: Google Map and cat interaction on real-time location
+
 ...
 
 ## Assumptions

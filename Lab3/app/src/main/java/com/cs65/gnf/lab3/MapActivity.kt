@@ -77,11 +77,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
 
                 //enable or disable button depending on the
                 val ifPetted: Boolean = selectedCat.petted
-                if (ifPetted) {
-                    patButton.setEnabled(false)
-                } else {
-                    patButton.setEnabled(true)
-                }
+                val patButton: Button = findViewById(R.id.pat_button)
+                patButton.isEnabled = !ifPetted
 
                 /*
                  * Update the panel with the following:
@@ -150,7 +147,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
             "s" -> 100f
             else -> 500f
         }
-        Log.d("onMapReady","mode: $mode radius: $RADIUS_OF_SHOWN_MARKERS")
 
         //Step 2— Make the URL
         val listUrl = "http://cs65.cs.dartmouth.edu/catlist.pl?name=$user&password=$pass&mode=$mode"
@@ -194,7 +190,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                                             //Step 5— Set the closest cat to SelectedCat to begin with
                                             selectedCatID.id = getClosestCat(listOfCats!!,currLoc!!)
 
-                                            val patButton: View = findViewById(R.id.pat_button)
+                                            val patButton: Button = findViewById(R.id.pat_button)
                                             patButton.visibility = (View.VISIBLE)
 
                                             //Step 6— Draw all markers
@@ -224,8 +220,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     /**
-     * When a marker is clicked the cat it refers to is selected, calling the selectedCatID's
-     * onClick Listener
+     * Called when a marker  is clicked
+     * Sets the selectedCatID to that marker's tag
      */
     override fun onMarkerClick(p0: Marker?): Boolean {
         val markerId = p0?.tag //Get the associated Cat ID we saved in the marker
@@ -354,6 +350,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
+    /**
+     * When permissions are not granted ask for them again
+     * Once they are, start up the map
+     */
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
             LOC_REQUEST_CODE -> {
@@ -412,7 +412,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                     Log.d("PERM", "Security Exception getting last known location. Using Hanover.")
                 }
                 currLoc = if (l != null)  LatLng(l.latitude, l.longitude) else hanover
-                Log.d("Coords", x.toString() + " " + y.toString() )
 
                 // Move camera: zoom in and out
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(currLoc))
@@ -426,7 +425,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                     "s" -> 1000
                     else -> 0
                 }
-                Log.d("TIME",time.toString())
                 //Ask for location updates
                 mgr!!.requestLocationUpdates(provider, time, 0f, this)
             }

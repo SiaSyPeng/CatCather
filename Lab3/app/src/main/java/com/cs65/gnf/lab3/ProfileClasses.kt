@@ -14,8 +14,8 @@ data class LoginResponse (
         val privacy: Boolean?,
         val alert: String?,
         val mode: Boolean?,
-        val minTime: String?,
         val dis: String?,
+        val minTime: String?,
 
         // Error case, will fetch status(error) and what error the user get(code)
         val error: String?,
