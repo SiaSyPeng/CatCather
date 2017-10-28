@@ -101,10 +101,10 @@ fun resetList(frag: Fragment,user: String?, pass: String?) {
                         else {
                             when (result.status) {
                                 Status.OK -> {
-                                    //TODO do whatever needs to be done
+                                    frag.toast("New game has started!")
                                 }
                                 Status.ERROR -> {
-                                    //TODO Idk if anything else should be done here
+                                    frag.toast("Error starting new game: ${result.error}")
                                     Log.d("ERROR",result.error)
                                 }
                             }
@@ -155,7 +155,6 @@ fun changePassword(frag: Fragment, user: String?, pass: String?, newPass: String
                             Log.d("ERROR","no result from pass change")
                         }
                         else {
-                            //TODO Password has been changed, what else needs to be done
                             frag.toast("Password changed successfully!")
                         }
                     },

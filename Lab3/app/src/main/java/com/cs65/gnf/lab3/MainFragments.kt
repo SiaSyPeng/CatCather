@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import android.widget.ImageView
 import android.widget.TextView
 import com.android.volley.*
 import com.android.volley.toolbox.JsonObjectRequest
@@ -38,7 +37,9 @@ class PlayFrag: Fragment() {
         val mUName= activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE).getString(USER_STRING, " ")
         // Update player name
         val mPlayName: TextView = view.findViewById(R.id.play_name)
-        mPlayName.text="Hi, $mUName"
+
+        val text = "Hi, $mUName"
+        mPlayName.text=text
 
         return view
     }

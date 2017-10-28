@@ -19,10 +19,12 @@ class LoginActivity : Activity() {
 
     //Safely save/retrieve
     private val USER_STRING = "Username"
-    private val NAME_STRING = "Name"
     private val PASS_STRING = "Password"
     private val ALERT_STRING = "alert"
     private val PRIVACY_STRING = "privacy"
+    private val MODE_STRING = "mode"
+    private val DIS_STRING = "dis"
+    private val TIME_STRING = "minTime"
 
     //Views needed many times
     private lateinit var mUsername: EditText
@@ -88,7 +90,9 @@ class LoginActivity : Activity() {
                                 } else {
                                     // if no error, authenticated, log in the the home page
                                     // update the newest user infor and preferences from the server
-                                    loginSubmit(loginRes.name, loginRes.password, loginRes.privacy, loginRes.alert)
+                                    loginSubmit(loginRes.name, loginRes.password, loginRes.privacy,
+                                            loginRes.alert,loginRes.mode,loginRes.minTime,
+                                            loginRes.dis)
                                 }
                             } catch (e: Exception) {
                                 Log.d("JSON", e.toString())
@@ -125,7 +129,8 @@ class LoginActivity : Activity() {
      * and
      * Takes you to home page
      */
-    fun loginSubmit(uname: String?, pass: String?, privacy: Boolean?, alert: String?){
+    fun loginSubmit(uname: String?, pass: String?, privacy: Boolean?, alert: String?, mode: Boolean?,
+                    time: String?, distance: String?){
         // save existent things to local
         val sp = getSharedPreferences(USER_INFO,0)
         val editor = sp.edit()
@@ -133,6 +138,9 @@ class LoginActivity : Activity() {
         if (pass is String) editor.putString(PASS_STRING, pass)
         if (privacy is Boolean) editor.putBoolean(PRIVACY_STRING, privacy)
         if (alert is String) editor.putString(ALERT_STRING, alert)
+        if (mode is Boolean) editor.putBoolean(MODE_STRING, mode)
+        if (time is String) editor.putString(TIME_STRING,time)
+        if (distance is String) editor.putString(DIS_STRING,distance)
         editor.apply()
 
         //Start main activity
@@ -179,11 +187,6 @@ class LoginActivity : Activity() {
         //Assign that to the view
         v.setBackgroundResource(R.color.colorPrimaryDark)
         v.startAnimation(blink)
-//        Timer().schedule(object : TimerTask() {
-//            override fun run() {
-//                v.setBackgroundResource(R.color.transparent)
-//            }
-//        }, 2000)
         doAsync {
             Thread.sleep(2000)
             uiThread {

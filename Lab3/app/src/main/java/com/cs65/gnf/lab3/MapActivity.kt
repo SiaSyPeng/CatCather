@@ -2,7 +2,6 @@ package com.cs65.gnf.lab3
 
 import android.Manifest
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Criteria
 import android.location.Location
@@ -13,6 +12,7 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import com.android.volley.*
@@ -47,9 +47,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private var visibleCats : HashMap<Int,Cat> = HashMap()
     private lateinit var selectedCatID: ListenableCatID
 
-    //View
-    private lateinit var patButton: View
-
     //For from shared preferences
     private val USER_PREFS = "profile_data" //Shared with other activities
     private val USER_STRING = "Username"
@@ -63,7 +60,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         setContentView(R.layout.activity_map)
 
         //setup views
-        patButton = findViewById(com.cs65.gnf.lab3.R.id.pat_button)
+        val patButton: Button = findViewById(com.cs65.gnf.lab3.R.id.pat_button)
 
         requestPermissions()
 
@@ -140,8 +137,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         mMap.setOnMarkerClickListener(this) //Defined after onMapReady function
 
         getLocation()
-
-        //WE NEED TO GET THE LIST OF CATS AND MAKE MARKERS ON THE SCREEN
 
         //Step 1— Get the username, password and mode
         val prefs = getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
@@ -228,6 +223,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                         ))
     }
 
+    /**
+     * When a marker is clicked the cat it refers to is selected, calling the selectedCatID's
+     * onClick Listener
+     */
     override fun onMarkerClick(p0: Marker?): Boolean {
         val markerId = p0?.tag //Get the associated Cat ID we saved in the marker
         if (markerId is Int) selectedCatID.id = markerId //set selected cat to that
@@ -236,7 +235,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         return true //Suppresses default behaviour of clicking on the marker
     }
 
-    /*
+    /**
      * when user location is changed,
      * create a new point of latitude and longtitude for this location
      * update it on map
@@ -277,7 +276,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    /*
+    /**
      * OnClick Pat button
      * Will send request to server and pat the cat
      */
@@ -333,7 +332,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    /*
+    /**
      * Check and request location permits:
      * Fine, coarse, internet
      * Once location request granted, request map manager and get map asynchronously
@@ -373,8 +372,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    // Application criteria for selecting a location provider. See line 158 "getBestProvider"
-    // https://developer.android.com/reference/android/location/Criteria.html
+    /**
+     * Application criteria for selecting a location provider. See line 158 "getBestProvider"
+     * https://developer.android.com/reference/android/location/Criteria.html
+     */
     private fun getCriteria(): Criteria {
         val criteria = Criteria()
         criteria.accuracy = Criteria.ACCURACY_FINE
@@ -386,8 +387,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         return criteria
     }
 
-    // This is called after location permissions is granted
-    // Make sure you declare the corresponding permission in your manifest.
+    /**
+     * This is called after location permissions is granted
+     * Make sure you declare the corresponding permission in your manifest.
+     */
     private fun getLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             val criteria = getCriteria()
@@ -430,7 +433,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    // some interface fun
+    // some interface functions that we don't actually use
+
     override fun onProviderDisabled(s: String) {
         // required for  interface, not used
     }
@@ -440,7 +444,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
-        // Called when the provider status changes.
+        // required for  interface, not used
     }
-
 }
