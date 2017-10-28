@@ -15,7 +15,7 @@ for lab2, please see the final code on branch lab2Submit
 
 for lab3, please see the final code on branch lab3Submit (or on master)
 
-##Late
+## Late passes
 
 We are using one of our 24-hour late passes for Lab 3
 
@@ -45,15 +45,15 @@ We are using one of our 24-hour late passes for Lab 3
 
 Run this totally not pokemon go game on your android phone!
 
-##Cool things we did / explanations
+## Cool things we did / explanations
 
-**ListenableCatID**
+**ListenableCatID**:
 I wanted a way to listen to changes in an integer variable, so I created a class
 called ListenableCatID that has a single function interface, a listener. This
 allows changes to the cat ID to call a function every time, which, in our case,
 we use to update the panel and redraw markers.
 
-**Kotlin Data Classes**
+**Kotlin Data Classes**:
 Kotlin has this structure called data classes which are like classes but that
 auto-generate toString, getters and setters. This makes them pretty much perfect
 for, say, changing JSON objects into programmable objects

@@ -1,9 +1,6 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-
 android {
-    compileSdkVersion 26
     buildToolsVersion "26.0.2"
+    compileSdkVersion 26
     defaultConfig {
         applicationId "com.cs65.gnf.lab3"
         minSdkVersion 26
@@ -17,6 +14,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
     }
 }
 
@@ -50,4 +50,3 @@ repositories {
     mavenCentral()
 }
 
-apply plugin: 'kotlin-android-extensions'
