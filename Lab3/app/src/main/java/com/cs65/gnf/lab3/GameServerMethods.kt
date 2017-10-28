@@ -5,7 +5,6 @@ import android.app.Fragment
 import android.content.Intent
 import android.location.Location
 import android.util.Log
-import android.widget.TextView
 import com.android.volley.*
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
@@ -13,7 +12,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
 import org.jetbrains.anko.toast
-import java.lang.StrictMath.pow
 
 /**
  * Pets a cat, from catID, latitude and longitude of user
