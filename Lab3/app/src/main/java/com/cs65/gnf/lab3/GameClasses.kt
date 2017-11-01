@@ -17,6 +17,9 @@ import com.squareup.moshi.JsonQualifier
 @JsonQualifier
 @Retention(AnnotationRetention.RUNTIME) annotation class StringToStatus
 
+@JsonQualifier
+@Retention(AnnotationRetention.RUNTIME) annotation class StringToDate
+
 /**
  * Adapter that changes strings to ints when converting from JSON and vice versa
  */
@@ -81,8 +84,49 @@ class StringToStatusAdapter {
     }
 }
 
+/**
+ * Adapter that changes strings to my own date class while converting from JSON and vice versa
+ */
+class StringToDateAdapter {
+    @FromJson
+    @StringToDate
+    fun fromJson(value: String): Date {
+        return Date.makeFromString(value)
+    }
+
+    @ToJson
+    fun toJson(@StringToDate value: Date): String {
+        return value.toString()
+    }
+}
+
 enum class Status {
     OK, ERROR
+}
+
+class Date(val date: Int, val month: Int, val year: Int): Comparable<Date> {
+
+    companion object {
+        @JvmStatic
+        fun makeFromString(string: String): Date {
+            val args = string
+                    .split("/")
+                    .map{i->i.toInt()}
+            return Date(args[0],args[1],args[2])
+        }
+    }
+
+    override fun toString(): String {
+        return ("$date/$month/$year")
+    }
+
+    private fun makeDouble(): Double {
+        return (year*365.25)+(month*30.44)+date
+    }
+
+    override fun compareTo(other: Date): Int {
+        return (this.makeDouble()-other.makeDouble()).toInt()
+    }
 }
 
 /**
@@ -95,6 +139,13 @@ data class Cat(
         @StringToDouble val lat: Double,
         @StringToDouble val lng: Double,
         @StringToBool var petted: Boolean
+)
+
+data class historicCat(
+        @StringToBool var liked: Boolean,
+        val name: String,
+        @StringToDate val whenCaught: Date,
+        val picUrl: String
 )
 
 /**
