@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/prefs_group_profile">
+
+        <Preference
+            android:title="@string/prefs_signout_title"
+            android:key="@string/prefs_signout_key"
+            android:summary="@string/prefs_signout_summary"/>
+        <EditTextPreference
+            android:title="@string/prefs_newpass_title"
+            android:key="@string/prefs_newpass_key"
+            android:summary="@string/prefs_newpass_summary"
+            android:dialogTitle="Change Password"
+            />
+
+
+    </PreferenceCategory>
+
+    <!--We need a password change thing here, and a mode easy/hard thing here-->
+
+    <PreferenceCategory android:title="@string/prefs_group_preferences">
+        <SwitchPreference
+            android:title="@string/prefs_mode_title"
+            android:key="@string/prefs_mode_key"
+            android:showText="true"
+            android:summaryOn="@string/prefs_mode_hard"
+            android:summaryOff="@string/prefs_mode_easy"
+            android:switchTextOn="@string/prefs_mode_hard"
+            android:switchTextOff="@string/prefs_mode_easy"
+            android:defaultValue="false"/>
+
+        <ListPreference
+            android:title="@string/prefs_dis_title"
+            android:key="@string/prefs_dis_key"
+            android:summary="@string/prefs_dis_summary"
+            android:entries= "@array/prefs_dis_entries"
+            android:entryValues="@array/prefs_dis_entryValues"
+            android:defaultValue="m"
+            />
+
+        <CheckBoxPreference
+            android:title="@string/prefs_privacy_title"
+            android:key="@string/prefs_privacy_key"
+            android:summary="@string/prefs_privacy_summary"
+            android:defaultValue="true"
+            />
+        <ListPreference
+            android:title="@string/prefs_alert_title"
+            android:key="@string/prefs_alert_key"
+            android:summary="@string/prefs_alert_summary"
+            android:entries= "@array/prefs_alert_entries"
+            android:entryValues="@array/prefs_alert_entryValues"
+            android:defaultValue="r"
+            />
+        <ListPreference
+            android:title="@string/prefs_mintime_title"
+            android:key="@string/prefs_mintime_key"
+            android:summary="@string/prefs_mintime_summary"
+            android:entries="@array/prefs_mintime_entries"
+            android:entryValues="@array/prefs_mintime_entryValues"
+            android:defaultValue="f"
+            />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/prefs_group_miscellaneous">
+        <Preference
+            android:title="@string/prefs_about_title"
+            android:key="@string/prefs_about_key"
+            android:summary="@string/prefs_about_summary"
+            />
+        <Preference
+            android:title="@string/prefs_newgame_title"
+            android:key="@string/prefs_newgame_key"
+            android:summary="@string/prefs_newgame_summary"/>
+    </PreferenceCategory>
+
+    <Preference/>
+
+</PreferenceScreen>

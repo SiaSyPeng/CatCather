@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.flexbox.FlexboxLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/map_screen"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:flexDirection="column"
+    app:alignItems="flex_start"
+    app:alignContent="stretch"
+    app:flexWrap="nowrap"
+    android:background="@color/LGreen"
+    android:clickable="true"
+    android:focusable="true"
+    android:fillViewport="true"
+    >
+
+    <fragment
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="wrap_content"
+        android:layout_height="500dp"
+        app:layout_flexBasisPercent="80%"
+        class="com.google.android.gms.maps.SupportMapFragment">
+    </fragment>
+
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/map_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_flexBasisPercent="20%"
+        app:flexDirection="row"
+        app:alignContent="stretch"
+        app:flexWrap="nowrap"
+        android:background="@color/LGreen"
+        android:padding="20dp"
+        android:clickable="true"
+        android:focusable="true"
+
+        >
+        <ImageView
+            android:id="@+id/panel_img"
+            android:layout_width="wrap_content"
+            android:layout_height="70dp"
+            android:src="@drawable/pointer"
+            android:scaleType="fitCenter"
+            android:padding="10dp"
+            app:layout_alignSelf="flex_start"
+            app:layout_flexGrow="1"
+            />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_flexGrow="2"
+            >
+            <TextView
+                android:id="@+id/map_panel_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:padding="10dp"
+                android:textColor="@color/Black"
+                android:text="@string/map_panel_default"
+                />
+            <TextView
+                android:id="@+id/map_panel_distance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" "
+                android:paddingEnd="10dp"
+                android:paddingStart="10dp"
+                android:textColor="@color/LGrey"
+                />
+        </LinearLayout>
+        <Button
+            android:id="@+id/pat_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pat_button"
+            android:visibility="gone"
+            android:background="@color/LPink"
+            android:padding="10dp"
+            android:layout_centerInParent="true"
+            app:layout_flexGrow="1"
+            android:onClick="onPat"
+            />
+
+    </com.google.android.flexbox.FlexboxLayout>
+</com.google.android.flexbox.FlexboxLayout>
+
+
