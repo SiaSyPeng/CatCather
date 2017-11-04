@@ -124,10 +124,13 @@
     <string name="play_username">Hi, XX!</string>
     <string name="play_cat_num">Welcome!</string>
     <string name="play_button">PLAY</string>
+    <string name="reset_button">RESET</string>
 
     <!--Map -->
     <string name="map_panel_default">Try to click the markers</string>
     <string name="pat_button">PAT</string>
+    <string name="track_button">TRACK</string>
+
 
     <!--Success-->
     <string name="success">Success</string>

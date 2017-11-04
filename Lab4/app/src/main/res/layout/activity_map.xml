@@ -35,7 +35,9 @@
         app:alignContent="stretch"
         app:flexWrap="nowrap"
         android:background="@color/LGreen"
-        android:padding="20dp"
+        android:padding="10dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
         android:clickable="true"
         android:focusable="true"
 
@@ -46,7 +48,6 @@
             android:layout_height="70dp"
             android:src="@drawable/pointer"
             android:scaleType="fitCenter"
-            android:padding="10dp"
             app:layout_alignSelf="flex_start"
             app:layout_flexGrow="1"
             />
@@ -74,19 +75,33 @@
                 android:textColor="@color/LGrey"
                 />
         </LinearLayout>
-        <Button
-            android:id="@+id/pat_button"
+        <com.google.android.flexbox.FlexboxLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/pat_button"
-            android:visibility="gone"
-            android:background="@color/LPink"
-            android:padding="10dp"
-            android:layout_centerInParent="true"
-            app:layout_flexGrow="1"
-            android:onClick="onPat"
-            />
+            app:flexDirection="column"
+            android:clickable="true"
+            android:paddingBottom="10dp"
+            android:focusable="true">
 
+            <Button
+                android:id="@+id/track_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/track_button"
+                android:background="@color/LLGreen"
+                android:visibility="gone"
+                android:onClick="onTrack"
+                />
+            <Button
+                android:id="@+id/pat_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pat_button"
+                android:visibility="gone"
+                android:background="@color/LPink"
+                android:onClick="onPat"
+                />
+        </com.google.android.flexbox.FlexboxLayout>
     </com.google.android.flexbox.FlexboxLayout>
 </com.google.android.flexbox.FlexboxLayout>
 
