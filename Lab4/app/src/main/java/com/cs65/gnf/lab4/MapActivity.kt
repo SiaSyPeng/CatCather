@@ -316,7 +316,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         val i = Intent(this, CameraViewActivity::class.java)
         startActivity(i)
 
-        // TODO: change button text back when clicked on another cat
     }
 
     /**
