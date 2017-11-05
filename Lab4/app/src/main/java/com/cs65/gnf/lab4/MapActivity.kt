@@ -2,6 +2,7 @@ package com.cs65.gnf.lab4
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Criteria
 import android.location.Location
@@ -28,6 +29,7 @@ import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.picasso.Picasso
+import com.varunmishra.catcameraoverlay.CameraViewActivity
 import org.jetbrains.anko.toast
 import org.json.JSONException
 import org.json.JSONObject
@@ -55,11 +57,15 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private val TIME_STRING = "minTime"
     private val DIS_STRING = "dis"
 
+    //View variables
+    private lateinit var trackButton: Button
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
         //setup views
+        trackButton = findViewById(R.id.track_button)
 
         requestPermissions()
 
@@ -197,6 +203,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
 
                                             val patButton: Button = findViewById(R.id.pat_button)
                                             patButton.visibility = (View.VISIBLE)
+                                            trackButton.visibility = (View.VISIBLE)
+                                            trackButton.setBackgroundColor(getResources().getColor(R.color.LLGreen))
+
 
                                             //Step 6— Draw all markers
                                             drawThings()
@@ -233,6 +242,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         if (markerId is Int) selectedCatID.id = markerId //set selected cat to that
                                                          //this will call the listener function
 
+        // change panel track button back
+        trackButton.setText("TRACK")
         return true //Suppresses default behaviour of clicking on the marker
     }
 
@@ -289,6 +300,22 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
 
         //get the pet result
         petCat(this,user,pass,selectedCatID.id,currLoc)
+    }
+
+    /*
+     * onClick Track button
+     * will open camera activity
+     */
+    fun onTrack(v: View) {
+
+        // change button text to stop
+        trackButton.setText("STOP")
+        trackButton.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark))
+
+        // start foreground camera activity
+        val i = Intent(this, CameraViewActivity::class.java)
+        startActivity(i)
+
     }
 
     /**

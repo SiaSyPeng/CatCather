@@ -73,5 +73,12 @@ class MainActivity: Activity() {
         startActivity(intent)
     }
 
+    /*
+     * Onclick Reset button
+     * reset cat list
+     */
+    fun toReset(v: View) {
+        //TODO: reset cat list
+    }
 
 }
