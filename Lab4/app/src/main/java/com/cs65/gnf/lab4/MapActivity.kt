@@ -16,6 +16,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import com.android.volley.*
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
@@ -30,12 +31,14 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.picasso.Picasso
 import com.varunmishra.catcameraoverlay.CameraViewActivity
+import com.varunmishra.catcameraoverlay.Config
+import com.varunmishra.catcameraoverlay.OnCatPetListener
 import org.jetbrains.anko.toast
 import org.json.JSONException
 import org.json.JSONObject
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, 
-    GoogleMap.OnMarkerClickListener, LocationListener {
+    GoogleMap.OnMarkerClickListener, LocationListener, OnCatPetListener {
 
     // Map variables
     private lateinit var mMap: GoogleMap
@@ -48,6 +51,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private var listOfCats: List<Cat>? = null
     private var visibleCats : HashMap<Int,Cat> = HashMap()
     private lateinit var selectedCatID: ListenableCatID
+    private lateinit var selectedCat: Cat
 
     //For from shared preferences
     private val USER_PREFS = "profile_data" //Shared with other activities
@@ -298,8 +302,29 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         val user = prefs.getString(USER_STRING,null)
         val pass = prefs.getString(PASS_STRING,null)
 
-        //get the pet result
-        petCat(this,user,pass,selectedCatID.id,currLoc)
+        // start foreground camera activity
+        val selectedCat = visibleCats[selectedCatID.id]
+        if (selectedCat == null) {
+            //TODO: what happens if selectedCat is null? Shall we start the camera anyway?
+            // If so, how should we get the params for config? would it be a default cat?
+            toast("You're too far away from any cats!")
+        }
+        else {
+            Config.catName = selectedCat.name
+            Config.catLatitude = selectedCat.lat
+            Config.catLongitude = selectedCat.lng
+            //TODO: not sure if this is the distance range he meant ,
+            // TODO: also do we need to change cat picture? it's not in the example but i would suppose so, and it's a bitmap
+            Config.locDistanceRange = RADIUS_OF_SHOWN_MARKERS.toDouble()
+            Config.useLocationFilter = true // use this only for testing. This should be true in the final app.
+            Config.onCatPetListener = this
+            val i = Intent(this, CameraViewActivity::class.java)
+            startActivity(i)
+
+            //get the pet result
+            //TODO: should we move this to his onCatPet? not sure what that is doing actually
+            petCat(this, user, pass, selectedCatID.id, currLoc)
+        }
     }
 
     /*
@@ -312,10 +337,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         trackButton.setText("STOP")
         trackButton.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark))
 
-        // start foreground camera activity
-        val i = Intent(this, CameraViewActivity::class.java)
-        startActivity(i)
+    }
 
+    /*
+     * required for camera interface
+     */
+    override fun onCatPet(catName: String) {
+        Toast.makeText(this, "You just Pet - " + catName, Toast.LENGTH_LONG).show()
     }
 
     /**
