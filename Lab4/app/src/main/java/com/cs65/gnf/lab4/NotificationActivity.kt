@@ -38,7 +38,7 @@ class NotificationActivity : Activity() {
     }
 
     private fun stopTracking() {
-        var nm : NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE)
+        val nm : NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE)
                 as NotificationManager
 
         //---cancel the notification that we started---

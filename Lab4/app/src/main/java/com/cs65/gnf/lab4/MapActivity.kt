@@ -30,10 +30,13 @@ import android.app.NotificationChannel
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.drawable.Icon
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.longToast
 import java.io.ObjectInputStream
+import java.net.URL
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     GoogleMap.OnMarkerClickListener, LocationListener, OnCatPetListener {
@@ -49,7 +52,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private var listOfCats: List<Cat>? = null
     private var visibleCats : HashMap<Int,Cat> = HashMap()
     private lateinit var selectedCatID: ListenableCatID
-    private lateinit var selectedCat: Cat
+    private var selectedCat: Cat? = null
+    private var distanceFromCat: Float = Float.MAX_VALUE
 
     //For from shared preferences
     private val USER_PREFS = "profile_data" //Shared with other activities
@@ -121,47 +125,45 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                 drawThings()
 
                 //Get the selected cat
-                val selectedCat = visibleCats[selectedCatID.id]
+                selectedCat = visibleCats[selectedCatID.id]
                 if (selectedCat == null) {
                     longToast("You're too far away from any cats!")
                 }
                 else {
                     //enable or disable button depending on if cat has been petted
-                    val ifPetted: Boolean = selectedCat.petted
+                    val ifPetted: Boolean = selectedCat!!.petted
                     val patButton: Button = findViewById(R.id.pat_button)
                     patButton.isEnabled = !ifPetted
                   // Update the panel with the following:
                   // cat pic, cat name, and cat distance to current location
 
                     //Update Cat pic
-                    val url = selectedCat.picUrl
+                    val url = selectedCat!!.picUrl
                     val mImg: ImageView = findViewById(R.id.panel_img)
                     Picasso.with(applicationContext).load(url).placeholder(R.drawable.pointer).into(mImg)
 
                     //Update Cat name
                     val mName: TextView = findViewById(R.id.map_panel_name)
-                    mName.text = selectedCat.name
+                    mName.text = selectedCat!!.name
+
+                    val readableDist = distanceFromCat.toInt().toString() + " metres"
+
+                    // update view
+                    val mDis: TextView = findViewById(R.id.map_panel_distance)
+                    mDis.text = readableDist
+
+
 
                     //Update Distance
                     if (currLoc!= null){
-                        //get distance between cat and user
                         val dist = FloatArray(1)
                         Location.distanceBetween(
-                                selectedCat.lat,selectedCat.lng,
-                                currLoc!!.latitude,currLoc!!.longitude,
+                                selectedCat!!.lat, selectedCat!!.lng,
+                                currLoc!!.latitude, currLoc!!.longitude,
                                 dist
                         )
-                        // cast distance to string
-                        val readableDist = dist[0].toInt().toString() + " metres"
-
-                        // update view
-                        val mDis: TextView = findViewById(R.id.map_panel_distance)
-                        mDis.text = readableDist
-                }
-
-
-
-
+                        distanceFromCat = dist[0]
+                    }
 
 
                     //update the map
@@ -246,9 +248,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         //Repopulate the map
         drawThings()
 
-        //Get the selected cat from the visible cat list
-        val selectedCat = visibleCats[selectedCatID.id]
-
         //if it's null that means the selected cat is now invisible
         //So now set the closest cat to selected cat
         if (selectedCat== null) {
@@ -260,10 +259,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
             //get distance between cat and user
             val dist = FloatArray(1)
             Location.distanceBetween(
-                    selectedCat.lat, selectedCat.lng,
+                    selectedCat!!.lat, selectedCat!!.lng,
                     currLoc!!.latitude, currLoc!!.longitude,
                     dist
             )
+            distanceFromCat = dist[0]
 
             val readableDist = dist[0].toInt().toString() + " metres"
 
@@ -278,33 +278,20 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
      * Will send request to server and pat the cat
      */
     fun onPat(v: View) {
-        //get Username / password
-        val prefs = getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
-        val user = prefs.getString(USER_STRING,null)
-        val pass = prefs.getString(PASS_STRING,null)
 
         // start foreground camera activity
-        val selectedCat = visibleCats[selectedCatID.id]
         if (selectedCat == null) {
-            //TODO: what happens if selectedCat is null? Shall we start the camera anyway?
             // If so, how should we get the params for config? would it be a default cat?
             longToast("You're too far away from any cats!")
         }
         else {
-            Config.catName = selectedCat.name
-            Config.catLatitude = selectedCat.lat
-            Config.catLongitude = selectedCat.lng
-            //TODO: not sure if this is the distance range he meant ,
-            // TODO: also do we need to change cat picture? it's not in the example but i would suppose so, and it's a bitmap
-            Config.locDistanceRange = RADIUS_OF_SHOWN_MARKERS.toDouble()
-            Config.useLocationFilter = true // use this only for testing. This should be true in the final app.
+            Config.catName = selectedCat!!.name
+            Config.catLatitude = selectedCat!!.lat
+            Config.catLongitude = selectedCat!!.lng
+            Config.catImage = BitmapFactory.decodeStream(URL(selectedCat!!.picUrl).openConnection().getInputStream())
             Config.onCatPetListener = this
             val i = Intent(this, CameraViewActivity::class.java)
             startActivity(i)
-
-            //get the pet result
-            //TODO: should we move this to his onCatPet? not sure what that is doing actually
-            petCat(this, user, pass, selectedCatID.id, currLoc)
         }
     }
 
@@ -327,6 +314,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
      * required for camera interface
      */
     override fun onCatPet(catName: String) {
+        //get Username / password
+        val prefs = getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
+        val user = prefs.getString(USER_STRING,null)
+        val pass = prefs.getString(PASS_STRING,null)
+
+        petCat(this,user,pass,selectedCatID.id,currLoc)
+
         Toast.makeText(this, "You just Pet - " + catName, Toast.LENGTH_LONG).show()
     }
 
@@ -402,12 +396,16 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
             Notification.Builder(this, channelId) else  Notification.Builder(this)
 
         // TODO: get actual cat info: name + dis(maybe make global?
-        val title= "Catching "
-        val dis = "miles away"
-        notiBuilder.setSmallIcon(R.drawable.green_marker)
+        val title= "Catching "+selectedCat?.name
+        val dis = distanceFromCat.toString() + " metres away"
+
+        val icon = Icon.createWithResource(this,R.mipmap.ic_launcher)
+        val action = Notification.Action.Builder(icon,"STOP", pendingIntent).build()
+
+        notiBuilder.setSmallIcon(R.drawable.rsz_ready_cat)
                 .setContentTitle(title)
                 .setContentText(dis)
-                .addAction(R.mipmap.ic_launcher, "STOP", pendingIntent)
+                .addAction(action)
                 .setContentIntent(pendingIntent)
 //               .setAutoCancel(true)  --if not set, the notification needs to be
         //   cancelled explicitly, or else it sticks in the notification bar.
