@@ -2,16 +2,27 @@ package com.cs65.gnf.lab4
 
 import android.app.Activity
 import android.app.Fragment
+import android.content.Context
 import android.content.Intent
 import android.location.Location
+import android.support.v4.content.ContextCompat.startActivity
+import android.support.v4.content.LocalBroadcastManager
 import android.util.Log
 import com.android.volley.*
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.maps.model.LatLng
+import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.longToast
 import org.jetbrains.anko.toast
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 
 /**
  * Pets a cat, from catID, latitude and longitude of user
@@ -47,10 +58,11 @@ fun petCat(act: Activity, user: String?, pass: String?, id: Int, loc: LatLng?) {
                         else {
                             when (petRes.status) {
                                 Status.ERROR -> { //If error is returned
-                                    act.toast(petRes.reason.toString()) //toast that error
+                                    act.longToast(petRes.reason.toString()) //toast that error
                                 }
                                 Status.OK -> { //if pet is successful start the success activity
-                                    act.toast("mrowwwww")
+                                    act.longToast("mrowwwww")
+                                    petInternal(act,id)
                                     val intent = Intent(act.applicationContext,SuccessActivity::class.java)
                                     act.startActivity(intent)
                                 }
@@ -60,18 +72,18 @@ fun petCat(act: Activity, user: String?, pass: String?, id: Int, loc: LatLng?) {
                     Response.ErrorListener { error -> // Handle error cases
                         when (error) {
                             is NoConnectionError ->
-                                act.toast("Connection Error")
+                                act.longToast("Connection Error")
                             is TimeoutError->
-                                act.toast("Timeout Error")
+                                act.longToast("Timeout Error")
                             is AuthFailureError ->
-                                act.toast("AuthFail Error")
+                                act.longToast("AuthFail Error")
                             is NetworkError ->
-                                act.toast("Network Error")
+                                act.longToast("Network Error")
                             is ParseError ->
-                                act.toast("Parse Error")
+                                act.longToast("Parse Error")
                             is ServerError ->
-                                act.toast("Server Error")
-                            else -> act.toast("Error: " + error)
+                                act.longToast("Server Error")
+                            else -> act.longToast("Error: " + error)
                         }
                     }
             ))
@@ -80,12 +92,18 @@ fun petCat(act: Activity, user: String?, pass: String?, id: Int, loc: LatLng?) {
 /**
  * Resets the cat list
  * */
-fun resetList(frag: Fragment,user: String?, pass: String?) {
+fun resetList(ctx: Context,user: String?, pass: String?) {
+    val USER_PREFS = "profile_data" //Shared with other activities
+    val READY_STRING = "ready"
+
+    //For internal storage
+    val CAT_LIST_FILE = "cat_list"
+
     //create url
     val url = "http://cs65.cs.dartmouth.edu/resetlist.pl?name=$user&password=$pass"
 
-    //start volley request
-    Volley.newRequestQueue(frag.activity)
+    //start volley request for resetting list
+    Volley.newRequestQueue(ctx)
             .add(StringRequest(Request.Method.GET,url,
                     Response.Listener<String> {response->
 
@@ -105,11 +123,24 @@ fun resetList(frag: Fragment,user: String?, pass: String?) {
                         else {
                             when (result.status) {
                                 Status.OK -> {
-                                    frag.toast("New game started!")
+                                    ctx.longToast("New game starting!")
+
+                                    //set ready in shared preferences as not true
+                                    ctx.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
+                                            .edit()
+                                            .putBoolean(READY_STRING,false)
+                                            .apply()
+
+                                    //delete from internal storage
+                                    ctx.deleteFile(CAT_LIST_FILE) //Clear the file
+
+                                    //Restart the main activity
+                                    val i = Intent(ctx,MainActivity::class.java)
+                                    ctx.startActivity(i)
                                 }
                                 Status.ERROR -> {
                                     Log.d("ERROR",result.error)
-                                    frag.toast("Error starting a new game")
+                                    ctx.longToast("Error starting a new game")
                                 }
                             }
                         }
@@ -117,18 +148,18 @@ fun resetList(frag: Fragment,user: String?, pass: String?) {
                     Response.ErrorListener { error -> // Handle error cases
     when (error) {
         is NoConnectionError ->
-            frag.toast("Connection Error")
+            ctx.longToast("Connection Error")
         is TimeoutError->
-            frag.toast("Timeout Error")
+            ctx.longToast("Timeout Error")
         is AuthFailureError ->
-            frag.toast("AuthFail Error")
+            ctx.longToast("AuthFail Error")
         is NetworkError ->
-            frag.toast("Network Error")
+            ctx.longToast("Network Error")
         is ParseError ->
-            frag.toast("Parse Error")
+            ctx.longToast("Parse Error")
         is ServerError ->
-            frag.toast("Server Error")
-        else -> frag.toast("Error: " + error)
+            ctx.longToast("Server Error")
+        else -> ctx.longToast("Error: " + error)
     }
 }
 ))
@@ -159,24 +190,24 @@ fun changePassword(frag: Fragment, user: String?, pass: String?, newPass: String
                             Log.d("ERROR","no result from pass change") //shouldn't happen
                         }
                         else {
-                            frag.toast("Password changed successfully!")
+                            frag.longToast("Password changed successfully!")
                         }
                     },
                     Response.ErrorListener { error -> // Handle error cases
                         when (error) {
                             is NoConnectionError ->
-                                frag.toast("Connection Error")
+                                frag.longToast("Connection Error")
                             is TimeoutError->
-                                frag.toast("Timeout Error")
+                                frag.longToast("Timeout Error")
                             is AuthFailureError ->
-                                frag.toast("AuthFail Error")
+                                frag.longToast("AuthFail Error")
                             is NetworkError ->
-                                frag.toast("Network Error")
+                                frag.longToast("Network Error")
                             is ParseError ->
-                                frag.toast("Parse Error")
+                                frag.longToast("Parse Error")
                             is ServerError ->
-                                frag.toast("Server Error")
-                            else -> frag.toast("Error: " + error)
+                                frag.longToast("Server Error")
+                            else -> frag.longToast("Error: " + error)
                         }
                     }
                     ))
@@ -208,4 +239,39 @@ fun getClosestCat(list: List<Cat>, loc: LatLng): Int {
         }
     }
     return closestId //returns the closest cat's ID
+}
+
+/**
+ * Sets a cat in internal storage to petted by pulling up internal storage, finding the correct cat,
+ * modifying it, and writing it back to internal storage. Done Async.
+ */
+fun petInternal(ctx: Context, id: Int) {
+    ctx.doAsync {
+        val CAT_LIST_FILE = "cat_list"
+
+        //First get the file
+        val fis = ctx.openFileInput(CAT_LIST_FILE)
+        val ois = ObjectInputStream(fis)
+
+        //Read it
+        val listOfCats = ois.readObject() as ArrayList<Cat>
+        fis.close()
+        ois.close()
+
+        //Find the one to pet and pet it
+        listOfCats.filter { it.catId == id }
+                .map { it.petted = true }
+
+
+        ctx.deleteFile(CAT_LIST_FILE) //Clear the file
+
+        //write new file to internal
+        val fos = ctx.openFileOutput(CAT_LIST_FILE, Context.MODE_PRIVATE)
+        val oos = ObjectOutputStream(fos)
+        oos.writeObject(listOfCats)
+        fos.close()
+        oos.close()
+    }
+
+
 }
