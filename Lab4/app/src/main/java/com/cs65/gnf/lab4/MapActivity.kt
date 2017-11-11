@@ -41,6 +41,7 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.graphics.Color
+import android.support.v4.app.TaskStackBuilder
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, 
     GoogleMap.OnMarkerClickListener, LocationListener, OnCatPetListener {
@@ -414,6 +415,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         i.putExtra("notificationID", notificationID)
         i.putExtra("action", "stop")
 
+        val stackBuilder : TaskStackBuilder = TaskStackBuilder.create(this)
+        stackBuilder.addNextIntentWithParentStack(i)
 
         //To be wrapped in a PendingIntent, because
         //it will be sent from whatever activity manages notifications;
@@ -422,7 +425,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                 PendingIntent.getActivity(this,
                         0, // on some SDK versions, the code should NOT be 0, or else it won't work
                         i,
-                        0) // flags are important, see https://developer.android.com/reference/android/app/PendingIntent.html
+                        PendingIntent.FLAG_UPDATE_CURRENT) // flags are important, see https://developer.android.com/reference/android/app/PendingIntent.html
 
         //The Notification.Builder provides an builder interface to create an Notification object.
         //Use a PendingIntent to specify the action which should be performed once the user select the notification.
@@ -510,6 +513,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
      */
     private fun requestPermissions() {
         // Here, thisActivity is the current activity
+
+        //TODO: check vibrate permission
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                 checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                 checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
