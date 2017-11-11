@@ -1,8 +1,7 @@
 package com.cs65.gnf.lab4
 
 import android.Manifest
-import android.content.Context
-import android.content.Intent
+import android.content.*
 import android.content.pm.PackageManager
 import android.location.Criteria
 import android.location.Location
@@ -11,38 +10,32 @@ import android.location.LocationListener
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
+import android.support.v4.content.LocalBroadcastManager
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import com.android.volley.*
-import com.android.volley.toolbox.StringRequest
-import com.android.volley.toolbox.Volley
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.KotlinJsonAdapterFactory
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
 import com.squareup.picasso.Picasso
 import com.varunmishra.catcameraoverlay.CameraViewActivity
 import com.varunmishra.catcameraoverlay.Config
 import com.varunmishra.catcameraoverlay.OnCatPetListener
-import org.jetbrains.anko.toast
-import org.json.JSONException
-import org.json.JSONObject
 import android.app.NotificationChannel
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.graphics.Color
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.longToast
+import java.io.ObjectInputStream
 
-class MapActivity : AppCompatActivity(), OnMapReadyCallback, 
+class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     GoogleMap.OnMarkerClickListener, LocationListener, OnCatPetListener {
 
     // Map variables
@@ -62,9 +55,15 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private val USER_PREFS = "profile_data" //Shared with other activities
     private val USER_STRING = "Username"
     private val PASS_STRING = "Password"
-    private val MODE_STRING = "mode"
     private val TIME_STRING = "minTime"
     private val DIS_STRING = "dis"
+    private val READY_STRING = "ready"
+
+    private val BROADCAST_ACTION = "com.cs65.gnf.lab4.ready"
+
+    //For internal storage
+    private val CAT_LIST_FILE = "cat_list"
+    private var ready = false
 
     //View variables
     private lateinit var trackButton: Button
@@ -77,7 +76,34 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
-        //get necessary views
+        val broadcastReceiver =  MyRecvr()
+
+
+        //Start listening for / getting the catList
+        val prefs = getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
+        if (prefs.getBoolean(READY_STRING,false)) { //if ready
+            val fis = openFileInput(CAT_LIST_FILE)
+            val ois = ObjectInputStream(fis)
+            doAsync {
+                listOfCats = ois.readObject() as ArrayList<Cat>
+                ready = true
+            }
+        }
+        else {
+            val i = IntentFilter(BROADCAST_ACTION)
+            LocalBroadcastManager.getInstance(applicationContext)
+                    .registerReceiver(broadcastReceiver,i)
+        }
+
+        //Set the radius
+        RADIUS_OF_SHOWN_MARKERS = when (prefs.getString(DIS_STRING, "m")) {
+            "l" -> 1000f
+            "m" -> 500f
+            "s" -> 250f
+            else -> 500f
+        }
+
+        //setup views
         trackButton = findViewById(R.id.track_button)
 
         // get necessary permissions
@@ -97,7 +123,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                 //Get the selected cat
                 val selectedCat = visibleCats[selectedCatID.id]
                 if (selectedCat == null) {
-                    toast("You're too far away from any cats!")
+                    longToast("You're too far away from any cats!")
                 }
                 else {
                     //enable or disable button depending on if cat has been petted
@@ -163,92 +189,33 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
 
         getLocation()
 
-        //Step 1— Get the username, password and mode
-        val prefs = getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
-        val user = prefs.getString(USER_STRING,null)
-        val pass = prefs.getString(PASS_STRING,null)
-        //mode as string is "hard" if mode is true, "easy" otherwise
-        val mode = if (prefs.getBoolean(MODE_STRING,false)) "hard" else "easy"
+        if (ready) { //if the list has been prepped by this point go on
+            selectedCatID.id = getClosestCat(listOfCats!!,currLoc!!)
 
-        //Set the radius
-        RADIUS_OF_SHOWN_MARKERS = when (prefs.getString(DIS_STRING, "m")) {
-            "l" -> 1000f
-            "m" -> 500f
-            "s" -> 250f
-            else -> 500f
+            val patButton: Button = findViewById(R.id.pat_button)
+            patButton.visibility = (View.VISIBLE)
+            trackButton.visibility = (View.VISIBLE)
+            trackButton.setBackgroundColor(getColor(R.color.LLGreen))
+
+
+            //Draw all markers
+            drawThings()
         }
+        else { //else wait in another thread for the list
+            doAsync {
+                while (!ready) {}
+                selectedCatID.id = getClosestCat(listOfCats!!,currLoc!!)
 
-        //Step 2— Make the URL
-        val listUrl = "http://cs65.cs.dartmouth.edu/catlist.pl?name=$user&password=$pass&mode=$mode"
-
-        //Step 3— Open a Volley request queue and pass a string request
-        Volley.newRequestQueue(this)
-                .add(
-                        StringRequest(Request.Method.GET,listUrl,
-                                Response.Listener<String> { response ->
-                                    val moshi = Moshi.Builder() //Build the Moshi, adding all needed adapters
-                                            .add(KotlinJsonAdapterFactory())
-                                            .add(StringToDoubleAdapter())
-                                            .add(StringToIntAdapter())
-                                            .add(StringToBoolAdapter())
-                                            .build()
-
-                                    //Try to change to a JSON object
-                                    val errorObject: JSONObject? = try {
-                                        JSONObject(response) //If it can be done, set  that to error object
-                                    }
-                                    catch (e: JSONException) { //If it can't be changed to an object it may be a list
-                                        null //set the "error object" to null
-                                    }
-
-                                    if (errorObject!=null) { //if there was an error object made
-                                        Log.d("SERVOR ERROR",errorObject.getString("error"))
-                                    }
-                                    else { //if no error object was found we can set our cat list
-                                        val type = Types.newParameterizedType(List::class.java,Cat::class.java)
-
-                                        val catAdaptor: JsonAdapter<List<Cat>> = moshi.adapter(type)
-
-                                        //Step 4— set the list of cats
-                                        listOfCats = catAdaptor.fromJson(response)
-
-                                        if (listOfCats==null) { //if the list cannot be made
-                                            Log.d("ERROR","List of cats not found")
-                                        }
-                                        else {
-                                            //Step 5— Set the closest cat to SelectedCat to begin with
-                                            selectedCatID.id = getClosestCat(listOfCats!!,currLoc!!)
-
-                                            val patButton: Button = findViewById(R.id.pat_button)
-                                            patButton.visibility = (View.VISIBLE)
-                                            trackButton.visibility = (View.VISIBLE)
-                                            trackButton.setBackgroundColor(getResources().getColor(R.color.LLGreen))
+                val patButton: Button = findViewById(R.id.pat_button)
+                patButton.visibility = (View.VISIBLE)
+                trackButton.visibility = (View.VISIBLE)
+                trackButton.setBackgroundColor(getColor(R.color.LLGreen))
 
 
-                                            //Step 6— Draw all markers
-                                            drawThings()
-
-                                        }
-                                    }
-                                },
-                                Response.ErrorListener { error -> // Handle error cases
-                                    when (error) {
-                                        is NoConnectionError ->
-                                            toast("Connection Error")
-                                        is TimeoutError ->
-                                            toast("Timeout Error")
-                                        is AuthFailureError ->
-                                            toast("AuthFail Error")
-                                        is NetworkError ->
-                                            toast("Network Error")
-                                        is ParseError ->
-                                            toast("Parse Error")
-                                        is ServerError ->
-                                            toast("Server Error")
-                                        else -> toast("Error: " + error)
-                                    }
-                                }
-                        ))
+                //Draw all markers
+                drawThings()
+            }
+        }
     }
 
     /**
@@ -261,7 +228,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                                                          //this will call the listener function
 
         // change panel track button back
-        trackButton.setText("TRACK")
+        trackButton.text = "TRACK"
         return true //Suppresses default behaviour of clicking on the marker
     }
 
@@ -321,7 +288,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         if (selectedCat == null) {
             //TODO: what happens if selectedCat is null? Shall we start the camera anyway?
             // If so, how should we get the params for config? would it be a default cat?
-            toast("You're too far away from any cats!")
+            longToast("You're too far away from any cats!")
         }
         else {
             Config.catName = selectedCat.name
@@ -348,8 +315,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     fun onTrack(v: View) {
 
         // change button text to stop
-        trackButton.setText("STOP")
-        trackButton.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark))
+        trackButton.text = "STOP"
+        trackButton.setBackgroundColor(getColor(R.color.colorPrimaryDark))
 
         // start foreground notification service
         displayNotification()
@@ -602,6 +569,22 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                 }
                 //Ask for location updates
                 mgr!!.requestLocationUpdates(provider, time, 0f, this)
+            }
+        }
+    }
+
+    /**
+     * inner class that is a broadcast receiver, so that when the broadcast is received we can getCats
+     */
+    inner class MyRecvr : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val fis = openFileInput(CAT_LIST_FILE)
+            val ois = ObjectInputStream(fis)
+            doAsync {
+                listOfCats = ois.readObject() as ArrayList<Cat>
+                ois.close()
+                fis.close()
+                ready = true
             }
         }
     }

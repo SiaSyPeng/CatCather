@@ -29,7 +29,7 @@ import com.theartofdev.edmodo.cropper.CropImageView
 import java.io.*
 import com.google.gson.GsonBuilder
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.toast
+import org.jetbrains.anko.longToast
 import org.jetbrains.anko.uiThread
 import org.json.JSONException
 import org.json.JSONObject
@@ -237,18 +237,18 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                 Response.ErrorListener { error ->
                     when (error) {
                         is NoConnectionError ->
-                            Toast.makeText(this, "Connection Error" , Toast.LENGTH_LONG).show()
-                        is TimeoutError->
-                            Toast.makeText(this, "Timeout Error" , Toast.LENGTH_LONG).show()
+                            longToast("Connection Error")
+                        is TimeoutError ->
+                            longToast("Timeout Error")
                         is AuthFailureError ->
-                            Toast.makeText(this, "AuthFailure Error" , Toast.LENGTH_LONG).show()
+                            longToast("AuthFailure Error")
                         is NetworkError ->
-                            Toast.makeText(this, "Network Error" , Toast.LENGTH_LONG).show()
+                            longToast("Network Error")
                         is ParseError ->
-                            Toast.makeText(this, "Parse Error" , Toast.LENGTH_LONG).show()
+                            longToast("Parse Error" )
                         is ServerError ->
-                            Toast.makeText(this, "Server Error" , Toast.LENGTH_LONG).show()
-                        else -> Toast.makeText(this, "Error: " + error, Toast.LENGTH_LONG).show()
+                            longToast("Server Error" )
+                        else -> longToast("Error: " + error)
                     }
                  }) {
         }
@@ -274,7 +274,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                 mAvail.setTextColor(getColor(R.color.colorPrimaryDark))
                 ifNameAvailable = false
             }
-            is String -> toast(res)
+            is String -> longToast(res)
         }
     }
 
@@ -307,7 +307,7 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
             // Warn the user that something is wrong; do not connect
             Log.d("JSON", "Invalid JSON: " + e.toString())
 
-            toast("Invalid JSON")
+            longToast("Invalid JSON")
 
             return
         }
@@ -340,18 +340,18 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                 }, Response.ErrorListener { error -> // Handle error cases
                     when (error) {
                         is NoConnectionError ->
-                            Toast.makeText(this, "Connection Error" , Toast.LENGTH_LONG).show()
-                        is TimeoutError->
-                            Toast.makeText(this, "Timeout Error" , Toast.LENGTH_LONG).show()
+                            longToast("Connection Error")
+                        is TimeoutError ->
+                            longToast("Timeout Error")
                         is AuthFailureError ->
-                            Toast.makeText(this, "AuthFailure Error" , Toast.LENGTH_LONG).show()
+                            longToast("AuthFailure Error")
                         is NetworkError ->
-                            Toast.makeText(this, "Network Error" , Toast.LENGTH_LONG).show()
+                            longToast("Network Error")
                         is ParseError ->
-                            Toast.makeText(this, "Parse Error" , Toast.LENGTH_LONG).show()
+                            longToast("Parse Error" )
                         is ServerError ->
-                            Toast.makeText(this, "Server Error" , Toast.LENGTH_LONG).show()
-                        else -> Toast.makeText(this, "Error: " + error, Toast.LENGTH_LONG).show()
+                            longToast("Server Error" )
+                        else -> longToast("Error: " + error)
                     }
         })
 
@@ -381,9 +381,9 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
      */
     fun checkSubmit(status: String?, name: String?){
         if (status == "OK") {
-            Toast.makeText(this, "Welcome "+ name.toString(), Toast.LENGTH_LONG).show()
+            longToast("Welcome "+ name.toString())
         } else if (status == "ERROR"){
-            toast("Sorry! Error occured when saving your profile.")
+            longToast("Sorry! Error occured when saving your profile.")
         }
 
     }
@@ -516,25 +516,25 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
         // check whether every field is filled and password matches
         when {
             mUsername.text.isEmpty() -> {
-                toast("Please enter a Username")
+                longToast("Please enter a Username")
                 highlight(mUsername)
             }
             mName.text.isEmpty() -> {
-                toast("Please enter a name")
+                longToast("Please enter a name")
                 highlight(mName)
             }
             mPassword.text.isEmpty() -> {
-                toast("Please enter a password")
+                longToast("Please enter a password")
                 highlight(mPassword)
             }
             !ifNameAvailable -> {
-                Toast.makeText(applicationContext, "Username must be available", Toast.LENGTH_LONG).show()
+                longToast("Username has been taken. Try another")
             }
             !ifPassMatch -> { //if password is not matched
                 mPassword.requestFocus()
                 mPassword.clearFocus() //call the pass match dialog
                 v.requestFocus()
-                toast("Please confirm password")
+                longToast("Please confirm password")
             }
             else -> { //once everything is checked
 
