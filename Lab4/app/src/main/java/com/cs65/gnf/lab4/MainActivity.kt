@@ -1,18 +1,47 @@
 package com.cs65.gnf.lab4
 
-import android.app.Activity
 import android.os.Bundle
 import android.app.FragmentManager
 import android.app.Fragment
+import android.content.Context
 import android.content.Intent
 import android.support.v13.app.FragmentPagerAdapter
+import android.support.v4.app.FragmentActivity
+import android.support.v4.content.LocalBroadcastManager
 import android.support.v4.view.ViewPager
+import android.util.Log
 import android.view.View
+import com.android.volley.*
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.KotlinJsonAdapterFactory
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.toast
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 
-class MainActivity: Activity() {
+class MainActivity: FragmentActivity() {
 
-    private lateinit var tabs: ArrayList<Fragment>
+    private val tabs: ArrayList<Fragment> = ArrayList()
 
+    //For from shared preferences
+    private val USER_PREFS = "profile_data" //Shared with other activities
+    private val USER_STRING = "Username"
+    private val PASS_STRING = "Password"
+    private val MODE_STRING = "mode"
+    private val READY_STRING = "ready"
+
+    //For internal storage
+    private val CAT_LIST_FILE = "cat_list"
+
+    private val BROADCAST_ACTION = "com.cs65.gnf.lab4.ready"
+
+    var catList: ArrayList<Cat>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         //Init
@@ -25,10 +54,9 @@ class MainActivity: Activity() {
         val adapter = TabAdapter(fragmentManager)
 
         //Add tabs
-        tabs = ArrayList()
         tabs.add(PlayFrag())
         tabs.add(HistoryFrag())
-        tabs.add(RankingFrag())
+        tabs.add(CatsFrag())
         tabs.add(SettingsFrag())
 
         //Assign adapter (see below)
@@ -37,12 +65,129 @@ class MainActivity: Activity() {
         //Set tab to evenly distribute, and then connect it to the viewPager
         tabStrip.setDistributeEvenly(true)
         tabStrip.setViewPager(mViewPager)
-    }
+
+        //And now we'll get the list of cats from the internet, and save it to internal storage for
+        //catsFrag, playFrag, etc.
+
+        //First, make sure that the cat list has not already been saved to internal storage
+        val prefs = getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
+        val ready = prefs.getBoolean(READY_STRING,false)
+        //If it's not been readied, then get the cat list and save to internal storage
+        if (!ready) {
+
+            // get the username, password and mode
+            val user = prefs.getString(USER_STRING,null)
+            val pass = prefs.getString(PASS_STRING,null)
+
+            //mode as string is "hard" if mode is true, "easy" otherwise
+            val mode = if (prefs.getBoolean(MODE_STRING,false)) "hard" else "easy"
+
+            //Make the URL
+            val listUrl = "http://cs65.cs.dartmouth.edu/catlist.pl?name=$user&password=$pass&mode=$mode"
+
+            //Open volley req (end result of this is saving the cat list to internal storage)
+            Volley.newRequestQueue(this)
+                    .add(
+                            StringRequest(Request.Method.GET,listUrl,
+                                    Response.Listener<String> { response ->
+                                        Log.d("RESPONSE",response)
+                                        //Build the Moshi, adding all needed adapters
+                                        val moshi = Moshi.Builder()
+                                                .add(KotlinJsonAdapterFactory())
+                                                .add(StringToDoubleAdapter())
+                                                .add(StringToIntAdapter())
+                                                .add(StringToBoolAdapter())
+                                                .build()
+
+                                        //Try to change to a JSON object
+                                        //If this succeeds, then the JSON was an error object
+                                        val errorObject: JSONObject? = try {
+                                            JSONObject(response)
+                                        }
+
+                                        //If there's a JSONException it may be a list
+                                        catch (e: JSONException) {
+                                            null //set the "error object" to null
+                                        }
+
+                                        if (errorObject!=null) { //if there was an error object made
+                                            Log.d("SERVOR ERROR",errorObject.getString("error"))
+                                        }
+                                        else { //if no error object was found we can set our cat list
+                                            val type = Types.newParameterizedType(List::class.java,Cat::class.java)
+
+                                            val catAdaptor: JsonAdapter<List<Cat>> = moshi.adapter(type)
+
+                                            //Set the list of cats
+                                             catList = ArrayList(catAdaptor.fromJson(response))
+
+                                            Log.d("MAINACT",catList.toString())
+
+                                            if (catList==null) { //if the list cannot be made
+                                                Log.d("ERROR","List of cats not found")
+                                            }
+                                            else {
+                                                //Open and write to the file
+                                                val fos = openFileOutput(CAT_LIST_FILE,Context.MODE_PRIVATE)
+                                                val oos = ObjectOutputStream(fos)
+                                                doAsync {
+                                                    oos.writeObject(catList)
+                                                    oos.close()
+                                                    fos.close()
+
+                                                    //Set ready to true so this doesn't keep
+                                                    //being called
+                                                    prefs.edit()
+                                                            .putBoolean(READY_STRING,true)
+                                                            .apply()
+
+                                                    Log.d("MAIN","ready")
+
+                                                    //Send a broadcast to everyone listening, so that
+                                                    //people waiting for the cat list know they can
+                                                    //get it now
+                                                    val intent = Intent()
+                                                    intent.action = BROADCAST_ACTION
+
+                                                    LocalBroadcastManager
+                                                            .getInstance(applicationContext)
+                                                            .sendBroadcast(intent)
+
+                                                    Log.d("MAIN","broadcast sent")
+                                                }
+                                            }
+                                        }
+                                    },
+                                    Response.ErrorListener { error -> // Handle error cases
+                                        when (error) {
+                                            is NoConnectionError ->
+                                                toast("Connection Error")
+                                            is TimeoutError ->
+                                                toast("Timeout Error")
+                                            is AuthFailureError ->
+                                                toast("AuthFail Error")
+                                            is NetworkError ->
+                                                toast("Network Error")
+                                            is ParseError ->
+                                                toast("Parse Error")
+                                            is ServerError ->
+                                                toast("Server Error")
+                                            else -> toast("Error: " + error)
+                                        }
+                                    }
+                            ))
+        }
+        else { //get from internal storage to this activity
+            val fis = openFileInput(CAT_LIST_FILE)
+            val ois = ObjectInputStream(fis)
+            catList = ois.readObject() as ArrayList<Cat>
+            }
+        }
 
     /**
      * Adapter for the tab in this activity
      */
-    inner class TabAdapter constructor(fm: FragmentManager): FragmentPagerAdapter(fm) {
+    inner class TabAdapter (fm: FragmentManager): FragmentPagerAdapter(fm) {
 
         override fun getCount(): Int {
             return tabs.size
@@ -57,7 +202,7 @@ class MainActivity: Activity() {
             when (position) {
                 0 -> return "Play"
                 1 -> return "History"
-                2 -> return "Rankings"
+                2 -> return "Cats"
                 3 -> return "Settings"
             }
             return null
@@ -78,7 +223,11 @@ class MainActivity: Activity() {
      * reset cat list
      */
     fun toReset(v: View) {
-        //TODO: reset cat list
+        val user = getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE).getString(USER_STRING, null)
+        val pass = getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE).getString(PASS_STRING, null)
+
+        resetList(this,user,pass)
+
     }
 
 }
