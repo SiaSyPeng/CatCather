@@ -36,6 +36,11 @@ import com.varunmishra.catcameraoverlay.OnCatPetListener
 import org.jetbrains.anko.toast
 import org.json.JSONException
 import org.json.JSONObject
+import android.app.NotificationChannel
+import android.app.Notification
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.graphics.Color
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, 
     GoogleMap.OnMarkerClickListener, LocationListener, OnCatPetListener {
@@ -64,14 +69,23 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     //View variables
     private lateinit var trackButton: Button
 
+    //Notification variables
+    private var notificationID = 1
+    private var channelId : String = "" // set in createChannel, only used in API >= 26
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
-        //setup views
+        //get necessary views
         trackButton = findViewById(R.id.track_button)
 
+        // get necessary permissions
         requestPermissions()
+
+        //create channel for notification
+        createChannel()
+
 
         //Set an onChangeListener for the CatID
         //Update panel accordingly
@@ -337,6 +351,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         trackButton.setText("STOP")
         trackButton.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark))
 
+        // start foreground notification service
+        displayNotification()
+
     }
 
     /*
@@ -345,6 +362,104 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     override fun onCatPet(catName: String) {
         Toast.makeText(this, "You just Pet - " + catName, Toast.LENGTH_LONG).show()
     }
+
+    /*
+     * create channel for notifications
+     */
+    private fun createChannel() {
+
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
+
+            val mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            // The id of the channel.
+            channelId = "my_channel_01"
+
+            // The user-visible name of the channel.
+            val name = getString(R.string.channel_name)
+            // The user-visible description of the channel.
+            val description = getString(R.string.channel_description)
+
+            val importance = NotificationManager.IMPORTANCE_LOW
+            val mChannel = NotificationChannel(channelId, name, importance)
+
+            // Configure the notification channel.
+            mChannel.description = description
+
+            mChannel.enableLights(true)
+
+            // Sets the notification light color for notifications posted to this
+            // channel, if the device supports this feature.
+            mChannel.lightColor = Color.RED
+
+            // Sets vibration if the device supports it
+            mChannel.enableVibration(true)
+            mChannel.vibrationPattern = longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
+
+            mNotificationManager.createNotificationChannel(mChannel)
+        }
+    }
+
+    /*
+     * Intent to launch another activity if the user clicks "track"
+     */
+    private fun displayNotification()
+    {
+
+        //TODO: stop on intent?
+        val i : Intent = Intent(this, NotificationActivity::class.java )
+
+        Log.d("INTENT", i.toString())
+
+        i.putExtra("notificationID", notificationID)
+        i.putExtra("action", "stop")
+
+
+        //To be wrapped in a PendingIntent, because
+        //it will be sent from whatever activity manages notifications;
+        //this activity may not even be running.
+        val pendingIntent : PendingIntent =
+                PendingIntent.getActivity(this,
+                        0, // on some SDK versions, the code should NOT be 0, or else it won't work
+                        i,
+                        0) // flags are important, see https://developer.android.com/reference/android/app/PendingIntent.html
+
+        //The Notification.Builder provides an builder interface to create an Notification object.
+        //Use a PendingIntent to specify the action which should be performed once the user select the notification.
+        val nm : NotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        // build notification
+        // Using the approved constructor for 26, which mandates that Channels be used;
+        //   the older channel-less constructor is deprecated.
+        val notiBuilder = if ( android.os.Build.VERSION.SDK_INT >= 26 )
+            Notification.Builder(this, channelId) else  Notification.Builder(this)
+
+        // TODO: get actual cat info: name + dis(maybe make global?
+        val title= "Catching "
+        val dis = "miles away"
+        notiBuilder.setSmallIcon(R.drawable.green_marker)
+                .setContentTitle(title)
+                .setContentText(dis)
+                .addAction(R.mipmap.ic_launcher, "STOP", pendingIntent)
+                .setContentIntent(pendingIntent)
+//               .setAutoCancel(true)  --if not set, the notification needs to be
+        //   cancelled explicitly, or else it sticks in the notification bar.
+        //   See cancellation logic in NotificationActivity.
+
+        val n = notiBuilder.build() // API >= 16, otherwise use NotificationCompat
+
+        nm.notify(notificationID, n)
+    }
+
+//    private fun stopTracking() {
+//        var nm : NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE)
+//                as NotificationManager
+//
+//        //---cancel the notification that we started---
+//        val notiId = intent.extras.getInt("notificationID")
+//        nm.cancel(notiId)
+//    }
+
 
     /**
      * Called whenever location is changed or selected cat is changed. Redraws markers according to

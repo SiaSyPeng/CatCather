@@ -143,4 +143,9 @@
     <string name="prefs_about_title">About us</string>
     <string name="prefs_about_key">About</string>
     <string name="prefs_about_summary">(opens in browser)</string>
+
+    <!--Notification -->
+    <string name="channel_name">Tracking NotifyChannel</string>
+    <string name="channel_description">Track Notify Channel</string>
+    <string name="stop_button">Stop</string>
 </resources>
