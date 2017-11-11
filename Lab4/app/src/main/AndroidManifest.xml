@@ -58,7 +58,11 @@
         <activity android:name=".SuccessActivity" />
         <activity
             android:name=".NotificationActivity"
-            android:label="Details of notification" />
+            android:label="Details of notification" android:parentActivityName=".MainActivity">
+            <!-- - for Android after 4.1  -->
+            <!--  Only needed for Android pre-4.1 : -->
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value=".MapActivity"/>
+        </activity>
     </application>
 
 </manifest>
