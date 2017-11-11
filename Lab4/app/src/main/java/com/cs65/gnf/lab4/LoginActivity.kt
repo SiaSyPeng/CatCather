@@ -7,7 +7,7 @@ import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.DecelerateInterpolator
 import android.widget.EditText
-import org.jetbrains.anko.toast
+import org.jetbrains.anko.longToast
 import com.android.volley.*
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
@@ -56,11 +56,11 @@ class LoginActivity : Activity() {
         when {
             // Check if uname and password entered
             uname.isEmpty() -> {
-                toast("Please enter an Username")
+                longToast("Please enter an Username")
                 highlight(mUsername)
             }
             pass.isEmpty() -> {
-                toast("Please  enter a Password")
+                longToast("Please  enter a Password")
                 highlight(mPassword)
             }
             else -> {
@@ -82,9 +82,9 @@ class LoginActivity : Activity() {
                                 if (error != null) { // error
                                     val code = loginRes.code // get error type
                                     if (code == "AUTH_FAIL") {
-                                        toast("Passwords don't match")
+                                        longToast("Passwords don't match")
                                     } else if (code == "NAME_NOT_FOUND") {
-                                        toast("Username not found")
+                                        longToast("Username not found")
                                     }
                                 } else {
                                     // if no error, authenticated, log in the the home page
@@ -100,18 +100,18 @@ class LoginActivity : Activity() {
                         Response.ErrorListener { error -> // Handle error cases
                             when (error) {
                                 is NoConnectionError ->
-                                    toast("Connection Error")
+                                    longToast("Connection Error")
                                 is TimeoutError->
-                                    toast("Timeout Error")
+                                    longToast("Timeout Error")
                                 is AuthFailureError ->
-                                    toast("AuthFail Error")
+                                    longToast("AuthFail Error")
                                 is NetworkError ->
-                                    toast("Network Error")
+                                    longToast("Network Error")
                                 is ParseError ->
-                                    toast("Parse Error")
+                                    longToast("Parse Error")
                                 is ServerError ->
-                                    toast("Server Error")
-                                else -> toast("Error: " + error)
+                                    longToast("Server Error")
+                                else -> longToast("Error: " + error)
                             }
                         }) {
                 }

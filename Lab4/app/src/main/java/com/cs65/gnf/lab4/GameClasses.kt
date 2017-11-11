@@ -1,8 +1,12 @@
 package com.cs65.gnf.lab4
 
+import android.util.Log
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import com.squareup.moshi.JsonQualifier
+import java.io.Externalizable
+import java.io.ObjectInput
+import java.io.ObjectOutput
 
 //These annotations will be used to change strings to doubles, ints, and booleans
 @JsonQualifier
@@ -132,14 +136,41 @@ class Date(val date: Int, val month: Int, val year: Int): Comparable<Date> {
 /**
  * Representation of the cat class
  */
-data class Cat(
-        @StringToInt val catId: Int,
-        val picUrl: String,
-        val name: String,
-        @StringToDouble val lat: Double,
-        @StringToDouble val lng: Double,
+data class Cat (
+        @StringToInt var catId: Int,
+        var picUrl: String,
+        var name: String,
+        @StringToDouble var lat: Double,
+        @StringToDouble var lng: Double,
         @StringToBool var petted: Boolean
-)
+): Externalizable {
+
+    constructor() : this(0,"","",0.0,0.0,false)
+
+    override fun readExternal(inp: ObjectInput?) {
+        if (inp!= null) {
+            catId = inp.readInt()
+            picUrl = inp.readObject() as String
+            name = inp.readObject() as String
+            lat = inp.readDouble()
+            lng = inp.readDouble()
+            petted = inp.readBoolean()
+
+        }
+    }
+
+    override fun writeExternal(out: ObjectOutput?) {
+        if (out!= null) {
+            out.writeInt(catId)
+            out.writeObject(picUrl)
+            out.writeObject(name)
+            out.writeDouble(lat)
+            out.writeDouble(lng)
+            out.writeBoolean(petted)
+        }
+    }
+
+}
 
 data class historicCat(
         @StringToBool var liked: Boolean,

@@ -143,4 +143,8 @@
     <string name="prefs_about_title">About us</string>
     <string name="prefs_about_key">About</string>
     <string name="prefs_about_summary">(opens in browser)</string>
+
+    <!--Cats Frag -->
+    <string name="cat_pic_descr">Image of the cat</string>
+    <string name="cat_petted_descr">Image showing if the cat has been petted</string>
 </resources>
