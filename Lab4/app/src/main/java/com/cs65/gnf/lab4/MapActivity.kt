@@ -31,6 +31,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.support.v4.app.TaskStackBuilder
 import android.graphics.drawable.Icon
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.longToast
@@ -75,6 +76,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private var track = true
 
     //Notification variables
+    private var isTrack: Boolean = false
     private var notificationID = 1
     private var channelId : String = "" // set in createChannel, only used in API >= 26
 
@@ -113,7 +115,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         requestPermissions()
 
         //create channel for notification
-        createChannel()
+        // createChannel()
 
 
         //Set an onChangeListener for the CatID
@@ -304,8 +306,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
      * If button is "STOP" it will stop tracking service, unregister receivers and change to "TRACK"
      */
     private fun onTrack() {
-        if (track) {
-            //TODO start service
+        if (track) { // track: if the text on the button is track
+            val intent = Intent(this, NotifyService::class.java)
+            this.startService(intent)
+            
+            track = false
             //TODO give it the catID for cat we're tracking or the cat itself, in byteArray
 
             trackButton.text = getString(R.string.track_button_stop)
@@ -318,7 +323,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         }
         else {
             //TODO stop service
-
+            val intent = Intent()
+            intent.action = NotifyService.ACTION
+            intent.putExtra(NotifyService.STOP_SERVICE_BROADCAST_KEY, NotifyService.RQS_STOP_SERVICE)
+            sendBroadcast(intent)
+            
+            track = true
+    
             trackButton.text = getString(R.string.track_button)
             trackButton.setBackgroundColor(getColor(R.color.LLGreen))
 
@@ -347,39 +358,39 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     /*
      * create channel for notifications
      */
-    private fun createChannel() {
-
-        if (android.os.Build.VERSION.SDK_INT >= 26) {
-
-            val mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-            // The id of the channel.
-            channelId = "my_channel_01"
-
-            // The user-visible name of the channel.
-            val name = getString(R.string.channel_name)
-            // The user-visible description of the channel.
-            val description = getString(R.string.channel_description)
-
-            val importance = NotificationManager.IMPORTANCE_LOW
-            val mChannel = NotificationChannel(channelId, name, importance)
-
-            // Configure the notification channel.
-            mChannel.description = description
-
-            mChannel.enableLights(true)
-
-            // Sets the notification light color for notifications posted to this
-            // channel, if the device supports this feature.
-            mChannel.lightColor = Color.RED
-
-            // Sets vibration if the device supports it
-            mChannel.enableVibration(true)
-            mChannel.vibrationPattern = longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
-
-            mNotificationManager.createNotificationChannel(mChannel)
-        }
-    }
+//    private fun createChannel() {
+//
+//        if (android.os.Build.VERSION.SDK_INT >= 26) {
+//
+//            val mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+//
+//            // The id of the channel.
+//            channelId = "my_channel_01"
+//
+//            // The user-visible name of the channel.
+//            val name = getString(R.string.channel_name)
+//            // The user-visible description of the channel.
+//            val description = getString(R.string.channel_description)
+//
+//            val importance = NotificationManager.IMPORTANCE_LOW
+//            val mChannel = NotificationChannel(channelId, name, importance)
+//
+//            // Configure the notification channel.
+//            mChannel.description = description
+//
+//            mChannel.enableLights(true)
+//
+//            // Sets the notification light color for notifications posted to this
+//            // channel, if the device supports this feature.
+//            mChannel.lightColor = Color.RED
+//
+//            // Sets vibration if the device supports it
+//            mChannel.enableVibration(true)
+//            mChannel.vibrationPattern = longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
+//
+//            mNotificationManager.createNotificationChannel(mChannel)
+//        }
+//    }
 
     /**
      * Intent to launch another activity if the user clicks "track"
@@ -395,13 +406,15 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         i.putExtra("notificationID", notificationID)
         i.putExtra("action", "stop")
 
+        val stackBuilder : TaskStackBuilder = TaskStackBuilder.create(this)
+        stackBuilder.addNextIntentWithParentStack(i)
 
         //To be wrapped in a PendingIntent, because
         //it will be sent from whatever activity manages notifications;
         //this activity may not even be running.
         val pendingIntent : PendingIntent =
                 PendingIntent.getActivity(this,
-                        0, i, 0)
+                        0, i, PendingIntent.FLAG_UPDATE_CURRENT)
 
         //The Notification.Builder provides an builder interface to create an Notification object.
         //Use a PendingIntent to specify the action which should be performed once the user select the notification.
@@ -490,6 +503,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
      */
     private fun requestPermissions() {
         // Here, thisActivity is the current activity
+
+        //TODO: check vibrate permission
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                 checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                 checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
