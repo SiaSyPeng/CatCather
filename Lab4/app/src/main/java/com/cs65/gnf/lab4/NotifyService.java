@@ -19,8 +19,9 @@ import android.util.Log;
 
 public class NotifyService extends Service {
 
-    final static String ACTION = "NotifyServiceAction";
-    final static String STOP_SERVICE_BROADCAST_KEY="StopServiceBroadcastKey";
+    final static String ACTION_STOP = "STOP";
+    final static String ACTION_TRACK = "TRACK";
+    final static String STOP_SERVICE_BROADCAST_KEY="STOP";
     final static int RQS_STOP_SERVICE = 1;
     final static int notificationID = 1;
     final String channelId  = "my_channel_01"; // set in createChannel, only used in API >= 26
@@ -42,19 +43,34 @@ public class NotifyService extends Service {
         Log.d("service ", " onStartCommand");
 
 
+        // filter intent and register receiver
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ACTION);
+        intentFilter.addAction(ACTION_TRACK);
         registerReceiver(notifyServiceReceiver, intentFilter);
 
-        // Send Notification
+        // if we request to stop the service, stop the service!
+        if (ACTION_STOP.equals(intent.getAction())) {
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (notificationManager != null) {
+                notificationManager.cancel(notificationID);
+            }
+            stopSelf();
+        }
+
+        // Set up Notification
         Context context = getApplicationContext();
         //TODO add selectedCat?.name and distance
         String notificationTitle = "Catching ";
         String notificationText = " meters away";
-        Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(myBlog));
 
+        // Click the notification goes back to map activity
+        Intent myIntent = new Intent(this, MapActivity.class);
+
+        // add back stack for new map activity
         TaskStackBuilder stackBuilder= TaskStackBuilder.create(this);
-        stackBuilder.addNextIntentWithParentStack(myIntent);
+        stackBuilder.addParentStack(MapActivity.class);
+        stackBuilder.addNextIntent(myIntent);
+        //stackBuilder.addNextIntentWithParentStack(myIntent);
 
         //To be wrapped in a PendingIntent, because
         //it will be sent from whatever activity manages notifications;
@@ -62,21 +78,34 @@ public class NotifyService extends Service {
         PendingIntent pendingIntent
                 = PendingIntent.getActivity(getBaseContext(),
                 0, myIntent,
-                Intent.FLAG_ACTIVITY_NEW_TASK);
+                PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         //val action = Notification.Action.Builder(icon,"STOP", pendingIntent).build()
 
-        Notification notification = new Notification.Builder(this, channelId)
+        Notification.Builder builder = new Notification.Builder(this, channelId)
                 .setContentTitle(notificationTitle)
-                .setContentText(notificationText).setSmallIcon(R.drawable.petted)
-                .setContentIntent(pendingIntent).build();
+                .setContentText(notificationText)
+                .setSmallIcon(R.drawable.petted)
+                .setContentIntent(pendingIntent);
 
-        notification.flags = notification.flags
-                | Notification.FLAG_ONGOING_EVENT;
-        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
+            builder.setChannelId(channelId);
+        }
+
+        // setup pending intent to stop this service when stop is clicked
+        Intent stopSelf = new Intent(this, NotifyService.class);
+        stopSelf.setAction(ACTION_STOP);
+        PendingIntent pStopSelf = PendingIntent.getService(this, 0, stopSelf, PendingIntent.FLAG_CANCEL_CURRENT);
+        builder.addAction(R.mipmap.ic_launcher, "Stop", pStopSelf);
+
+
+        Notification notification = builder.build();
+//        notification.flags = notification.flags
+//                | Notification.FLAG_ONGOING_EVENT;
+//        notification.flags |= Notification.FLAG_AUTO_CANCEL;
 
         notificationManager.notify(notificationID, notification);
 
@@ -141,8 +170,8 @@ public class NotifyService extends Service {
                 //String notiId = arg1.getIntExtra("notificationID", 0)
 
                 ((NotificationManager) getSystemService(NOTIFICATION_SERVICE))
-                        .cancelAll();
-                        //.cancel(notiId);
+                        //.cancelAll();
+                        .cancel(notificationID);
             }
         }
     }
