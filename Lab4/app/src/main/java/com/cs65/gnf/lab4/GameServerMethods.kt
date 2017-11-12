@@ -5,22 +5,15 @@ import android.app.Fragment
 import android.content.Context
 import android.content.Intent
 import android.location.Location
-import android.support.v4.content.ContextCompat.startActivity
-import android.support.v4.content.LocalBroadcastManager
 import android.util.Log
 import com.android.volley.*
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.gms.maps.model.LatLng
-import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.longToast
-import org.jetbrains.anko.longToast
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 

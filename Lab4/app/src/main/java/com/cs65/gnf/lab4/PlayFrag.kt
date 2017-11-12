@@ -7,14 +7,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.support.v4.content.LocalBroadcastManager
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import kotlinx.android.synthetic.*
-import org.jetbrains.anko.find
-import org.w3c.dom.Text
 
 /**
  * Fragment for "Play" Tab
