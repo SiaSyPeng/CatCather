@@ -28,9 +28,7 @@ import com.varunmishra.catcameraoverlay.OnCatPetListener
 import android.graphics.BitmapFactory
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.longToast
-import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
 import java.net.URL
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback,
@@ -308,7 +306,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
             intent.putExtra("lat",selectedCat?.lat)
             intent.putExtra("lng",selectedCat?.lng)
             this.startService(intent)
-            
+
             track = false
 
 
@@ -326,9 +324,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
             intent.action = NotifyService.ACTION_TRACK
             intent.putExtra(NotifyService.STOP_SERVICE_BROADCAST_KEY, NotifyService.RQS_STOP_SERVICE)
             sendBroadcast(intent)
-            
+
             track = true
-    
+
             trackButton.text = getString(R.string.track_button)
             trackButton.setBackgroundColor(getColor(R.color.LLGreen))
 
