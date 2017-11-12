@@ -18,7 +18,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.longToast
-import org.jetbrains.anko.toast
+import org.jetbrains.anko.longToast
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.ObjectInputStream
@@ -38,7 +38,7 @@ fun petCat(act: Activity, user: String?, pass: String?, id: Int, loc: LatLng?) {
 
     //open a request
     Volley.newRequestQueue(act)
-            .add(StringRequest(Request.Method.GET,url,
+            .add(object : StringRequest(Request.Method.GET,url,
                     Response.Listener<String> { response ->
 
                         val moshi = Moshi.Builder()
@@ -53,6 +53,7 @@ fun petCat(act: Activity, user: String?, pass: String?, id: Int, loc: LatLng?) {
                         val petRes = petAdaptor.fromJson(response)
 
                         if (petRes==null) {
+                            act.longToast("Not petting. Check connection?")
                             Log.d("ERROR","Pat result is null") //this shouldn't happen
                         }
                         else {
@@ -86,7 +87,12 @@ fun petCat(act: Activity, user: String?, pass: String?, id: Int, loc: LatLng?) {
                             else -> act.longToast("Error: " + error)
                         }
                     }
-            ))
+            ){
+                override fun setRetryPolicy(retryPolicy: RetryPolicy?): Request<*> {
+                    return super.setRetryPolicy(DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS,
+                            2, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+                }
+            })
 }
 
 /**
@@ -104,7 +110,7 @@ fun resetList(ctx: Context,user: String?, pass: String?) {
 
     //start volley request for resetting list
     Volley.newRequestQueue(ctx)
-            .add(StringRequest(Request.Method.GET,url,
+            .add(object : StringRequest(Request.Method.GET,url,
                     Response.Listener<String> {response->
 
                         val moshi = Moshi.Builder()
@@ -161,8 +167,12 @@ fun resetList(ctx: Context,user: String?, pass: String?) {
             ctx.longToast("Server Error")
         else -> ctx.longToast("Error: " + error)
     }
-}
-))
+}){
+                        override fun setRetryPolicy(retryPolicy: RetryPolicy?): Request<*> {
+                    return super.setRetryPolicy(DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS,
+                            2, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+                }
+                    })
 }
 
 /**
@@ -174,7 +184,7 @@ fun changePassword(frag: Fragment, user: String?, pass: String?, newPass: String
 
     //start a volley request
     Volley.newRequestQueue(frag.activity)
-            .add(StringRequest(Request.Method.GET,url,
+            .add(object : StringRequest(Request.Method.GET,url,
                     Response.Listener<String> {response ->
 
                         val moshi = Moshi.Builder()
@@ -210,7 +220,11 @@ fun changePassword(frag: Fragment, user: String?, pass: String?, newPass: String
                             else -> frag.longToast("Error: " + error)
                         }
                     }
-                    ))
+                    )
+                    {override fun setRetryPolicy(retryPolicy: RetryPolicy?): Request<*> {
+                return super.setRetryPolicy(DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS,
+                        2, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+            }})
 }
 
 /**

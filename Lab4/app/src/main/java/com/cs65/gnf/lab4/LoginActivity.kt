@@ -114,6 +114,10 @@ class LoginActivity : Activity() {
                                 else -> longToast("Error: " + error)
                             }
                         }) {
+                    override fun setRetryPolicy(retryPolicy: RetryPolicy?): Request<*> {
+                        return super.setRetryPolicy(DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS,
+                                2, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+                    }
                 }
 
                 // Add the request to the RequestQueue.

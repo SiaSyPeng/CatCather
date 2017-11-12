@@ -15,6 +15,7 @@ import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.longToast
 import org.json.JSONException
 import org.json.JSONObject
+import java.util.HashMap
 
 /**
  * Fragment for "Settings" Tab
@@ -58,7 +59,6 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
         val newGamePref = findPreference(getString(R.string.prefs_newgame_key))
 
         val prefs = activity.getSharedPreferences(USER_PREFS, Context.MODE_PRIVATE)
-        val mode = prefs.getBoolean(MODE_STRING,false)
 
         // Clean up when the user sign out
         signoutPref.setOnPreferenceClickListener { _ ->
@@ -233,8 +233,33 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
             longToast("Invalid JSON")
         }
 
+        /**
+         * Custom class that retries the request if there are  timeout errors etc
+         */
+        class MyReq(url: String, obj: JSONObject,
+                    listener: Response.Listener<JSONObject>,
+                    errorListener: Response.ErrorListener) :
+                JsonObjectRequest(url,obj, listener, errorListener) {
+            override fun setRetryPolicy(retryPolicy: RetryPolicy?): Request<*> {
+                return super.setRetryPolicy(DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS,
+                        2, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+            }
+
+            // This to set custom headers:
+            //   https://stackoverflow.com/questions/17049473/how-to-set-custom-header-in-volley-request
+            @Throws(AuthFailureError::class)
+            override fun getHeaders(): Map<String, String> {
+                val params = HashMap<String, String>()
+                // params.put("Accept", "application/json");
+                params.put("Accept-Encoding", "identity")
+                params.put("Content-Type", "application/json")
+
+                return params
+            }
+        }
+
         // POST jsonrequest to the reserver
-        val joRequest = object: JsonObjectRequest(SAVE_URL, // POST is presumed
+        val joRequest = MyReq(SAVE_URL, // POST is presumed
                 jsonReq,
                 Response.Listener<JSONObject> { response ->
                     try {
@@ -259,20 +284,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
                     longToast("Server Error" )
                 else -> longToast("Error: " + error)
             }
-        }) {
-            // This to set custom headers:
-            //   https://stackoverflow.com/questions/17049473/how-to-set-custom-header-in-volley-request
-            @Throws(AuthFailureError::class)
-            override  fun getHeaders(): Map<String, String> {
-                run {
-                    val params = HashMap<String, String>()
-                    params.put("Accept-Encoding", "identity")
-                    params.put("Content-Type", "application/json")
-
-                    return params
-                }
-            }
-        }
+        })
 
         // Add the request to the RequestQueue.
         queue.add(joRequest)

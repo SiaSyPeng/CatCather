@@ -354,7 +354,6 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
                         else -> longToast("Error: " + error)
                     }
         })
-
         {
           // This to set custom headers:
           //   https://stackoverflow.com/questions/17049473/how-to-set-custom-header-in-volley-request
@@ -368,6 +367,11 @@ class SignupActivity : AppCompatActivity(), AuthDialog.DialogListener {
 
                     return params
                 }
+            }
+
+            override fun setRetryPolicy(retryPolicy: RetryPolicy?): Request<*> {
+                return super.setRetryPolicy(DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS,
+                        2, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
             }
         }
 

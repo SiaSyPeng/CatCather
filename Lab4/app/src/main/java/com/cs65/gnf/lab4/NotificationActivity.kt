@@ -5,10 +5,12 @@ import android.app.Activity
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
-
+import android.support.v4.content.LocalBroadcastManager
 
 
 class NotificationActivity : Activity() {
+
+    private val STOP_TRACKING_ACTION = "com.cs65.gnf.stopTracking"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,5 +46,12 @@ class NotificationActivity : Activity() {
         //---cancel the notification that we started---
         val notiId = intent.extras.getInt("notificationID")
         nm.cancel(notiId)
+
+        val intent = Intent()
+        intent.action = STOP_TRACKING_ACTION
+
+        LocalBroadcastManager
+                .getInstance(applicationContext)
+                .sendBroadcast(intent)
     }
 }
