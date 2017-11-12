@@ -23,7 +23,7 @@ public class NotifyService extends Service {
     final static String STOP_SERVICE_BROADCAST_KEY="StopServiceBroadcastKey";
     final static int RQS_STOP_SERVICE = 1;
     final static int notificationID = 1;
-    final String channelId  = ""; // set in createChannel, only used in API >= 26
+    final String channelId  = "my_channel_01"; // set in createChannel, only used in API >= 26
 
     NotifyServiceReceiver notifyServiceReceiver;
 
@@ -39,7 +39,7 @@ public class NotifyService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("service", " onStartCommand");
+        Log.d("service ", " onStartCommand");
 
 
         IntentFilter intentFilter = new IntentFilter();
@@ -92,7 +92,7 @@ public class NotifyService extends Service {
             NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
             // The id of the channel.
-            String channelId = "my_channel_01";
+            //channelId = "my_channel_01";
 
             // The user-visible name of the channel.
             String name = getString(R.string.channel_name);

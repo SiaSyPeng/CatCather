@@ -56,13 +56,13 @@
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
         <activity android:name=".SuccessActivity" />
-        <activity
-            android:name=".NotificationActivity"
-            android:label="Details of notification" android:parentActivityName=".MainActivity">
-            <!-- - for Android after 4.1  -->
-            <!--  Only needed for Android pre-4.1 : -->
-            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value=".MapActivity"/>
-        </activity>
+
+        <service
+            android:name=".NotifyService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
+
     </application>
 
 </manifest>

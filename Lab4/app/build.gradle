@@ -50,7 +50,7 @@ dependencies {
     implementation 'com.squareup.moshi:moshi-kotlin:1.5.0'
     implementation "com.squareup.picasso:picasso:2.4.0"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
-    implementation 'com.varunmishra.catcameraoverlay:catcameraoverlay:1.0.3'
+    implementation 'com.varunmishra.catcameraoverlay:catcameraoverlay:1.0.5'
 }
 repositories {
     mavenCentral()
