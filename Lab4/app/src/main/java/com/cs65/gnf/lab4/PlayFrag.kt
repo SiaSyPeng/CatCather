@@ -20,6 +20,8 @@ class PlayFrag: Fragment() {
     private val USER_STRING = "Username"
     private val READY_STRING = "ready"
 
+    private lateinit var mView: View
+
     private lateinit var broadcastReceiver: BroadcastReceiver
 
     private val BROADCAST_ACTION = "com.cs65.gnf.lab4.ready"
@@ -32,13 +34,13 @@ class PlayFrag: Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        val view =  inflater.inflate(R.layout.fragment_play, container, false)
+        mView =  inflater.inflate(R.layout.fragment_play, container, false)
 
         // using the player name saved in local shared preference
         val mUName= activity.getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE).getString(USER_STRING, " ")
 
         // Update player name
-        val mPlayName: TextView = view.findViewById(R.id.play_name)
+        val mPlayName: TextView = mView.findViewById(R.id.play_name)
         val text = "Hi, $mUName"
         mPlayName.text=text
 
@@ -53,7 +55,7 @@ class PlayFrag: Fragment() {
         else {
             setNumber()
         }
-        return view
+        return mView
     }
 
     /**
@@ -69,7 +71,7 @@ class PlayFrag: Fragment() {
      * Function that sets the number of cats the user has access to
      */
     private fun setNumber() {
-        val welcome: TextView = view.findViewById(R.id.welcome_message)
+        val welcome: TextView = mView.findViewById(R.id.welcome_message)
         val cats = (activity as MainActivity).catList?.size
         val text = "Welcome! You have $cats to catch!"
         welcome.text = text
