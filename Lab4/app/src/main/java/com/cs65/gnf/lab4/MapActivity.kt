@@ -25,17 +25,12 @@ import com.squareup.picasso.Picasso
 import com.varunmishra.catcameraoverlay.CameraViewActivity
 import com.varunmishra.catcameraoverlay.Config
 import com.varunmishra.catcameraoverlay.OnCatPetListener
-import android.app.NotificationChannel
-import android.app.Notification
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.graphics.BitmapFactory
-import android.graphics.Color
-import android.support.v4.app.TaskStackBuilder
-import android.graphics.drawable.Icon
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.longToast
+import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import java.net.URL
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback,
@@ -49,7 +44,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private var RADIUS_OF_SHOWN_MARKERS: Float = 500f
 
     // Cat variables
-    private var listOfCats: List<Cat>? = null
+    private var listOfCats: ArrayList<Cat>? = null
     private var visibleCats : HashMap<Int,Cat> = HashMap()
     private lateinit var selectedCatID: ListenableCatID
     private var selectedCat: Cat? = null
@@ -308,10 +303,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private fun onTrack() {
         if (track) { // track: if the text on the button is track
             val intent = Intent(this, NotifyService::class.java)
+
+            intent.putExtra("name",selectedCat?.name)
+            intent.putExtra("lat",selectedCat?.lat)
+            intent.putExtra("lng",selectedCat?.lng)
             this.startService(intent)
             
             track = false
-            //TODO give it the catID for cat we're tracking or the cat itself, in byteArray
+
 
             trackButton.text = getString(R.string.track_button_stop)
             trackButton.setBackgroundColor(getColor(R.color.colorPrimaryDark))
