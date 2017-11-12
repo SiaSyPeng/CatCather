@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.IBinder;
 import android.util.Log;
@@ -57,59 +58,9 @@ public class NotifyService extends Service {
             stopSelf();
         }
 
-        // Set up Notification
-        Context context = getApplicationContext();
-        //TODO add selectedCat?.name and distance
-        String notificationTitle = "Catching ";
-        String notificationText = " meters away";
-
-        // Click the notification goes back to map activity
-        Intent myIntent = new Intent(this, MapActivity.class);
-
-        // add back stack for new map activity
-        TaskStackBuilder stackBuilder= TaskStackBuilder.create(this);
-        stackBuilder.addParentStack(MapActivity.class);
-        stackBuilder.addNextIntent(myIntent);
-        //stackBuilder.addNextIntentWithParentStack(myIntent);
-
-        //To be wrapped in a PendingIntent, because
-        //it will be sent from whatever activity manages notifications;
-        //this activity may not even be running.
-        PendingIntent pendingIntent
-                = PendingIntent.getActivity(getBaseContext(),
-                0, myIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-        //val action = Notification.Action.Builder(icon,"STOP", pendingIntent).build()
-
-        Notification.Builder builder = new Notification.Builder(this, channelId)
-                .setContentTitle(notificationTitle)
-                .setContentText(notificationText)
-                .setSmallIcon(R.drawable.petted)
-                .setContentIntent(pendingIntent);
-
-        if (android.os.Build.VERSION.SDK_INT >= 26) {
-            builder.setChannelId(channelId);
-        }
-
-        // setup pending intent to stop this service when stop is clicked
-        Intent stopSelf = new Intent(this, NotifyService.class);
-        stopSelf.setAction(ACTION_STOP);
-        PendingIntent pStopSelf = PendingIntent.getService(this, 0, stopSelf, PendingIntent.FLAG_CANCEL_CURRENT);
-        builder.addAction(R.mipmap.ic_launcher, "Stop", pStopSelf);
-
-
-        Notification notification = builder.build();
-//        notification.flags = notification.flags
-//                | Notification.FLAG_ONGOING_EVENT;
-//        notification.flags |= Notification.FLAG_AUTO_CANCEL;
-
-        notificationManager.notify(notificationID, notification);
-
-        return super.onStartCommand(intent, flags, startId);
+        updateNotification();
+        return START_STICKY;
+        //return super.onStartCommand(intent, flags, startId);
     }
 
 
@@ -148,6 +99,69 @@ public class NotifyService extends Service {
         }
     }
 
+    private void updateNotification() {
+
+        // Set up Notification
+        Context context = getApplicationContext();
+        //TODO add selectedCat?.name and distance
+        String notificationTitle = "Catching ";
+        String notificationText = " meters away";
+
+        // Click the notification goes back to map activity
+        //TODO: go back to main if back stack doesn't work
+        Intent myIntent = new Intent(this, MapActivity.class);
+
+        // add back stack for new map activity
+        TaskStackBuilder stackBuilder= TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(MapActivity.class);
+        stackBuilder.addNextIntent(myIntent);
+        //stackBuilder.addNextIntentWithParentStack(myIntent);
+
+        //To be wrapped in a PendingIntent, because
+        //it will be sent from whatever activity manages notifications;
+        //this activity may not even be running.
+        PendingIntent pendingIntent
+                = PendingIntent.getActivity(getBaseContext(),
+                0, myIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        //val action = Notification.Action.Builder(icon,"STOP", pendingIntent).build()
+
+        Notification.Builder builder = new Notification.Builder(this, channelId)
+                .setContentTitle(notificationTitle)
+                .setContentText(notificationText)
+                .setSmallIcon(R.drawable.petted)
+                .setContentIntent(pendingIntent);
+
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
+            builder.setChannelId(channelId);
+        }
+
+        //TODO: hidable
+        // setup pending intent to stop this service when stop is clicked
+
+        Intent stopSelf = new Intent(this, NotifyService.class);
+        stopSelf.setAction(ACTION_STOP);
+        PendingIntent pStopSelf = PendingIntent.getService(this, 0, stopSelf, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        Icon button = Icon.createWithResource(this,R.mipmap.ic_launcher);
+        Notification.Action stopAct = new Notification.Action.Builder( button,"STOP", pStopSelf).build();
+
+        builder.addAction(stopAct);
+
+
+
+        Notification notification = builder.build();
+//        notification.flags = notification.flags
+//                | Notification.FLAG_ONGOING_EVENT;
+//        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+        startForeground(notificationID, notification);
+        //notificationManager.notify(notificationID, notification);
+
+    }
     @Override
     public void onDestroy() {
         this.unregisterReceiver(notifyServiceReceiver);
