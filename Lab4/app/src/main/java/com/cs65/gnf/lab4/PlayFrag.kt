@@ -73,7 +73,7 @@ class PlayFrag: Fragment() {
     private fun setNumber() {
         val welcome: TextView = mView.findViewById(R.id.welcome_message)
         val cats = (activity as MainActivity).catList?.size
-        val text = "Welcome! You have $cats to catch!"
+        val text = "Welcome! You have $cats cats to catch!"
         welcome.text = text
     }
 }
