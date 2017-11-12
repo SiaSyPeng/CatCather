@@ -28,9 +28,7 @@ import com.varunmishra.catcameraoverlay.OnCatPetListener
 import android.graphics.BitmapFactory
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.longToast
-import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
 import java.net.URL
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback,
