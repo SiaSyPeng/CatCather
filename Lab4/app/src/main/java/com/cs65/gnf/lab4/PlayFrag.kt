@@ -69,7 +69,7 @@ class PlayFrag: Fragment() {
      * Function that sets the number of cats the user has access to
      */
     private fun setNumber() {
-        val welcome: TextView = activity.findViewById(R.id.welcome_message)
+        val welcome: TextView = view.findViewById(R.id.welcome_message)
         val cats = (activity as MainActivity).catList?.size
         val text = "Welcome! You have $cats to catch!"
         welcome.text = text

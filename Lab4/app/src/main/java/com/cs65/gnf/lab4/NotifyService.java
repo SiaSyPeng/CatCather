@@ -31,7 +31,6 @@ public class NotifyService extends Service {
 
     @Override
     public void onCreate() {
-        // TODO Auto-generated method stub
         notifyServiceReceiver = new NotifyServiceReceiver();
         super.onCreate();
 
@@ -40,8 +39,7 @@ public class NotifyService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // TODO Auto-generated method stub
-        Log.d("servuce", "start servie");
+        Log.d("service", " onStartCommand");
 
 
         IntentFilter intentFilter = new IntentFilter();
@@ -123,14 +121,12 @@ public class NotifyService extends Service {
 
     @Override
     public void onDestroy() {
-        // TODO Auto-generated method stub
         this.unregisterReceiver(notifyServiceReceiver);
         super.onDestroy();
     }
 
     @Override
     public IBinder onBind(Intent arg0) {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -138,7 +134,6 @@ public class NotifyService extends Service {
 
         @Override
         public void onReceive(Context arg0, Intent arg1) {
-            // TODO Auto-generated method stub
             int rqs = arg1.getIntExtra(STOP_SERVICE_BROADCAST_KEY, 0);
 
             if (rqs == RQS_STOP_SERVICE){
@@ -148,7 +143,6 @@ public class NotifyService extends Service {
                 ((NotificationManager) getSystemService(NOTIFICATION_SERVICE))
                         .cancelAll();
                         //.cancel(notiId);
-
             }
         }
     }
