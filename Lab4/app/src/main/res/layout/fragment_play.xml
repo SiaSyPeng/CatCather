@@ -36,10 +36,11 @@
             android:layout_marginStart="20dp"
             android:padding="10dp"
             android:textColor="@color/Black"
-            android:textSize="20dp"
+            android:textSize="20sp"
             android:text="@string/play_username"
             />
         <TextView
+            android:id="@+id/welcome_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"

@@ -77,6 +77,4 @@
             android:summary="@string/prefs_newgame_summary"/>
     </PreferenceCategory>
 
-    <Preference/>
-
 </PreferenceScreen>

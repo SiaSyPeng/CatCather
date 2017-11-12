@@ -19,7 +19,7 @@ import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.toast
+import org.jetbrains.anko.longToast
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.ObjectInputStream
@@ -55,7 +55,6 @@ class MainActivity: FragmentActivity() {
 
         //Add tabs
         tabs.add(PlayFrag())
-        tabs.add(HistoryFrag())
         tabs.add(CatsFrag())
         tabs.add(SettingsFrag())
 
@@ -88,8 +87,8 @@ class MainActivity: FragmentActivity() {
             //Open volley req (end result of this is saving the cat list to internal storage)
             Volley.newRequestQueue(this)
                     .add(
-                            StringRequest(Request.Method.GET,listUrl,
-                                    Response.Listener<String> { response ->
+                            object : StringRequest(Request.Method.GET,listUrl,
+                                    Response.Listener { response ->
                                         Log.d("RESPONSE",response)
                                         //Build the Moshi, adding all needed adapters
                                         val moshi = Moshi.Builder()
@@ -161,21 +160,27 @@ class MainActivity: FragmentActivity() {
                                     Response.ErrorListener { error -> // Handle error cases
                                         when (error) {
                                             is NoConnectionError ->
-                                                toast("Connection Error")
+                                                longToast("Connection Error")
                                             is TimeoutError ->
-                                                toast("Timeout Error")
+                                                longToast("Timeout Error")
                                             is AuthFailureError ->
-                                                toast("AuthFail Error")
+                                                longToast("AuthFail Error")
                                             is NetworkError ->
-                                                toast("Network Error")
+                                                longToast("Network Error")
                                             is ParseError ->
-                                                toast("Parse Error")
+                                                longToast("Parse Error")
                                             is ServerError ->
-                                                toast("Server Error")
-                                            else -> toast("Error: " + error)
+                                                longToast("Server Error")
+                                            else -> longToast("Error: " + error)
                                         }
                                     }
-                            ))
+                            ) {
+                                override fun setRetryPolicy(retryPolicy: RetryPolicy?): Request<*> {
+                                    return super.setRetryPolicy(DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS,
+                                            2, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+                                }
+                            }
+                    )
         }
         else { //get from internal storage to this activity
             val fis = openFileInput(CAT_LIST_FILE)
@@ -199,13 +204,12 @@ class MainActivity: FragmentActivity() {
 
         // Four fields for tab
         override fun getPageTitle(position: Int): CharSequence? {
-            when (position) {
-                0 -> return "Play"
-                1 -> return "History"
-                2 -> return "Cats"
-                3 -> return "Settings"
+            return when (position) {
+                0 -> "Play"
+                1 -> "Cats"
+                2 -> "Settings"
+                else -> null
             }
-            return null
         }
     }
 

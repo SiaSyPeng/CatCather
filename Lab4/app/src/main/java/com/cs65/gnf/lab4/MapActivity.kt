@@ -16,7 +16,6 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -63,14 +62,17 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private val DIS_STRING = "dis"
     private val READY_STRING = "ready"
 
+    //Broadcasts
     private val BROADCAST_ACTION = "com.cs65.gnf.lab4.ready"
+    private val STOP_TRACKING_ACTION = "com.cs65.gnf.stopTracking"
 
     //For internal storage
     private val CAT_LIST_FILE = "cat_list"
     private var ready = false
 
-    //View variables
+    //track button
     private lateinit var trackButton: Button
+    private var track = true
 
     //Notification variables
     private var notificationID = 1
@@ -79,9 +81,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
-
-        val broadcastReceiver =  MyRecvr()
-
 
         //Start listening for / getting the catList
         val prefs = getSharedPreferences(USER_PREFS,Context.MODE_PRIVATE)
@@ -96,7 +95,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         else {
             val i = IntentFilter(BROADCAST_ACTION)
             LocalBroadcastManager.getInstance(applicationContext)
-                    .registerReceiver(broadcastReceiver,i)
+                    .registerReceiver(ReadyRecvr(),i)
         }
 
         //Set the radius
@@ -146,14 +145,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                     val mName: TextView = findViewById(R.id.map_panel_name)
                     mName.text = selectedCat!!.name
 
-                    val readableDist = distanceFromCat.toInt().toString() + " metres"
-
-                    // update view
-                    val mDis: TextView = findViewById(R.id.map_panel_distance)
-                    mDis.text = readableDist
-
-
-
                     //Update Distance
                     if (currLoc!= null){
                         val dist = FloatArray(1)
@@ -164,6 +155,16 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                         )
                         distanceFromCat = dist[0]
                     }
+
+                    val readableDist = distanceFromCat.toInt().toString() + " metres"
+
+                    // update view
+                    val mDis: TextView = findViewById(R.id.map_panel_distance)
+                    mDis.text = readableDist
+
+
+
+
 
 
                     //update the map
@@ -196,9 +197,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
 
             val patButton: Button = findViewById(R.id.pat_button)
             patButton.visibility = (View.VISIBLE)
-            trackButton.visibility = (View.VISIBLE)
-            trackButton.setBackgroundColor(getColor(R.color.LLGreen))
-
 
             //Draw all markers
             drawThings()
@@ -210,8 +208,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
 
                 val patButton: Button = findViewById(R.id.pat_button)
                 patButton.visibility = (View.VISIBLE)
-                trackButton.visibility = (View.VISIBLE)
-                trackButton.setBackgroundColor(getColor(R.color.LLGreen))
 
 
                 //Draw all markers
@@ -229,8 +225,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         if (markerId is Int) selectedCatID.id = markerId //set selected cat to that
                                                          //this will call the listener function
 
-        // change panel track button back
-        trackButton.text = "TRACK"
+        onTrack()
+
         return true //Suppresses default behaviour of clicking on the marker
     }
 
@@ -295,19 +291,40 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    /*
-     * onClick Track button
-     * will open camera activity
+    /**
+     * Calls the onTrack() function, which changes  the text and starts / stops service
+     * The actual function needs to be on its own so that it can be called without a view needed
+     * (like from a broadcast, sent from the notification service)
      */
-    fun onTrack(v: View) {
+    fun onTrack(v: View) {onTrack()}
 
-        // change button text to stop
-        trackButton.text = "STOP"
-        trackButton.setBackgroundColor(getColor(R.color.colorPrimaryDark))
+    /**
+     * onClick Track / Stop button
+     * If button is "TRACK" it will start tracking service, register receivers and change to "STOP"
+     * If button is "STOP" it will stop tracking service, unregister receivers and change to "TRACK"
+     */
+    private fun onTrack() {
+        if (track) {
+            //TODO start service
+            //TODO give it the catID for cat we're tracking or the cat itself, in byteArray
 
-        // start foreground notification service
-        displayNotification()
+            trackButton.text = getString(R.string.track_button_stop)
+            trackButton.setBackgroundColor(getColor(R.color.colorPrimaryDark))
 
+            //register receiver for the stop button in the notification
+            val i = IntentFilter(STOP_TRACKING_ACTION)
+            LocalBroadcastManager.getInstance(applicationContext)
+                    .registerReceiver(StopRecvr(),i)
+        }
+        else {
+            //TODO stop service
+
+            trackButton.text = getString(R.string.track_button)
+            trackButton.setBackgroundColor(getColor(R.color.LLGreen))
+
+            LocalBroadcastManager.getInstance(applicationContext)
+                    .unregisterReceiver(StopRecvr())
+        }
     }
 
     /*
@@ -319,9 +336,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         val user = prefs.getString(USER_STRING,null)
         val pass = prefs.getString(PASS_STRING,null)
 
+        selectedCat!!.petted = true
+
         petCat(this,user,pass,selectedCatID.id,currLoc)
 
-        Toast.makeText(this, "You just Pet - " + catName, Toast.LENGTH_LONG).show()
+        val i = Intent(this,SuccessActivity::class.java)
+        startActivity(i)
     }
 
     /*
@@ -361,7 +381,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    /*
+    /**
      * Intent to launch another activity if the user clicks "track"
      */
     private fun displayNotification()
@@ -381,26 +401,21 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         //this activity may not even be running.
         val pendingIntent : PendingIntent =
                 PendingIntent.getActivity(this,
-                        0, // on some SDK versions, the code should NOT be 0, or else it won't work
-                        i,
-                        0) // flags are important, see https://developer.android.com/reference/android/app/PendingIntent.html
+                        0, i, 0)
 
         //The Notification.Builder provides an builder interface to create an Notification object.
         //Use a PendingIntent to specify the action which should be performed once the user select the notification.
         val nm : NotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
         // build notification
-        // Using the approved constructor for 26, which mandates that Channels be used;
-        //   the older channel-less constructor is deprecated.
-        val notiBuilder = if ( android.os.Build.VERSION.SDK_INT >= 26 )
-            Notification.Builder(this, channelId) else  Notification.Builder(this)
+        val notiBuilder = Notification.Builder(this, channelId)
 
-        // TODO: get actual cat info: name + dis(maybe make global?
+        // TODO somehow update
         val title= "Catching "+selectedCat?.name
         val dis = distanceFromCat.toString() + " metres away"
 
-        val icon = Icon.createWithResource(this,R.mipmap.ic_launcher)
-        val action = Notification.Action.Builder(icon,"STOP", pendingIntent).build()
+        val stopButton = Icon.createWithResource(this,R.mipmap.ic_launcher)
+        val action = Notification.Action.Builder(stopButton,"STOP", pendingIntent).build()
 
         notiBuilder.setSmallIcon(R.drawable.rsz_ready_cat)
                 .setContentTitle(title)
@@ -572,9 +587,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     /**
-     * inner class that is a broadcast receiver, so that when the broadcast is received we can getCats
+     * broadcast receiver to know when cat list is ready
      */
-    inner class MyRecvr : BroadcastReceiver() {
+    inner class ReadyRecvr : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val fis = openFileInput(CAT_LIST_FILE)
             val ois = ObjectInputStream(fis)
@@ -586,6 +601,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
             }
         }
     }
+
+    /**
+     * broadcast receiver for stopping tracking activity
+     */
+    inner class StopRecvr : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            onTrack()
+        }
+    }
+
+    /**
+     * Function that gets the ID of the first cat, either from
+     */
 
     // some interface functions that we don't actually use
 
