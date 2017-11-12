@@ -323,7 +323,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         else {
             //TODO stop service
             val intent = Intent()
-            intent.action = NotifyService.ACTION
+            intent.action = NotifyService.ACTION_TRACK
             intent.putExtra(NotifyService.STOP_SERVICE_BROADCAST_KEY, NotifyService.RQS_STOP_SERVICE)
             sendBroadcast(intent)
             
