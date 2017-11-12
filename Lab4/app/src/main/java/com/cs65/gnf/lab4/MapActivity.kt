@@ -74,6 +74,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var trackButton: Button
 
     //Notification variables
+    private var isTrack: Boolean = false
     private var notificationID = 1
     private var channelId : String = "" // set in createChannel, only used in API >= 26
 
@@ -115,7 +116,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         requestPermissions()
 
         //create channel for notification
-        createChannel()
+        // createChannel()
 
 
         //Set an onChangeListener for the CatID
@@ -297,8 +298,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     /*
-     * onClick Track button
-     * will open camera activity
+     * onClick Track/stop button
+     * will start/stop tracking service
      */
     fun onTrack(v: View) {
 
@@ -307,7 +308,25 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         trackButton.setBackgroundColor(getColor(R.color.colorPrimaryDark))
 
         // start foreground notification service
-        displayNotification()
+
+        // if is already tracking, the button will display "stop"
+        // clicking it will stop the tracking service
+        if (isTrack) {
+            val intent = Intent()
+            intent.action = NotifyService.ACTION
+            intent.putExtra(NotifyService.STOP_SERVICE_BROADCAST_KEY, NotifyService.RQS_STOP_SERVICE)
+            sendBroadcast(intent)
+
+            // update isTrack
+            isTrack = false
+        } else {// other wise it's not tracking yet, clicking the button start the tracking service
+            val intent = Intent(this, NotifyService::class.java)
+            this.startService(intent)
+
+            // update isTrack
+            isTrack = true
+        }
+        //displayNotification()
 
     }
 
@@ -328,39 +347,39 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     /*
      * create channel for notifications
      */
-    private fun createChannel() {
-
-        if (android.os.Build.VERSION.SDK_INT >= 26) {
-
-            val mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-            // The id of the channel.
-            channelId = "my_channel_01"
-
-            // The user-visible name of the channel.
-            val name = getString(R.string.channel_name)
-            // The user-visible description of the channel.
-            val description = getString(R.string.channel_description)
-
-            val importance = NotificationManager.IMPORTANCE_LOW
-            val mChannel = NotificationChannel(channelId, name, importance)
-
-            // Configure the notification channel.
-            mChannel.description = description
-
-            mChannel.enableLights(true)
-
-            // Sets the notification light color for notifications posted to this
-            // channel, if the device supports this feature.
-            mChannel.lightColor = Color.RED
-
-            // Sets vibration if the device supports it
-            mChannel.enableVibration(true)
-            mChannel.vibrationPattern = longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
-
-            mNotificationManager.createNotificationChannel(mChannel)
-        }
-    }
+//    private fun createChannel() {
+//
+//        if (android.os.Build.VERSION.SDK_INT >= 26) {
+//
+//            val mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+//
+//            // The id of the channel.
+//            channelId = "my_channel_01"
+//
+//            // The user-visible name of the channel.
+//            val name = getString(R.string.channel_name)
+//            // The user-visible description of the channel.
+//            val description = getString(R.string.channel_description)
+//
+//            val importance = NotificationManager.IMPORTANCE_LOW
+//            val mChannel = NotificationChannel(channelId, name, importance)
+//
+//            // Configure the notification channel.
+//            mChannel.description = description
+//
+//            mChannel.enableLights(true)
+//
+//            // Sets the notification light color for notifications posted to this
+//            // channel, if the device supports this feature.
+//            mChannel.lightColor = Color.RED
+//
+//            // Sets vibration if the device supports it
+//            mChannel.enableVibration(true)
+//            mChannel.vibrationPattern = longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
+//
+//            mNotificationManager.createNotificationChannel(mChannel)
+//        }
+//    }
 
     /*
      * Intent to launch another activity if the user clicks "track"
