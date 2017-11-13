@@ -37,7 +37,8 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".LaunchActivity">
+        <activity android:name=".LaunchActivity"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -45,8 +46,8 @@
             </intent-filter>
         </activity>
         <activity android:name="com.varunmishra.catcameraoverlay.CameraViewActivity" />
-        <activity android:name=".LoginActivity"></activity>
-        <activity android:name=".SignupActivity"></activity>
+        <activity android:name=".LoginActivity"/>
+        <activity android:name=".SignupActivity"/>
         <activity
             android:name=".MapActivity"
             android:screenOrientation="portrait"
@@ -56,7 +57,7 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait"/>
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
@@ -65,8 +66,13 @@
         <service
             android:name=".NotifyService"
             android:enabled="true"
-            android:exported="true">
-        </service>
+            android:exported="false"
+            />
+        <receiver
+            android:name=".ServiceStopReceiver"
+            android:enabled="true"
+            android:process=":remote"
+            />
 
     </application>
 

@@ -66,12 +66,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
 
     //track button
     private lateinit var trackButton: Button
-    private var track = true
-
-    //Notification variables
-    private var isTrack: Boolean = false
-    private var notificationID = 1
-    private var channelId : String = "" // set in createChannel, only used in API >= 26
+    private var track = TRACKBUTTON.TRACK
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -124,12 +119,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                     longToast("You're too far away from any cats!")
                 }
                 else {
-                    //enable or disable button depending on if cat has been petted
+                    //enable or disable pet button depending on if cat has been petted
                     val ifPetted: Boolean = selectedCat!!.petted
                     val patButton: Button = findViewById(R.id.pat_button)
                     patButton.isEnabled = !ifPetted
-                  // Update the panel with the following:
-                  // cat pic, cat name, and cat distance to current location
+
+                    //in panel,
 
                     //Update Cat pic
                     val url = selectedCat!!.picUrl
@@ -140,7 +135,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                     val mName: TextView = findViewById(R.id.map_panel_name)
                     mName.text = selectedCat!!.name
 
-                    //Update Distance
+                    //get distance
                     if (currLoc!= null){
                         val dist = FloatArray(1)
                         Location.distanceBetween(
@@ -150,20 +145,20 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                         )
                         distanceFromCat = dist[0]
                     }
-
                     val readableDist = distanceFromCat.toInt().toString() + " metres"
 
-                    // update view
+                    //update distance
                     val mDis: TextView = findViewById(R.id.map_panel_distance)
                     mDis.text = readableDist
 
-
-
-
-
-
                     //update the map
                     drawThings()
+
+                    //stop tracking other cat if it's being tracked
+                    if (track==TRACKBUTTON.STOP) {
+                        trackOrStop()
+                        track = TRACKBUTTON.TRACK
+                    }
                 }
             }
         })
@@ -188,7 +183,17 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         getLocation()
 
         if (ready) { //if the list has been prepped by this point go on
-            selectedCatID.id = getClosestCat(listOfCats!!,currLoc!!)
+
+            //Set the first cat ID to either the catID in the tracking service, or to the closest cat
+            val serviceCatID = intent.getIntExtra("catId",0)
+            if (serviceCatID!=0) { //if the service was running
+                selectedCatID.id = serviceCatID
+                trackOrStop()
+                track = TRACKBUTTON.STOP //set track to STOP
+            }
+            else {
+                selectedCatID.id = getClosestCat(listOfCats!!,currLoc!!)
+            }
 
             val patButton: Button = findViewById(R.id.pat_button)
             patButton.visibility = (View.VISIBLE)
@@ -220,7 +225,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         if (markerId is Int) selectedCatID.id = markerId //set selected cat to that
                                                          //this will call the listener function
 
-        onTrack()
+        trackOrStop()
 
         return true //Suppresses default behaviour of clicking on the marker
     }
@@ -272,17 +277,21 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
 
         // start foreground camera activity
         if (selectedCat == null) {
-            // If so, how should we get the params for config? would it be a default cat?
             longToast("You're too far away from any cats!")
         }
         else {
-            Config.catName = selectedCat!!.name
-            Config.catLatitude = selectedCat!!.lat
-            Config.catLongitude = selectedCat!!.lng
-            Config.catImage = BitmapFactory.decodeStream(URL(selectedCat!!.picUrl).openConnection().getInputStream())
-            Config.onCatPetListener = this
-            val i = Intent(this, CameraViewActivity::class.java)
-            startActivity(i)
+            if (distanceFromCat<30) { //if close enough
+                Config.catName = selectedCat!!.name
+                Config.catLatitude = selectedCat!!.lat
+                Config.catLongitude = selectedCat!!.lng
+                Config.catImage = BitmapFactory.decodeStream(URL(selectedCat!!.picUrl).openConnection().getInputStream())
+                Config.onCatPetListener = this
+                val i = Intent(this, CameraViewActivity::class.java)
+                startActivity(i)
+            }
+            else {
+                longToast("Get closer to ${selectedCat?.name}")
+            }
         }
     }
 
@@ -291,47 +300,55 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
      * The actual function needs to be on its own so that it can be called without a view needed
      * (like from a broadcast, sent from the notification service)
      */
-    fun onTrack(v: View) {onTrack()}
+    fun onTrack(v: View) {
+        trackOrStop()
+        track = if (track==TRACKBUTTON.STOP) TRACKBUTTON.TRACK else TRACKBUTTON.STOP //flip track button
+    }
 
     /**
-     * onClick Track / Stop button
-     * If button is "TRACK" it will start tracking service, register receivers and change to "STOP"
-     * If button is "STOP" it will stop tracking service, unregister receivers and change to "TRACK"
+     * If track is TRACKBUTTON.TRACK it will start tracking service, register receivers
+     * If track is TRACKBUTTON.STOP it will stop tracking service, unregister receivers
+     * Make sure track is set to the right
      */
-    private fun onTrack() {
-        if (track) { // track: if the text on the button is track
-            val intent = Intent(this, NotifyService::class.java)
+    private fun trackOrStop() {
+        when (track) {
+            TRACKBUTTON.STOP -> {
+                //unregister receiver from notifyService's destroy
+                LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(StopRecvr())
 
-            intent.putExtra("name",selectedCat?.name)
-            intent.putExtra("lat",selectedCat?.lat)
-            intent.putExtra("lng",selectedCat?.lng)
-            this.startService(intent)
+                //send a broadcast to stop the service
+                val intent = Intent()
+                intent.action = NotifyService.ACTION_STOP
+                
+                LocalBroadcastManager
+                        .getInstance(applicationContext)
+                        .sendBroadcast(intent)
 
-            track = false
+                Log.d("HERE","in stop")
 
-
-            trackButton.text = getString(R.string.track_button_stop)
-            trackButton.setBackgroundColor(getColor(R.color.colorPrimaryDark))
-
-            //register receiver for the stop button in the notification
-            val i = IntentFilter(STOP_TRACKING_ACTION)
-            LocalBroadcastManager.getInstance(applicationContext)
-                    .registerReceiver(StopRecvr(),i)
+                //change the button view
+                trackButton.text = getString(R.string.track_button)
+                trackButton.setBackgroundColor(getColor(R.color.LLGreen))
         }
-        else {
-            //TODO stop service
-            val intent = Intent()
-            intent.action = NotifyService.ACTION_TRACK
-            intent.putExtra(NotifyService.STOP_SERVICE_BROADCAST_KEY, NotifyService.RQS_STOP_SERVICE)
-            sendBroadcast(intent)
 
-            track = true
+            TRACKBUTTON.TRACK -> {
 
-            trackButton.text = getString(R.string.track_button)
-            trackButton.setBackgroundColor(getColor(R.color.LLGreen))
+                //start the service, passing the tracked cat's info
+                val intent = Intent(this, NotifyService::class.java)
+                intent.putExtra("name",selectedCat?.name)
+                intent.putExtra("lat",selectedCat?.lat)
+                intent.putExtra("lng",selectedCat?.lng)
+                intent.putExtra("id",selectedCat?.catId)
+                this.startService(intent)
 
-            LocalBroadcastManager.getInstance(applicationContext)
-                    .unregisterReceiver(StopRecvr())
+                Log.d("HERE","in track")
+                //change look of button
+                trackButton.text = getString(R.string.track_button_stop)
+                trackButton.setBackgroundColor(getColor(R.color.colorPrimaryDark))
+
+                val i = IntentFilter(STOP_TRACKING_ACTION)
+                LocalBroadcastManager.getInstance(applicationContext).registerReceiver(StopRecvr(),i)
+            }
         }
     }
 
@@ -402,7 +419,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private fun requestPermissions() {
         // Here, thisActivity is the current activity
 
-        //TODO: check vibrate permission
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                 checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                 checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
@@ -520,7 +536,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
      */
     inner class StopRecvr : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            onTrack()
+            track = TRACKBUTTON.STOP
+            trackOrStop()
+            track = TRACKBUTTON.TRACK
+            Log.d("HERE","stop receiver is called")
         }
     }
 

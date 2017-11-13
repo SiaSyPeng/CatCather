@@ -1,6 +1,5 @@
 package com.cs65.gnf.lab4
 
-import android.util.Log
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 import com.squareup.moshi.JsonQualifier
@@ -213,3 +212,9 @@ class ListenableCatID(private val listener: ChangeListener){
     }
 
 }
+
+/**
+ * enum class for the track button that changes functionality depending on if the text displays STOP
+ * or TRACK
+ */
+enum class TRACKBUTTON {TRACK,STOP}
