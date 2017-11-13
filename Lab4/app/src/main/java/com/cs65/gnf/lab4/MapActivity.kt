@@ -26,6 +26,7 @@ import com.varunmishra.catcameraoverlay.CameraViewActivity
 import com.varunmishra.catcameraoverlay.Config
 import com.varunmishra.catcameraoverlay.OnCatPetListener
 import android.graphics.BitmapFactory
+import android.support.v4.app.NavUtils
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.longToast
 import java.io.ObjectInputStream
@@ -513,6 +514,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                 ready = true
             }
         }
+    }
+
+    /*
+     * for back stack,
+     * advised by Sergey
+     */
+    override fun onBackPressed() {
+        super.onBackPressed()
+        val i = Intent(this,MainActivity::class.java)
+        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(i)
+        finish()
     }
 
     /**
