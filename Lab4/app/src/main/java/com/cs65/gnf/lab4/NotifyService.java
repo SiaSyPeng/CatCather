@@ -19,6 +19,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.graphics.drawable.Icon;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -258,8 +259,11 @@ public class NotifyService extends Service implements LocationListener {
                 .setContentText(notificationText)
                 .setSmallIcon(R.drawable.petted)
                 .setShowWhen(true)
-                .setVibrate(new long[] { 1000, 1000})
+//                .setVibrate(new long[] { 1000, 1000 }) // Each element then alternates between delay, vibrate, sleep, vibrate, sleep
                 .setContentIntent(pendingIntent);
+
+//        Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+//        builder.setSound(alarmSound);
 
         if (android.os.Build.VERSION.SDK_INT >= 26) {
             builder.setChannelId(channelId);
@@ -330,7 +334,6 @@ public class NotifyService extends Service implements LocationListener {
     public void onProviderEnabled(String provider) {
 
     }
-
 
 
     public class NotifyServiceReceiver extends BroadcastReceiver{
