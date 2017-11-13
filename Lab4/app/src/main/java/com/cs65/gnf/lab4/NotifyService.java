@@ -18,10 +18,11 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
+import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v13.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,8 +32,9 @@ import java.util.ArrayList;
 
 public class NotifyService extends Service implements LocationListener {
 
-    final static String ACTION = "NotifyServiceAction";
-    final static String STOP_SERVICE_BROADCAST_KEY="StopServiceBroadcastKey";
+    final static String ACTION_STOP = "STOP";
+    final static String ACTION_TRACK = "TRACK";
+    final static String STOP_SERVICE_BROADCAST_KEY="STOP"; //from activity to service
     final static int RQS_STOP_SERVICE = 1;
     final static int notificationID = 1;
     final String channelId  = "my_channel_01"; // set in createChannel, only used in API >= 26
@@ -41,8 +43,11 @@ public class NotifyService extends Service implements LocationListener {
 
     //cat being tracked
     String catName;
-    Double catLat;
-    Double catLng;
+    double catLat;
+    double catLng;
+    int catId;
+
+    boolean fromMapActivityClick = false;
 
     double[] currLoc = new double[2]; //lat and long
 
@@ -88,6 +93,11 @@ public class NotifyService extends Service implements LocationListener {
         catch (ClassNotFoundException e) {
             Log.d("SERVICE ERROR","huh. Couldn't find cat class");
         }
+
+        //Start a broadcast receiver for stopping the notify service from MapActivity
+        IntentFilter i = new IntentFilter(ACTION_STOP);
+        LocalBroadcastManager.getInstance(getApplicationContext())
+                .registerReceiver(new NotifyServiceReceiver(),i);
     }
 
     @Override
@@ -96,52 +106,25 @@ public class NotifyService extends Service implements LocationListener {
 
         startLocation();
 
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ACTION);
-        registerReceiver(notifyServiceReceiver, intentFilter);
-
-        //get tracked cat  info
+        //get tracked cat info
         catName = intent.getStringExtra("name");
         catLat = intent.getDoubleExtra("lat",43.70805181058869);
         catLng = intent.getDoubleExtra("lng",43.70805181058869);
+        catName = intent.getStringExtra("name");
+        catId = intent.getIntExtra("id",0);
 
-        //get distance
-        float[] dist = new float[1];
-        Location.distanceBetween(currLoc[0],currLoc[1],catLat,catLng,dist);
+        // if we request to stop the service, stop the service!
+        if (ACTION_STOP.equals(intent.getAction())) {
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (notificationManager != null) {
+                notificationManager.cancel(notificationID);
+            }
+            stopSelf();
+        }
 
-        // Send Notification
-        String notificationTitle = "Tracking "+catName;
-        String notificationText = ((int) dist[0]) + " meters away";
-        Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(myBlog));
-
-        TaskStackBuilder stackBuilder= TaskStackBuilder.create(this);
-        stackBuilder.addNextIntentWithParentStack(myIntent);
-
-        //To be wrapped in a PendingIntent, because
-        //it will be sent from whatever activity manages notifications;
-        //this activity may not even be running.
-        PendingIntent pendingIntent
-                = PendingIntent.getActivity(getBaseContext(),
-                0, myIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-        //val action = Notification.Action.Builder(icon,"STOP", pendingIntent).build()
-
-        Notification notification = new Notification.Builder(this, channelId)
-                .setContentTitle(notificationTitle)
-                .setContentText(notificationText).setSmallIcon(R.drawable.petted)
-                .setContentIntent(pendingIntent).build();
-
-        notification.flags = notification.flags
-                | Notification.FLAG_ONGOING_EVENT;
-        notification.flags |= Notification.FLAG_AUTO_CANCEL;
-
-        notificationManager.notify(notificationID, notification);
-
-        return super.onStartCommand(intent, flags, startId);
+        updateNotification();
+        return START_STICKY;
+        //return super.onStartCommand(intent, flags, startId);
     }
 
     /**
@@ -238,9 +221,85 @@ public class NotifyService extends Service implements LocationListener {
         }
     }
 
+    private void updateNotification() {
+
+        //get distance
+        float[] dist = new float[1];
+        Location.distanceBetween(currLoc[0],currLoc[1],catLat,catLng,dist);
+
+        String notificationTitle = "Catching "+catName;
+        String notificationText = ((int) dist[0])+" meters away";
+
+        // Click the notification goes back to map activity
+        //TODO: go back to main if back stack doesn't work
+        Intent myIntent = new Intent(this, MapActivity.class);
+        myIntent.putExtra("catId",catId);
+
+        // add back stack for new map activity
+        TaskStackBuilder stackBuilder= TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(MapActivity.class);
+        stackBuilder.addNextIntent(myIntent);
+        //stackBuilder.addNextIntentWithParentStack(myIntent);
+
+        //To be wrapped in a PendingIntent, because
+        //it will be sent from whatever activity manages notifications;
+        //this activity may not even be running.
+
+        PendingIntent pendingIntent
+                = PendingIntent.getActivity(getApplicationContext(),
+                0, myIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Notification.Builder builder = new Notification.Builder(this, channelId)
+                .setContentTitle(notificationTitle)
+                .setContentText(notificationText)
+                .setSmallIcon(R.drawable.petted)
+                .setContentIntent(pendingIntent);
+
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
+            builder.setChannelId(channelId);
+        }
+
+        //Create a pending intent that will send a broadcast to ServiceStopReceiver
+        Intent intentStop = new Intent(getApplicationContext(), ServiceStopReceiver.class);
+        PendingIntent pStopSelf = PendingIntent.getBroadcast
+                (getApplicationContext(), 23123123, intentStop, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        //Create an action with that pending intent
+        Icon button = Icon.createWithResource(this,R.mipmap.ic_launcher);
+        Notification.Action stopAct = new Notification.Action.Builder
+                (button,"STOP", pStopSelf).build();
+
+        //add that action to the notification
+        builder.addAction(stopAct);
+
+
+
+        Notification notification = builder.build();
+//        notification.flags = notification.flags
+//                | Notification.FLAG_ONGOING_EVENT;
+//        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+        startForeground(notificationID, notification);
+        //notificationManager.notify(notificationID, notification);
+
+    }
     @Override
     public void onDestroy() {
-        this.unregisterReceiver(notifyServiceReceiver);
+        LocalBroadcastManager.getInstance(getApplicationContext())
+                .unregisterReceiver(new NotifyServiceReceiver());
+
+        if (!fromMapActivityClick) { //if this call was not from mapActivityClick
+            //Tell mapActivity to change from STOP to TRACK
+            String STOP_TRACKING_ACTION = "com.cs65.gnf.stopTracking"; //changes button in MapActivity
+
+            Intent stopIntent = new Intent();
+            stopIntent.setAction(STOP_TRACKING_ACTION);
+
+            Log.d("HERE","destroying NotifyService296");
+
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(stopIntent);
+        }
+
         super.onDestroy();
     }
 
@@ -293,17 +352,14 @@ public class NotifyService extends Service implements LocationListener {
 
         @Override
         public void onReceive(Context arg0, Intent arg1) {
-            int rqs = arg1.getIntExtra(STOP_SERVICE_BROADCAST_KEY, 0);
-
-            if (rqs == RQS_STOP_SERVICE){
-                stopSelf();
-                //String notiId = arg1.getIntExtra("notificationID", 0)
-
-                ((NotificationManager) getSystemService(NOTIFICATION_SERVICE))
-                        .cancelAll();
-                        //.cancel(notiId);
+            fromMapActivityClick = true;
+            stopSelf();
+            try {
+            ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).cancel(notificationID);
+            }
+            catch (java.lang.NullPointerException e) {
+                Log.d("CANCEL","nothing to cancel");
             }
         }
     }
-
 }
