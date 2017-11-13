@@ -19,6 +19,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.graphics.drawable.Icon;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -29,6 +30,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+//import java.util.Timer;
+//import java.util.TimerTask;
 
 
 public class NotifyService extends Service implements LocationListener {
@@ -39,6 +42,8 @@ public class NotifyService extends Service implements LocationListener {
     final static int RQS_STOP_SERVICE = 1;
     final static int notificationID = 1;
     final String channelId  = "my_channel_01"; // set in createChannel, only used in API >= 26
+
+//    private Timer timer= new Timer();
 
     ArrayList<Cat> listOfCats = null;
 
@@ -193,18 +198,15 @@ public class NotifyService extends Service implements LocationListener {
             mgr.requestLocationUpdates(provider,time,0f,this);
         }
     }
+
     private void createChannel() {
 
         if (android.os.Build.VERSION.SDK_INT >= 26) {
 
             NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-            // The id of the channel.
-            //channelId = "my_channel_01";
-
-            // The user-visible name of the channel.
+            // The user-visible name and description of the channel.
             String name = getString(R.string.channel_name);
-            // The user-visible description of the channel.
             String description = getString(R.string.channel_description);
 
             int importance = NotificationManager.IMPORTANCE_LOW;
@@ -218,7 +220,6 @@ public class NotifyService extends Service implements LocationListener {
             // Sets the notification light color for notifications posted to this
             // channel, if the device supports this feature.
             mChannel.setLightColor(Color.RED);
-
             // Sets vibration if the device supports it
             mChannel.enableVibration(true);
             mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
@@ -238,14 +239,15 @@ public class NotifyService extends Service implements LocationListener {
 
         // Click the notification goes back to map activity
         //TODO: go back to main if back stack doesn't work
-        Intent myIntent = new Intent(this, MapActivity.class);
-        myIntent.putExtra("catId",catId);
+        Intent mapIntent = new Intent(this, MapActivity.class);
+        mapIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        mapIntent.putExtra("catId",catId);
 
         // add back stack for new map activity
         TaskStackBuilder stackBuilder= TaskStackBuilder.create(this);
-        stackBuilder.addParentStack(MapActivity.class);
-        stackBuilder.addNextIntent(myIntent);
-        //stackBuilder.addNextIntentWithParentStack(myIntent);
+        //stackBuilder.addParentStack(MapActivity.class);
+        //stackBuilder.addNextIntent(mapIntent);
+        stackBuilder.addNextIntentWithParentStack(mapIntent);
 
         //To be wrapped in a PendingIntent, because
         //it will be sent from whatever activity manages notifications;
@@ -253,18 +255,30 @@ public class NotifyService extends Service implements LocationListener {
 
         PendingIntent pendingIntent
                 = PendingIntent.getActivity(getApplicationContext(),
-                0, myIntent,
+                0, mapIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
+//        PendingIntent pendingIntent = TaskStackBuilder.create(this)
+//                .addNextIntentWithParentStack(mapIntent)
+//                .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         Notification.Builder builder = new Notification.Builder(this, channelId)
                 .setContentTitle(notificationTitle)
                 .setContentText(notificationText)
                 .setSmallIcon(R.drawable.petted)
+                .setShowWhen(true)
+//                .setVibrate(new long[] { 1000, 1000 }) // Each element then alternates between delay, vibrate, sleep, vibrate, sleep
                 .setContentIntent(pendingIntent);
+
+//        Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+//        builder.setSound(alarmSound);
 
         if (android.os.Build.VERSION.SDK_INT >= 26) {
             builder.setChannelId(channelId);
         }
+
 
         //Create a pending intent that will send a broadcast to ServiceStopReceiver
         Intent intentStop = new Intent(getApplicationContext(), ServiceStopReceiver.class);
@@ -282,9 +296,6 @@ public class NotifyService extends Service implements LocationListener {
 
 
         Notification notification = builder.build();
-//        notification.flags = notification.flags
-//                | Notification.FLAG_ONGOING_EVENT;
-//        notification.flags |= Notification.FLAG_AUTO_CANCEL;
         startForeground(notificationID, notification);
         //notificationManager.notify(notificationID, notification);
 
@@ -351,7 +362,6 @@ public class NotifyService extends Service implements LocationListener {
     public void onProviderEnabled(String provider) {
 
     }
-
 
 
     public class NotifyServiceReceiver extends BroadcastReceiver{
