@@ -19,6 +19,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.graphics.drawable.Icon;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v13.app.ActivityCompat;
@@ -106,7 +107,12 @@ public class NotifyService extends Service implements LocationListener {
 
         startLocation();
 
-        //get tracked cat info
+        // filter intent and register receiver
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ACTION_TRACK);
+        registerReceiver(notifyServiceReceiver, intentFilter);
+
+        //get tracked cat  info
         catName = intent.getStringExtra("name");
         catLat = intent.getDoubleExtra("lat",43.70805181058869);
         catLng = intent.getDoubleExtra("lng",43.70805181058869);

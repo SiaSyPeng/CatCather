@@ -319,7 +319,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                 //send a broadcast to stop the service
                 val intent = Intent()
                 intent.action = NotifyService.ACTION_STOP
-
+                
                 LocalBroadcastManager
                         .getInstance(applicationContext)
                         .sendBroadcast(intent)
@@ -329,8 +329,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                 //change the button view
                 trackButton.text = getString(R.string.track_button)
                 trackButton.setBackgroundColor(getColor(R.color.LLGreen))
-
-            }
+        }
 
             TRACKBUTTON.TRACK -> {
 
