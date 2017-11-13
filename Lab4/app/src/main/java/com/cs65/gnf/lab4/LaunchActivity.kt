@@ -21,7 +21,6 @@ class LaunchActivity: Activity() {
             Intent(applicationContext, LoginActivity::class.java) //launch login
         else  //if there is a user saved
             Intent(applicationContext, MainActivity::class.java) //just open the game
-
         startActivity(intent)
     }
 }
