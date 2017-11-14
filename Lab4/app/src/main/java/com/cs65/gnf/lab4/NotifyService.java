@@ -24,6 +24,8 @@ import android.os.IBinder;
 import android.support.v13.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.util.SparseBooleanArray;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -35,11 +37,14 @@ public class NotifyService extends Service implements LocationListener {
     final static String ACTION_STOP = "STOP";
     final static String ACTION_TRACK = "TRACK";
     final static int notificationID = 1;
-    final String channelId  = "my_channel_01"; // set in createChannel, only used in API >= 26
+    int notification2ID = 2; //needs to keep changing so multiple notifications can be added
+    final String channelId  = "my_channel_01";
+    final String channel2Id = "my_channel_02";
 
 //    private Timer timer= new Timer();
 
     ArrayList<Cat> listOfCats = null;
+    SparseBooleanArray closeCats = new SparseBooleanArray();
 
     //cat being tracked
     String catName;
@@ -52,7 +57,6 @@ public class NotifyService extends Service implements LocationListener {
     double[] currLoc = new double[2]; //lat and long
 
     NotifyServiceReceiver notifyServiceReceiver; //our receiver for this service
-    private Notification notification;
     private NotificationManager notificationManager;
 
     @Override
@@ -60,13 +64,15 @@ public class NotifyService extends Service implements LocationListener {
         notifyServiceReceiver = new NotifyServiceReceiver();
         super.onCreate();
 
+        //start a notificationManager
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
         createChannel();
+        createChannel2();
 
         //Get the cat list from internal storage. Tries twice.
         String CAT_LIST_FILE = "cat_list";
         try {
-
-
             FileInputStream fis = openFileInput(CAT_LIST_FILE);
             ObjectInputStream ois = new ObjectInputStream(fis);
             listOfCats = (ArrayList<Cat>) ois.readObject();
@@ -94,13 +100,17 @@ public class NotifyService extends Service implements LocationListener {
             Log.d("SERVICE ERROR","huh. Couldn't find cat class");
         }
 
+        if (listOfCats!=null) {
+            //Start the map of cats close to you
+            for (Cat cat: listOfCats) {
+                closeCats.append(cat.getCatId(),false);
+            }
+        }
+
         //Start a broadcast receiver for stopping the notify service from MapActivity
         IntentFilter i = new IntentFilter(ACTION_STOP);
         LocalBroadcastManager.getInstance(getApplicationContext())
                 .registerReceiver(new NotifyServiceReceiver(),i);
-
-        //start a notificationManager
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     @Override
@@ -130,7 +140,7 @@ public class NotifyService extends Service implements LocationListener {
             stopSelf();
         }
 
-        startNotification();
+        updateNotification();
         return START_STICKY;
         //return super.onStartCommand(intent, flags, startId);
     }
@@ -202,13 +212,32 @@ public class NotifyService extends Service implements LocationListener {
 
             // The user-visible name and description of the channel.
             String name = getString(R.string.channel_name);
-            String description = getString(R.string.channel_description);
 
-            int importance = NotificationManager.IMPORTANCE_HIGH;
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel mChannel = new NotificationChannel(channelId, name, importance);
 
-            // Configure the notification channel.
-            description = mChannel.getDescription();
+            mChannel.enableLights(true);
+
+            // Sets the notification light color for notifications posted to this
+            // channel, if the device supports this feature.
+            mChannel.setLightColor(Color.RED);
+
+            notificationManager.createNotificationChannel(mChannel);
+        }
+    }
+
+    /**
+     * For the special notifications that notify you that there is a cat close by
+     */
+    private void createChannel2() {
+
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
+
+            // The user-visible name and description of the channel.
+            String name = getString(R.string.channel_name_2);
+
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel mChannel = new NotificationChannel(channel2Id, name, importance);
 
             mChannel.enableLights(true);
 
@@ -223,7 +252,7 @@ public class NotifyService extends Service implements LocationListener {
         }
     }
 
-    private void startNotification() {
+    private void updateNotification() {
 
         //get distance
         float[] dist = new float[1];
@@ -253,7 +282,7 @@ public class NotifyService extends Service implements LocationListener {
         Notification.Builder builder = new Notification.Builder(this, channelId)
                 .setContentTitle(notificationTitle)
                 .setContentText(notificationText)
-                .setSmallIcon(R.drawable.petted)
+                .setSmallIcon(R.drawable.rsz_user_marker)
                 .setShowWhen(true)
                 .setContentIntent(pendingIntent);
 
@@ -263,7 +292,7 @@ public class NotifyService extends Service implements LocationListener {
         //Create a pending intent that will send a broadcast to ServiceStopReceiver
         Intent intentStop = new Intent(getApplicationContext(), ServiceStopReceiver.class);
         PendingIntent pStopSelf = PendingIntent.getBroadcast
-                (getApplicationContext(), 23123123, intentStop, PendingIntent.FLAG_UPDATE_CURRENT);
+                (getApplicationContext(), 23123123, intentStop, PendingIntent.FLAG_CANCEL_CURRENT);
 
         //Create an action with that pending intent
         Icon button = Icon.createWithResource(this,R.mipmap.ic_launcher);
@@ -273,10 +302,51 @@ public class NotifyService extends Service implements LocationListener {
         //add that action to the notification
         builder.addAction(stopAct);
 
-        notification = builder.build();
+        Notification notification = builder.build();
         notificationManager.notify(notificationID, notification);
-
     }
+
+    /**
+     * Creates the second kind of notification, that only triggers when one is close to a cat
+     * @param name Name of that cat
+     * @param id ID of that cat
+     */
+    private void otherNotification(String name, int id) {
+
+        String notificationTitle = "Cat Alert!";
+        String notificationText = name + " is 30 metres away from you!";
+
+        // Click the notification goes back to map activity with that cat selected
+        Intent mapIntent = new Intent(this, MapActivity.class);
+        mapIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        mapIntent.putExtra("catId",id);
+
+        // add back stack for new map activity
+        TaskStackBuilder stackBuilder= TaskStackBuilder.create(this);
+        stackBuilder.addNextIntentWithParentStack(mapIntent);
+
+        //To be wrapped in a PendingIntent, because
+        //it will be sent from whatever activity manages notifications;
+        //this activity may not even be running.
+
+        PendingIntent pendingIntent
+                = PendingIntent.getActivity(getApplicationContext(),
+                0, mapIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Notification.Builder builder = new Notification.Builder(this, channelId)
+                .setContentTitle(notificationTitle)
+                .setContentText(notificationText)
+                .setSmallIcon(R.drawable.rsz_ready_cat)
+                .setShowWhen(true)
+                .setContentIntent(pendingIntent);
+
+        builder.setChannelId(channel2Id);
+
+        Notification notification = builder.build();
+        notificationManager.notify(notification2ID++, notification);
+    }
+
     @Override
     public void onDestroy() {
         LocalBroadcastManager.getInstance(getApplicationContext())
@@ -307,18 +377,28 @@ public class NotifyService extends Service implements LocationListener {
         currLoc[0] = location.getLatitude();
         currLoc[1] = location.getLongitude();
 
-        for (Cat cat : listOfCats) {
-            float[] dist = new float[1];
-            Location.distanceBetween(currLoc[0],currLoc[1],
-                    cat.getLat(),cat.getLng(),dist);
+        if (listOfCats!=null) {
+            for (Cat cat : listOfCats) {
+                float[] dist = new float[1];
+                Location.distanceBetween(currLoc[0],currLoc[1],
+                        cat.getLat(),cat.getLng(),dist);
 
-            if (cat.getName().equals(catName)) { //if this is the cat we're tracking
-                notificationManager.notify(notificationID,notification);
-            }
+                if (cat.getName().equals(catName)) { //if this is the cat we're tracking
+                    updateNotification();
+                }
 
-            if (dist[0]<30) { //if in range
-                String message = cat.getName() + " is close by!";
-                //TODO send the other notification type with this message and a timer
+                if (dist[0]<30) { //if we are close to the cat
+                    //if this is the first time we're close to this cat
+                    if (!closeCats.get(cat.getCatId())) {
+                        //send a notification
+                        otherNotification(cat.getName(),cat.getCatId());
+                        //set this to true so it doesn't keep being called
+                        closeCats.put(cat.getCatId(),true);
+                    }
+                }
+                else { //if out of range set closeCat to false
+                    closeCats.put(cat.getCatId(),false);
+                }
             }
         }
     }

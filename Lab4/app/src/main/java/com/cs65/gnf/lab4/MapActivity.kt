@@ -116,7 +116,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                 //Get the selected cat
                 selectedCat = visibleCats[selectedCatID.id]
                 if (selectedCat == null) {
-                    longToast("You're too far away from any cats!")
+                    longToast("You're too far away from that cat now!")
                 }
                 else {
                     //enable or disable pet button depending on if cat has been petted
