@@ -233,7 +233,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
      * update it on map
      */
     override fun onLocationChanged(location : Location){
-        Log.d("LOCATION", "CHANGED: " + location.latitude + " " + location.longitude)
 
         //Change current location
         currLoc = LatLng(location.latitude,location.longitude)
@@ -324,8 +323,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                         .getInstance(applicationContext)
                         .sendBroadcast(intent)
 
-                Log.d("HERE","in stop")
-
                 //change the button view
                 trackButton.text = getString(R.string.track_button)
                 trackButton.setBackgroundColor(getColor(R.color.LLGreen))
@@ -341,7 +338,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                 intent.putExtra("id",selectedCat?.catId)
                 this.startService(intent)
 
-                Log.d("HERE","in track")
                 //change look of button
                 trackButton.text = getString(R.string.track_button_stop)
                 trackButton.setBackgroundColor(getColor(R.color.colorPrimaryDark))
@@ -552,7 +548,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
             track = TRACKBUTTON.STOP
             trackOrStop()
             track = TRACKBUTTON.TRACK
-            Log.d("HERE","stop receiver is called")
         }
     }
 

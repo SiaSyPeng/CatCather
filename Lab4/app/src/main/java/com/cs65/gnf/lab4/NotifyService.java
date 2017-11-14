@@ -257,17 +257,6 @@ public class NotifyService extends Service implements LocationListener {
                 Vibrator vibrator;
                 vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                 vibrator.vibrate(500);
-
-            } else if (alert.equals("r")) { //if set to ring
-                Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-
-                AudioAttributes attribs = new AudioAttributes
-                        .Builder()
-                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .build();
-                mChannel.setSound(uri,attribs);
-                //mChannel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);
             } else { //if set to none
                 mChannel.enableLights(false);
                 mChannel.enableVibration(false);
@@ -383,8 +372,6 @@ public class NotifyService extends Service implements LocationListener {
 
             Intent stopIntent = new Intent();
             stopIntent.setAction(STOP_TRACKING_ACTION);
-
-            Log.d("HERE","destroying NotifyService296");
 
             LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(stopIntent);
         }

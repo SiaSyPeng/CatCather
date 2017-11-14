@@ -210,7 +210,7 @@ class SettingsFrag: PreferenceFragment(), SharedPreferences.OnSharedPreferenceCh
 
         //List preference for alerts
             getString(R.string.prefs_alert_key) -> {
-                alert = activity.defaultSharedPreferences.getString(key,"r")
+                alert = activity.defaultSharedPreferences.getString(key,"v")
 
                 //Put it into sharedPrefs storage
                 activity.getSharedPreferences(USER_PREFS, Context.MODE_PRIVATE)

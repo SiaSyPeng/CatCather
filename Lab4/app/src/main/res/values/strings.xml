@@ -111,12 +111,10 @@
     <!--preferences: alert-->
     <string-array name="prefs_alert_entries">
         <item>Vibrate</item>
-        <item>Ring</item>
         <item>Nothing</item>
     </string-array>
     <string-array name="prefs_alert_entryValues">
         <item>v</item>
-        <item>r</item>
         <item>n</item>
     </string-array>
 

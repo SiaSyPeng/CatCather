@@ -7,15 +7,17 @@ Built using Android Studio
 Naman Goyal 20'<br>
 Sia Peng 20'
 
+***Please read Lab4 section below for our extracredit and notes***
+
 ## Submission
 
 for lab1, please see the final code on branch lab1Submit
 
 for lab2, please see the final code on branch lab2Submit
 
-for lab3, please see the final code on branch lab3Submit
+for lab3, please see the final code on branch lab3Submit 
 
-for lab4, please see the final code on branch Lab4Submit or master
+for lab4, please see the final code on branch lab4Submit  [***Please read Lab4 section below for our extracredit and notes***]
 
 ## Late passes
 
@@ -44,7 +46,10 @@ We are using one of our 24-hour late passes for Lab 3
         the settings fragment.
 
 ### Lab4
- - We issue proximity alerts for all cats
+- We submitted a few minutes after Monday midnight, which is the extension we get from Sergey. We are also using the two extensions that we have not used before.
+- Some minor design changes we made. For notification, we have two modes, either vibrate or none. As we are using notification channel, Android 26 Oreo uses channels to not be intrusive to users. Thus, to change some of the channels configs, you have to go to settings in your phone. i.e. setting importance
+- For back stack, it is not fully functioniong at first for us. We talked to Sergey about it, he says that it is an AOSP source bug, so we will not get points off that. Upon his advice, we had a walkthrough by overriding the onBackClick, which also worked to preserve our back navigation.
+- We issue proximity alerts for all cats
 
 ## Usage
 

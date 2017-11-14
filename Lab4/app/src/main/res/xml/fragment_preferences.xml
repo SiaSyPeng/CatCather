@@ -52,7 +52,7 @@
             android:summary="@string/prefs_alert_summary"
             android:entries= "@array/prefs_alert_entries"
             android:entryValues="@array/prefs_alert_entryValues"
-            android:defaultValue="r"
+            android:defaultValue="v"
             />
         <ListPreference
             android:title="@string/prefs_mintime_title"
