@@ -403,7 +403,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     private fun requestPermissions() {
         // Here, thisActivity is the current activity
 
-        //TODO: check vibrate permission
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                 checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                 checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
