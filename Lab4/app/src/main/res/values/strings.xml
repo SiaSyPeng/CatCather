@@ -149,6 +149,8 @@
     <string name="channel_name">Tracking Notify Channel</string>
     <string name="channel_description">Track Notify Channel</string>
     <string name="stop_button">Stop</string>
+    <string name="channel_name_2">Close cats channel</string>
+    <string name="channel_description_2">Cats close to you</string>
     <!--Cats Frag -->
     <string name="cat_pic_descr">Image of the cat</string>
     <string name="cat_petted_descr">Image showing if the cat has been petted</string>
