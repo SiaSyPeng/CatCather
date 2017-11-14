@@ -26,7 +26,6 @@ import com.varunmishra.catcameraoverlay.CameraViewActivity
 import com.varunmishra.catcameraoverlay.Config
 import com.varunmishra.catcameraoverlay.OnCatPetListener
 import android.graphics.BitmapFactory
-import android.support.v4.app.NavUtils
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.longToast
 import java.io.ObjectInputStream
@@ -225,9 +224,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         val markerId = p0?.tag //Get the associated Cat ID we saved in the marker
         if (markerId is Int) selectedCatID.id = markerId //set selected cat to that
                                                          //this will call the listener function
-
-        trackOrStop()
-
         return true //Suppresses default behaviour of clicking on the marker
     }
 
@@ -285,7 +281,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
                 Config.catName = selectedCat!!.name
                 Config.catLatitude = selectedCat!!.lat
                 Config.catLongitude = selectedCat!!.lng
-                Config.catImage = BitmapFactory.decodeStream(URL(selectedCat!!.picUrl).openConnection().getInputStream())
+                Config.catImage = BitmapFactory
+                        .decodeStream(URL(selectedCat!!.picUrl)
+                                .openConnection()
+                                .getInputStream())
                 Config.onCatPetListener = this
                 val i = Intent(this, CameraViewActivity::class.java)
                 startActivity(i)

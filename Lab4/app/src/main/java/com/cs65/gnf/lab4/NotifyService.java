@@ -19,8 +19,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.graphics.drawable.Icon;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v13.app.ActivityCompat;
@@ -30,16 +28,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
-//import java.util.Timer;
-//import java.util.TimerTask;
 
 
 public class NotifyService extends Service implements LocationListener {
 
     final static String ACTION_STOP = "STOP";
     final static String ACTION_TRACK = "TRACK";
-    final static String STOP_SERVICE_BROADCAST_KEY="STOP"; //from activity to service
-    final static int RQS_STOP_SERVICE = 1;
     final static int notificationID = 1;
     final String channelId  = "my_channel_01"; // set in createChannel, only used in API >= 26
 
@@ -58,8 +52,6 @@ public class NotifyService extends Service implements LocationListener {
     double[] currLoc = new double[2]; //lat and long
 
     NotifyServiceReceiver notifyServiceReceiver; //our receiver for this service
-
-    private final String myBlog = "http://www.cs.dartmouth.edu/~campbell/cs65/cs65.html";
 
     @Override
     public void onCreate() {
@@ -245,8 +237,6 @@ public class NotifyService extends Service implements LocationListener {
 
         // add back stack for new map activity
         TaskStackBuilder stackBuilder= TaskStackBuilder.create(this);
-        //stackBuilder.addParentStack(MapActivity.class);
-        //stackBuilder.addNextIntent(mapIntent);
         stackBuilder.addNextIntentWithParentStack(mapIntent);
 
         //To be wrapped in a PendingIntent, because
@@ -257,9 +247,6 @@ public class NotifyService extends Service implements LocationListener {
                 = PendingIntent.getActivity(getApplicationContext(),
                 0, mapIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
-//        PendingIntent pendingIntent = TaskStackBuilder.create(this)
-//                .addNextIntentWithParentStack(mapIntent)
-//                .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -269,11 +256,7 @@ public class NotifyService extends Service implements LocationListener {
                 .setContentText(notificationText)
                 .setSmallIcon(R.drawable.petted)
                 .setShowWhen(true)
-//                .setVibrate(new long[] { 1000, 1000 }) // Each element then alternates between delay, vibrate, sleep, vibrate, sleep
                 .setContentIntent(pendingIntent);
-
-//        Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-//        builder.setSound(alarmSound);
 
         if (android.os.Build.VERSION.SDK_INT >= 26) {
             builder.setChannelId(channelId);
