@@ -13,7 +13,10 @@ for lab1, please see the final code on branch lab1Submit
 
 for lab2, please see the final code on branch lab2Submit
 
-for lab3, please see the final code on branch lab3Submit (or on master)
+for lab3, please see the final code on branch lab3Submit 
+
+for lab4, please see the final code on branch lab4Submit 
+
 
 ## Late passes
 
