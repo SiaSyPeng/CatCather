@@ -52,6 +52,8 @@ public class NotifyService extends Service implements LocationListener {
     double[] currLoc = new double[2]; //lat and long
 
     NotifyServiceReceiver notifyServiceReceiver; //our receiver for this service
+    private Notification notification;
+    private NotificationManager notificationManager;
 
     @Override
     public void onCreate() {
@@ -96,6 +98,9 @@ public class NotifyService extends Service implements LocationListener {
         IntentFilter i = new IntentFilter(ACTION_STOP);
         LocalBroadcastManager.getInstance(getApplicationContext())
                 .registerReceiver(new NotifyServiceReceiver(),i);
+
+        //start a notificationManager
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     @Override
@@ -118,14 +123,14 @@ public class NotifyService extends Service implements LocationListener {
 
         // if we request to stop the service, stop the service!
         if (ACTION_STOP.equals(intent.getAction())) {
-            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
             if (notificationManager != null) {
                 notificationManager.cancel(notificationID);
             }
             stopSelf();
         }
 
-        updateNotification();
+        startNotification();
         return START_STICKY;
         //return super.onStartCommand(intent, flags, startId);
     }
@@ -195,8 +200,6 @@ public class NotifyService extends Service implements LocationListener {
 
         if (android.os.Build.VERSION.SDK_INT >= 26) {
 
-            NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
             // The user-visible name and description of the channel.
             String name = getString(R.string.channel_name);
             String description = getString(R.string.channel_description);
@@ -213,11 +216,11 @@ public class NotifyService extends Service implements LocationListener {
             mChannel.enableVibration(true);
             mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
 
-            mNotificationManager.createNotificationChannel(mChannel);
+            notificationManager.createNotificationChannel(mChannel);
         }
     }
 
-    private void updateNotification() {
+    private void startNotification() {
 
         //get distance
         float[] dist = new float[1];
@@ -227,7 +230,6 @@ public class NotifyService extends Service implements LocationListener {
         String notificationText = ((int) dist[0])+" meters away";
 
         // Click the notification goes back to map activity
-        //TODO: go back to main if back stack doesn't work
         Intent mapIntent = new Intent(this, MapActivity.class);
         mapIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         mapIntent.putExtra("catId",catId);
@@ -245,9 +247,6 @@ public class NotifyService extends Service implements LocationListener {
                 0, mapIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
 
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
         Notification.Builder builder = new Notification.Builder(this, channelId)
                 .setContentTitle(notificationTitle)
                 .setContentText(notificationText)
@@ -255,9 +254,7 @@ public class NotifyService extends Service implements LocationListener {
                 .setShowWhen(true)
                 .setContentIntent(pendingIntent);
 
-        if (android.os.Build.VERSION.SDK_INT >= 26) {
-            builder.setChannelId(channelId);
-        }
+        builder.setChannelId(channelId);
 
 
         //Create a pending intent that will send a broadcast to ServiceStopReceiver
@@ -316,7 +313,7 @@ public class NotifyService extends Service implements LocationListener {
                     cat.getLat(),cat.getLng(),dist);
 
             if (cat.getName().equals(catName)) { //if this is the cat we're tracking
-                //TODO update notification with distance
+                notificationManager.notify(notificationID,notification);
             }
 
             if (dist[0]<30) { //if in range
@@ -351,7 +348,7 @@ public class NotifyService extends Service implements LocationListener {
             fromMapActivityClick = true;
             stopSelf();
             try {
-            ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).cancel(notificationID);
+            notificationManager.cancel(notificationID);
             }
             catch (java.lang.NullPointerException e) {
                 Log.d("CANCEL","nothing to cancel");
