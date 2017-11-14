@@ -12,8 +12,12 @@ import com.android.volley.toolbox.Volley
 import com.google.android.gms.maps.model.LatLng
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.longToast
+import org.jetbrains.anko.longToast
+import org.json.JSONException
+import org.json.JSONObject
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 
@@ -22,6 +26,7 @@ import java.io.ObjectOutputStream
  */
 fun petCat(act: Activity, user: String?, pass: String?, id: Int, loc: LatLng?) {
 
+    Log.d("HERE","petCat triggered")
     //Get lat and long
     val lat = loc?.latitude
     val lng = loc?.longitude
@@ -50,12 +55,14 @@ fun petCat(act: Activity, user: String?, pass: String?, id: Int, loc: LatLng?) {
                             Log.d("ERROR","Pat result is null") //this shouldn't happen
                         }
                         else {
+                            Log.d("HERE","result gotten")
                             when (petRes.status) {
                                 Status.ERROR -> { //If error is returned
                                     act.longToast(petRes.reason.toString()) //toast that error
                                 }
                                 Status.OK -> { //if pet is successful start the success activity
                                     act.longToast("mrowwwww")
+                                    Log.d("HERE","status was ok")
                                     petInternal(act,id)
                                     val intent = Intent(act.applicationContext,SuccessActivity::class.java)
                                     act.startActivity(intent)
@@ -253,6 +260,7 @@ fun getClosestCat(list: List<Cat>, loc: LatLng): Int {
  * modifying it, and writing it back to internal storage. Done Async.
  */
 fun petInternal(ctx: Context, id: Int) {
+    Log.d("HERE","in pet internal")
     ctx.doAsync {
         val CAT_LIST_FILE = "cat_list"
 
