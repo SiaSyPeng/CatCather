@@ -89,7 +89,7 @@ class MainActivity: FragmentActivity() {
                     .add(
                             object : StringRequest(Request.Method.GET,listUrl,
                                     Response.Listener { response ->
-                                        Log.d("RESPONSE",response)
+
                                         //Build the Moshi, adding all needed adapters
                                         val moshi = Moshi.Builder()
                                                 .add(KotlinJsonAdapterFactory())
@@ -120,8 +120,6 @@ class MainActivity: FragmentActivity() {
                                             //Set the list of cats
                                              catList = ArrayList(catAdaptor.fromJson(response))
 
-                                            Log.d("MAINACT",catList.toString())
-
                                             if (catList==null) { //if the list cannot be made
                                                 Log.d("ERROR","List of cats not found")
                                             }
@@ -140,8 +138,6 @@ class MainActivity: FragmentActivity() {
                                                             .putBoolean(READY_STRING,true)
                                                             .apply()
 
-                                                    Log.d("MAIN","ready")
-
                                                     //Send a broadcast to everyone listening, so that
                                                     //people waiting for the cat list know they can
                                                     //get it now
@@ -151,8 +147,6 @@ class MainActivity: FragmentActivity() {
                                                     LocalBroadcastManager
                                                             .getInstance(applicationContext)
                                                             .sendBroadcast(intent)
-
-                                                    Log.d("MAIN","broadcast sent")
                                                 }
                                             }
                                         }

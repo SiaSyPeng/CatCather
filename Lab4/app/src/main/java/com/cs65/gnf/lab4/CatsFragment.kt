@@ -40,12 +40,11 @@ class CatsFrag : ListFragment() {
 
         if (!prefs.getBoolean(READY_STRING,false)) { //if not ready
 
-            Log.d("CATSFRAG"," was not ready")
             val i = IntentFilter(BROADCAST_ACTION)
 
             LocalBroadcastManager.getInstance(activity.applicationContext)
                     .registerReceiver(broadcastReceiver,i) //register broadcast receiver
-            Log.d("CATSFRAG","registered")
+
         }
         else {
             Log.d("CATSFRAG"," was ready")
@@ -60,7 +59,6 @@ class CatsFrag : ListFragment() {
      */
     inner class MyRecvr : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            Log.d("CATSFRAG","broadcast received")
             getCats()
         }
     }
@@ -71,19 +69,13 @@ class CatsFrag : ListFragment() {
      */
     private fun getCats() {
 
-        Log.d("CATSFRAG","get cats called")
-
         val act = activity as MainActivity
         catList = act.catList
-
-        Log.d("CATSFRAG",catList.toString())
 
         //Sort them into an array (here, by name)
         //TODO if time, let user sort by different things
         catList?.sortedBy { it.name }
         val catArray = catList?.toTypedArray()
-
-        Log.d("CATSFRAG",catArray.toString())
 
         if (catArray != null) {
             listAdapter = CatViewAdaptor(context,catArray)
