@@ -19,7 +19,6 @@ for lab3, please see the final code on branch lab3Submit
 
 for lab4, please see the final code on branch lab4Submit  [***Please read Lab4 section below for our extracredit and notes***]
 
-
 ## Late passes
 
 We are using one of our 24-hour late passes for Lab 3
@@ -50,7 +49,7 @@ We are using one of our 24-hour late passes for Lab 3
 - We submitted a few minutes after Monday midnight, which is the extension we get from Sergey. We are also using the two extensions that we have not used before.
 - Some minor design changes we made. For notification, we have two modes, either vibrate or none. As we are using notification channel, Android 26 Oreo uses channels to not be intrusive to users. Thus, to change some of the channels configs, you have to go to settings in your phone. i.e. setting importance
 - For back stack, it is not fully functioniong at first for us. We talked to Sergey about it, he says that it is an AOSP source bug, so we will not get points off that. Upon his advice, we had a walkthrough by overriding the onBackClick, which also worked to preserve our back navigation.
-- 
+- We issue proximity alerts for all cats
 
 ## Usage
 
@@ -69,6 +68,23 @@ Kotlin has this structure called data classes which are like classes but that
 auto-generate toString, getters and setters. This makes them pretty much perfect
 for, say, changing JSON objects into programmable objects
 
+**Serializing our cat class**:
+I made our cat class serializable by implementing the Externalizable interface,
+so that we could easily and efficiently save our list of cats to internal
+storage, such that it only needs to be gotten by the server once. The game can
+then at the least display cats and  whatnot without an internet connection.
+
+**Workaround for BackStack**:
+For some reason, backstacks simply weren't working for us. We asked the
+professor for help but he too did not understand why it was not working. So,
+we instead overrode the back button in the map activity to always send back
+to our main activity instead of to whatever is in the backStack.
+
+**Autoselection of tracked cat**:
+If the user enters the mapActivity from the notification, whether or not
+mapActivity has been closed or not, the cat that was being tracked is
+automatically selected
+
 ## Directory Structure
 
 **Lab1**: Sign up page
@@ -80,6 +96,8 @@ preferences into preference fragment.
 
 **Lab3**: Google Map and cat interaction on real-time location
 
+**Lab4**: Notifications, Camera overlay, Tracking
+
 ...
 
 ## Assumptions
@@ -89,4 +107,11 @@ Lab Requirement:
 
 **Lab2**: http://www.cs.dartmouth.edu/~sergey/cs65/lab2/
 
-**Lab2**: http://www.cs.dartmouth.edu/~sergey/cs65/lab3/
+**Lab3**: http://www.cs.dartmouth.edu/~sergey/cs65/lab3/
+
+**Lab4**: http://www.cs.dartmouth.edu/~sergey/cs65/lab4/
+
+## Contact us
+If you have any questions about any of our code or how we implemented stuff
+or the "cool things" we did, please feel free to slack us in the CS channel at
+any point!
