@@ -207,12 +207,9 @@ public class NotifyService extends Service implements LocationListener {
             int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel mChannel = new NotificationChannel(channelId, name, importance);
 
-            // Configure the notification channel.
-            description = mChannel.getDescription();
-
-            mChannel.enableLights(true);
 
             // Sets the notification light color for notifications posted to this
+            mChannel.enableLights(true);
             // channel, if the device supports this feature.
             mChannel.setLightColor(Color.RED);
             // Sets vibration if the device supports it
@@ -273,8 +270,11 @@ public class NotifyService extends Service implements LocationListener {
         //add that action to the notification
         builder.addAction(stopAct);
 
-        notification = builder.build();
-        notificationManager.notify(notificationID, notification);
+
+
+        Notification notification = builder.build();
+        startForeground(notificationID, notification);
+        //notificationManager.notify(notificationID, notification);
 
     }
     @Override
