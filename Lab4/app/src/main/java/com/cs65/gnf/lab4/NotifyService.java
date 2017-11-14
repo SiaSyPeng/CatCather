@@ -278,8 +278,8 @@ public class NotifyService extends Service implements LocationListener {
 
 
         Notification notification = builder.build();
-        startForeground(notificationID, notification);
-        //notificationManager.notify(notificationID, notification);
+        //startForeground(notificationID, notification);
+        notificationManager.notify(notificationID, notification);
 
     }
     @Override

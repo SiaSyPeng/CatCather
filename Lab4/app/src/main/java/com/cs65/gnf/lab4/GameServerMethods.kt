@@ -52,10 +52,10 @@ fun petCat(act: Activity, user: String?, pass: String?, id: Int, loc: LatLng?) {
                         else {
                             when (petRes.status) {
                                 Status.ERROR -> { //If error is returned
-                                    if(petRes.reason == "TOO_FAR") {
+                                    if(petRes.code == "TOO_FAR") {
                                         act.longToast("Too far away") //too far away
                                     }else{
-                                        act.longToast(petRes.reason.toString()) //toast that error
+                                        act.longToast(petRes.code.toString()) //toast that error
                                     }
                                 }
                                 Status.OK -> { //if pet is successful start the success activity
