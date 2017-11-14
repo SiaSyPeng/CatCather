@@ -146,7 +146,7 @@
     <string name="prefs_about_summary">(opens in browser)</string>
 
     <!--Notification -->
-    <string name="channel_name">Tracking NotifyChannel</string>
+    <string name="channel_name">Tracking Notify Channel</string>
     <string name="channel_description">Track Notify Channel</string>
     <string name="stop_button">Stop</string>
     <!--Cats Frag -->

@@ -201,7 +201,7 @@ public class NotifyService extends Service implements LocationListener {
             String name = getString(R.string.channel_name);
             String description = getString(R.string.channel_description);
 
-            int importance = NotificationManager.IMPORTANCE_LOW;
+            int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel mChannel = new NotificationChannel(channelId, name, importance);
 
             // Configure the notification channel.
