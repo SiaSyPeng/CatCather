@@ -19,8 +19,13 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.graphics.drawable.Icon;
+import android.media.AudioAttributes;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Vibrator;
+import android.provider.Settings;
 import android.support.v13.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -201,17 +206,38 @@ public class NotifyService extends Service implements LocationListener {
             String name = getString(R.string.channel_name);
             String description = getString(R.string.channel_description);
 
-            int importance = NotificationManager.IMPORTANCE_HIGH;
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel mChannel = new NotificationChannel(channelId, name, importance);
 
+            String alert = getSharedPreferences("profile_data",Context.MODE_PRIVATE).getString("alert", null);
 
-            // Sets the notification light color for notifications posted to this
-            mChannel.enableLights(true);
-            // channel, if the device supports this feature.
-            mChannel.setLightColor(Color.RED);
-            // Sets vibration if the device supports it
-            mChannel.enableVibration(true);
-            mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+            if (alert.equals("v")){
+                mChannel.setImportance(NotificationManager.IMPORTANCE_LOW);
+                Vibrator vibrator;
+                vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                vibrator.vibrate(500);
+                // Sets the notification light color for notifications posted to this
+//                mChannel.enableLights(true);
+//                // channel, if the device supports this feature.
+//                mChannel.setLightColor(Color.RED);
+//
+//                // Sets vibration if the device supports it
+//                mChannel.enableVibration(true);
+//                mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+            } else if (alert.equals("r")) {
+                Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+                AudioAttributes attribs = new AudioAttributes
+                        .Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build();
+                mChannel.setSound(uri,attribs);
+                //mChannel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);
+            } else {
+                mChannel.enableLights(false);
+                mChannel.enableVibration(false);
+            }
 
             mNotificationManager.createNotificationChannel(mChannel);
         }
