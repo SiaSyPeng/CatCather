@@ -13,7 +13,9 @@ for lab1, please see the final code on branch lab1Submit
 
 for lab2, please see the final code on branch lab2Submit
 
-for lab3, please see the final code on branch lab3Submit (or on master)
+for lab3, please see the final code on branch lab3Submit
+
+for lab4, please see the final code on branch Lab4Submit or master
 
 ## Late passes
 
@@ -41,6 +43,9 @@ We are using one of our 24-hour late passes for Lab 3
         updates from locationManager, use the min time from
         the settings fragment.
 
+### Lab4
+ - We issue proximity alerts for all cats
+
 ## Usage
 
 Run this totally not pokemon go game on your android phone!
@@ -58,6 +63,23 @@ Kotlin has this structure called data classes which are like classes but that
 auto-generate toString, getters and setters. This makes them pretty much perfect
 for, say, changing JSON objects into programmable objects
 
+**Serializing our cat class**:
+I made our cat class serializable by implementing the Externalizable interface,
+so that we could easily and efficiently save our list of cats to internal
+storage, such that it only needs to be gotten by the server once. The game can
+then at the least display cats and  whatnot without an internet connection.
+
+**Workaround for BackStack**:
+For some reason, backstacks simply weren't working for us. We asked the
+professor for help but he too did not understand why it was not working. So,
+we instead overrode the back button in the map activity to always send back
+to our main activity instead of to whatever is in the backStack.
+
+**Autoselection of tracked cat**:
+If the user enters the mapActivity from the notification, whether or not
+mapActivity has been closed or not, the cat that was being tracked is
+automatically selected
+
 ## Directory Structure
 
 **Lab1**: Sign up page
@@ -69,6 +91,8 @@ preferences into preference fragment.
 
 **Lab3**: Google Map and cat interaction on real-time location
 
+**Lab4**: Notifications, Camera overlay, Tracking
+
 ...
 
 ## Assumptions
@@ -78,4 +102,11 @@ Lab Requirement:
 
 **Lab2**: http://www.cs.dartmouth.edu/~sergey/cs65/lab2/
 
-**Lab2**: http://www.cs.dartmouth.edu/~sergey/cs65/lab3/
+**Lab3**: http://www.cs.dartmouth.edu/~sergey/cs65/lab3/
+
+**Lab4**: http://www.cs.dartmouth.edu/~sergey/cs65/lab4/
+
+## Contact us
+If you have any questions about any of our code or how we implemented stuff
+or the "cool things" we did, please feel free to slack us in the CS channel at
+any point!
